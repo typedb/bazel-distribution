@@ -1,17 +1,16 @@
 def _py_replace_imports_impl(ctx):
     outputs = []
     for file in ctx.files.src:
-        relativeFileName = file.short_path.replace(
-            ctx.attr.src.label.package + '/', '')
-        outputFileName = relativeFileName.replace(ctx.attr.original_name, ctx.attr.output_name)
+        relativeFileName = file.short_path.replace(ctx.attr.src.label.package + '/', '')
+        outputFileName = relativeFileName.replace(ctx.attr.src.label.name, ctx.attr.name)
         outputFile = ctx.actions.declare_file(outputFileName)
         outputs.append(outputFile)
         ctx.actions.run_shell(
             inputs  = [file],
     	    outputs = [outputFile],
-            tools = [ctx.file._replacer_script],
+            tools = [ctx.file._replace_imports_script],
     		command = "python %s %s %s %s %s" % (
-                ctx.file._replacer_script.path, file.path, outputFile.path,
+                ctx.file._replace_imports_script.path, file.path, outputFile.path,
                 ctx.attr.original_package, ctx.attr.output_package)
         )
 
@@ -77,21 +76,15 @@ py_replace_imports = rule(
 		"src": attr.label(
             mandatory = True,
 		),
-        "original_name": attr.string(
-            mandatory = True,
-        ),
-        "output_name": attr.string(
-            mandatory = True,
-        ),
         "original_package": attr.string(
             default = ""
         ),
         "output_package": attr.string(
             default = ""
         ),
-        "_replacer_script": attr.label(
+        "_replace_imports_script": attr.label(
             allow_single_file = True,
-            default = "//pip:replacer.py",
+            default = "//pip:replace_imports.py",
         )
 	},
 	implementation = _py_replace_imports_impl
@@ -156,11 +149,11 @@ deploy_pip = rule(
     ),
     "_setup_py_template": attr.label(
         allow_single_file = True,
-        default = "//pip:setup_template.py",
+        default = "//pip/templates:setup.py",
     ),
     "_deployment_script_template": attr.label(
         allow_single_file = True,
-        default = "//pip:deploy.sh",
+        default = "//pip/templates:deploy.sh",
     )
   },
   executable = True,
