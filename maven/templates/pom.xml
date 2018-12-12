@@ -27,6 +27,6 @@
     <version>{pom_version}</version>
 
     <dependencies>
-        {generated_bzl_deps}
+        {maven_dependencies}
     </dependencies>
 </project>

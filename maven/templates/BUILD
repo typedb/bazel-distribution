@@ -16,9 +16,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-def maven_dependencies():
-    native.git_repository(
-        name="com_github_google_bazel_common",
-        remote = "https://github.com/graknlabs/bazel-common.git",
-        commit = "ccd5a3c9dccb844ce45d8aaf4595d56668a2f2a2"
-    )
+exports_files(["pom.xml", "deploy.sh", "rules.bzl"])
