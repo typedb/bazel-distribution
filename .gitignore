@@ -1,2 +1,4 @@
 # IDEA files
 *.iml
+.ijwb/
+bazel-*
