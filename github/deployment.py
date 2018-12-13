@@ -59,20 +59,14 @@ if system == 'Darwin':
         print('There should be exactly one zip archive containing `ghr`')
         sys.exit(1)
     subprocess.call(['unzip', ghr[0], '-d', tempdir])
-    ghr = glob.glob(os.path.join(tempdir, '**/ghr'))
-    if len(ghr) != 1:
-        print('There should be exactly one executable named `ghr` in archive')
-    ghr = ghr[0]
+    ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
 elif system == 'Linux':
     ghr = glob.glob('external/ghr_linux_tar/file/*.tar.gz')
     if len(ghr) != 1:
         print('There should be exactly one tar archive containing `ghr`')
         sys.exit(1)
     subprocess.call(['tar', '-xf', ghr[0], '-C', tempdir])
-    ghr = glob.glob(os.path.join(tempdir, '**/ghr'))
-    if len(ghr) != 1:
-        print('There should be exactly one executable named `ghr` in archive')
-    ghr = ghr[0]
+    ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
 else:
     print('Error - your platform ({}) is not supported. Try Linux or macOS instead.'.format(system))
     sys.exit(1)
