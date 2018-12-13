@@ -1,20 +1,4 @@
-#
-# GRAKN.AI - THE KNOWLEDGE GRAPH
-# Copyright (C) 2018 Grakn Labs Ltd
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
+# Do not edit. deployment_rules_builder.py autogenerates this file from deployment/maven/templates/rules.bzl
 
 # Imported from google/bazel-commons: begin
 MavenInfo = provider(
@@ -60,6 +44,7 @@ def _collect_maven_info_impl(_target, ctx):
 
 _collect_maven_info = aspect(
     attr_aspects = [
+        "jars",
         "deps",
         "exports",
         "runtime_deps"
@@ -171,7 +156,12 @@ def _deploy_maven_jar_impl(ctx):
     _generate_deployment_script(ctx, maven_coordinates)
 
     # there is also .source_jar which produces '.srcjar'
-    jar = target.java.outputs.jars[0].class_jar
+    if hasattr(target, "java"):
+        jar = target.java.outputs.jars[0].class_jar
+    elif hasattr(target, "files"):
+        jar = target.files.to_list()[0]
+    else:
+        fail("Could not find JAR file to deploy in {}".format(target))
 
     symlinks = {}
     for i, libjar in enumerate(jars):
@@ -195,21 +185,28 @@ def _transitive_maven_dependencies(_target, ctx):
         for x in _target[MavenInfo].maven_dependencies:
             tags.append(x)
 
-    for dep in ctx.rule.attr.deps:
+    for dep in getattr(ctx.rule.attr, "jars", []):
         if dep.label.package.startswith(ctx.attr.package):
             tags = tags + dep[TransitiveMavenInfo].transitive_dependencies
-    for dep in ctx.rule.attr.exports:
+    for dep in getattr(ctx.rule.attr, "deps", []):
         if dep.label.package.startswith(ctx.attr.package):
             tags = tags + dep[TransitiveMavenInfo].transitive_dependencies
-    for dep in ctx.rule.attr.runtime_deps:
+    for dep in getattr(ctx.rule.attr, "exports", []):
+        if dep.label.package.startswith(ctx.attr.package):
+            tags = tags + dep[TransitiveMavenInfo].transitive_dependencies
+    for dep in getattr(ctx.rule.attr, "runtime_deps", []):
         if dep.label.package.startswith(ctx.attr.package):
             tags = tags + dep[TransitiveMavenInfo].transitive_dependencies
     return [TransitiveMavenInfo(transitive_dependencies = tags)]
 
+# Filled in by deployment_rules_builder
 _maven_packages = "{maven_packages}".split(",")
+_default_version_file = None if 'version_file_placeholder' in "{version_file_placeholder}" else "{version_file_placeholder}"
+_default_deployment_properties = None if 'deployment_properties_placeholder' in "{deployment_properties_placeholder}" else "{deployment_properties_placeholder}"
 
 _transitive_maven_info = aspect(
     attr_aspects = [
+        "jars",
         "deps",
         "exports",
         "runtime_deps",
@@ -237,11 +234,13 @@ deploy_maven_jar = rule(
         ),
         "version_file": attr.label(
             allow_single_file = True,
-            mandatory = True,
+            mandatory = not bool(_default_version_file),
+            default = _default_version_file
         ),
         "deployment_properties": attr.label(
             allow_single_file = True,
-            mandatory = True,
+            mandatory = not bool(_default_deployment_properties),
+            default = _default_deployment_properties
         ),
         "_pom_xml_template": attr.label(
             allow_single_file = True,
