@@ -28,4 +28,7 @@ with zipfile.ZipFile('{distribution_zip_location}', 'w', zipfile.ZIP_DEFLATED) a
     for fn, arcfn in moves.items():
         zf.write(fn, arcfn)
     for emptydir in empty_directories:
-        zf.writestr(emptydir + '/', '')
+        zi = zipfile.ZipInfo(emptydir + '/')
+        zi.compress_type = zipfile.ZIP_DEFLATED
+        zi.external_attr = 0o40775 << 16
+        zf.writestr(zi, '')
