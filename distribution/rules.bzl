@@ -70,6 +70,10 @@ distribution = rule(
         "empty_directories": attr.string_list(
             doc = "List of names to create empty directories inside the archive"
         ),
+        "output_filename": attr.string(
+            doc = "Filename for result of rule execution",
+            mandatory = True
+        ),
         "_distribution_py": attr.label(
             allow_single_file = True,
             default="//distribution:archiver.py"
@@ -77,7 +81,7 @@ distribution = rule(
     },
     implementation = _distribution_impl,
     outputs = {
-        "distribution": "%{name}.zip"
+        "distribution": "%{output_filename}.zip"
     },
     output_to_genfiles = True,
     doc = "Create a distribution of Java program(s) containing additional files"
