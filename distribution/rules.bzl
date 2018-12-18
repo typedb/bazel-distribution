@@ -63,10 +63,10 @@ distribution = rule(
         ),
         "additional_files": attr.label_keyed_string_dict(
             allow_files = True,
-            doc = "Additional files to put into archive"
+            doc = "Additional files to put into the archive"
         ),
         "empty_directories": attr.string_list(
-            doc = "List of names to create empty directories inside archive"
+            doc = "List of names to create empty directories inside the archive"
         ),
         "_distribution_py": attr.label(
             allow_single_file = True,
