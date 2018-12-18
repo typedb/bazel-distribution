@@ -53,6 +53,8 @@ def _distribution_impl(ctx):
         executable = archiver_script
     )
 
+    return DefaultInfo(data_runfiles = ctx.runfiles(files=[ctx.outputs.distribution]))
+
 
 distribution = rule(
     attrs = {
@@ -77,5 +79,6 @@ distribution = rule(
     outputs = {
         "distribution": "%{name}.zip"
     },
+    output_to_genfiles = True,
     doc = "Create a distribution of Java program(s) containing additional files"
 )
