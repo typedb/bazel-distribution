@@ -23,13 +23,13 @@ def _distribution_impl(ctx):
     names = {}
 
     for target in ctx.attr.targets:
-        for file in target.data_runfiles.files:
+        for file in target.data_runfiles.files.to_list():
             if file.extension == 'jar':
                 names[file.path] = ctx.attr.java_deps_root + file.basename
                 files.append(file)
 
     for label, filename in ctx.attr.additional_files.items():
-        if len(label.files) != 1:
+        if len(label.files.to_list()) != 1:
             fail("should specify target producing single file instead of {}".format(label))
         single_file = label.files.to_list()[0]
         names[single_file.path] = filename
