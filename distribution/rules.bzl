@@ -16,6 +16,37 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+def _java_deps_impl(ctx):
+    names = {}
+    files = []
+    newfiles = []
+
+    for target in ctx.attr.targets:
+        for file in target.data_runfiles.files.to_list():
+            if file.extension == 'jar':
+                names[file.path] = ctx.attr.java_deps_root + file.basename
+                files.append(file)
+
+
+    java_deps_builder = ctx.actions.declare_file('_java_deps.py')
+
+    ctx.actions.expand_template(
+        template = ctx.file._java_deps_builder,
+        output = java_deps_builder,
+        substitutions = {
+            "{moves}": str(names),
+            "{distribution_tgz_location}": ctx.outputs.distribution.path,
+        },
+        is_executable = True
+    )
+
+    ctx.actions.run(
+        outputs = [ctx.outputs.distribution],
+        inputs = files,
+        executable = java_deps_builder
+    )
+
+
 def _distribution_impl(ctx):
     # files to put into archive
     files = []
@@ -55,6 +86,67 @@ def _distribution_impl(ctx):
 
     return DefaultInfo(data_runfiles = ctx.runfiles(files=[ctx.outputs.distribution]))
 
+
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar", "pkg_deb")
+def deploy_deb(name,
+               package_dir,
+               maintainer,
+               version_file,
+               description,
+               postinst = None,
+               prerm = None,
+               target = None,
+               empty_dirs = [],
+               files = {},
+               depends = []):
+    java_deps_tar = []
+    if target:
+        java_deps(
+            name = "_{}-deps".format(name),
+            targets = [target],
+            java_deps_root = "services/lib/"
+        )
+        java_deps_tar.append("_{}-deps".format(name))
+
+    pkg_tar(
+        name = "_{}-tar".format(name),
+        extension = "tgz",
+        deps = java_deps_tar,
+        package_dir = package_dir,
+        empty_dirs = empty_dirs,
+        files = files,
+    )
+
+    pkg_deb(
+        name = "{}-deb".format(name),
+        data = "_{}-tar".format(name),
+        package = name,
+        depends = depends,
+        maintainer = maintainer,
+        version_file = version_file,
+        postinst = postinst,
+        prerm = prerm,
+        description = description
+    )
+
+
+java_deps = rule(
+    attrs = {
+        "targets": attr.label_list(mandatory=True),
+        "java_deps_root": attr.string(
+            default = "services/lib/",
+            doc = "Folder inside archive to put JARs into"
+        ),
+        "_java_deps_builder": attr.label(
+              allow_single_file = True,
+              default="//distribution:java_deps.py"
+        )
+    },
+    implementation = _java_deps_impl,
+    outputs = {
+        "distribution": "%{name}.tgz"
+    },
+)
 
 distribution = rule(
     attrs = {
