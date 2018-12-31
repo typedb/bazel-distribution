@@ -16,4 +16,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-exports_files(["archiver.py", "java_deps.py"])
+exports_files(["archiver.py", "java_deps.py", "tgz2zip.py"])
