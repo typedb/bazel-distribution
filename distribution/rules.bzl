@@ -122,7 +122,7 @@ def deploy_deb(name,
     )
 
     pkg_deb(
-        name = "{}-deb".format(name),
+        name = "deploy-deb",
         data = "_{}-tar".format(name),
         package = name,
         depends = depends,
