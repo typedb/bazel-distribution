@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 #
 # GRAKN.AI - THE KNOWLEDGE GRAPH
 # Copyright (C) 2018 Grakn Labs Ltd
@@ -16,4 +18,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-exports_files(["archiver.py", "java_deps.py"])
+from __future__ import print_function
+import tarfile
+
+moves = eval('{moves}')
+
+with tarfile.open('{distribution_tgz_location}', 'w:gz', dereference=True) as tgz:
+    for fn, arcfn in moves.items():
+        tgz.add(fn, arcfn)
