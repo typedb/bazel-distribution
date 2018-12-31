@@ -98,7 +98,8 @@ def deploy_deb(name,
                target = None,
                empty_dirs = [],
                files = {},
-               depends = []):
+               depends = [],
+               symlinks = {}):
     java_deps_tar = []
     if target:
         java_deps(
@@ -115,6 +116,7 @@ def deploy_deb(name,
         package_dir = package_dir,
         empty_dirs = empty_dirs,
         files = files,
+        symlinks = symlinks
     )
 
     pkg_deb(
