@@ -16,38 +16,30 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar", "pkg_deb")
+load("@bazel_tools//tools/build_defs/pkg:rpm.bzl", "pkg_rpm")
+
 def _java_deps_impl(ctx):
     names = {}
     files = []
     newfiles = []
 
-    for target in ctx.attr.targets:
-        for file in target.data_runfiles.files.to_list():
-            if file.extension == 'jar':
-                names[file.path] = ctx.attr.java_deps_root + file.basename
-                files.append(file)
-
-
-    java_deps_builder = ctx.actions.declare_file('_java_deps.py')
-
-    ctx.actions.expand_template(
-        template = ctx.file._java_deps_builder,
-        output = java_deps_builder,
-        substitutions = {
-            "{moves}": str(names),
-            "{distribution_tgz_location}": ctx.outputs.distribution.path,
-        },
-        is_executable = True
-    )
+    for file in ctx.attr.target.data_runfiles.files.to_list():
+        if file.extension == 'jar':
+            names[file.path] = ctx.attr.java_deps_root + file.basename
+            files.append(file)
 
     ctx.actions.run(
         outputs = [ctx.outputs.distribution],
         inputs = files,
-        executable = java_deps_builder
+        arguments = [str(names), ctx.outputs.distribution.path],
+        executable = ctx.file._java_deps_builder,
+        progress_message = "Generating tarball with Java deps: {}".format(
+            ctx.outputs.distribution.short_path)
     )
 
 
-def _distribution_impl(ctx):
+def _old_distribution_impl(ctx):
     # files to put into archive
     files = []
     # maps real fs paths to paths inside archive
@@ -86,45 +78,59 @@ def _distribution_impl(ctx):
 
     return DefaultInfo(data_runfiles = ctx.runfiles(files=[ctx.outputs.distribution]))
 
+def _tgz2zip_impl(ctx):
+    ctx.actions.run(
+        inputs = [ctx.file.tgz],
+        outputs = [ctx.outputs.zip],
+        executable = ctx.file._tgz2zip_py,
+        arguments = [ctx.file.tgz.path, ctx.outputs.zip.path],
+        progress_message = "Converting {} to {}".format(ctx.file.tgz.short_path, ctx.outputs.zip.short_path)
+    )
 
-load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar", "pkg_deb")
-def deploy_deb(name,
-               package_dir,
-               maintainer,
-               version_file,
-               description,
-               postinst = None,
-               prerm = None,
-               target = None,
-               empty_dirs = [],
-               files = {},
-               depends = [],
-               symlinks = {},
-               modes = {}):
+    return DefaultInfo(data_runfiles = ctx.runfiles(files=[ctx.outputs.zip]))
+
+def linux_packages(package_name,
+                   installation_dir,
+                   maintainer,
+                   version_file,
+                   description,
+                   rpm_spec_file,
+                   postinst = None,
+                   prerm = None,
+                   target = None,
+                   empty_dirs = [],
+                   files = {},
+                   depends = [],
+                   symlinks = {},
+                   modes = {}):
     java_deps_tar = []
     if target:
+        java_deps_name = "_{}-deps".format(package_name)
         java_deps(
-            name = "_{}-deps".format(name),
-            targets = [target],
+            name = java_deps_name,
+            target = target,
             java_deps_root = "services/lib/"
         )
-        java_deps_tar.append("_{}-deps".format(name))
+        java_deps_tar.append(java_deps_name)
+
+    tar_name = "_{}-tar".format(package_name)
 
     pkg_tar(
-        name = "_{}-tar".format(name),
+        name = tar_name,
         extension = "tgz",
         deps = java_deps_tar,
-        package_dir = package_dir,
+        package_dir = installation_dir,
         empty_dirs = empty_dirs,
         files = files,
+        mode = "0755",
         symlinks = symlinks,
         modes = modes,
     )
 
     pkg_deb(
         name = "deploy-deb",
-        data = "_{}-tar".format(name),
-        package = name,
+        data = tar_name,
+        package = package_name,
         depends = depends,
         maintainer = maintainer,
         version_file = version_file,
@@ -133,10 +139,50 @@ def deploy_deb(name,
         description = description
     )
 
+    pkg_rpm(
+        name = "deploy-rpm",
+        architecture = "x86_64",
+        spec_file = rpm_spec_file,
+        version_file = version_file,
+        data = [tar_name],
+    )
+
+
+def distribution(targets,
+                 additional_files,
+                 output_filename,
+                 empty_directories = [],
+                 modes = {}):
+    all_java_deps = []
+    for target, java_deps_root in targets.items():
+        target_name = "{}-deps".format(Label(target).package)
+        java_deps(
+            name = target_name,
+            target = target,
+            java_deps_root = java_deps_root
+        )
+        all_java_deps.append(target_name)
+
+    pkg_tar(
+        name="distribution_tgz",
+        deps = all_java_deps,
+        extension = "tgz",
+        files = additional_files,
+        empty_dirs = empty_directories,
+        modes = modes,
+    )
+
+    tgz2zip(
+        name = "distribution",
+        tgz = ":distribution_tgz",
+        output_filename = output_filename,
+        visibility = ["//visibility:public"]
+    )
+
 
 java_deps = rule(
     attrs = {
-        "targets": attr.label_list(mandatory=True),
+        "target": attr.label(mandatory=True),
         "java_deps_root": attr.string(
             default = "services/lib/",
             doc = "Folder inside archive to put JARs into"
@@ -152,7 +198,28 @@ java_deps = rule(
     },
 )
 
-distribution = rule(
+tgz2zip = rule(
+    attrs = {
+        "tgz": attr.label(
+            allow_single_file=[".tgz"],
+            mandatory = True
+        ),
+        "output_filename": attr.string(
+            mandatory = True,
+        ),
+        "_tgz2zip_py": attr.label(
+            allow_single_file = True,
+            default="//distribution:tgz2zip.py"
+        )
+    },
+    implementation = _tgz2zip_impl,
+    outputs = {
+        "zip": "%{output_filename}.zip"
+    },
+    output_to_genfiles = True
+)
+
+old_distribution = rule(
     attrs = {
         "targets": attr.label_list(mandatory=True),
         "java_deps_root": attr.string(
@@ -175,7 +242,7 @@ distribution = rule(
             default="//distribution:archiver.py"
         )
     },
-    implementation = _distribution_impl,
+    implementation = _old_distribution_impl,
     outputs = {
         "distribution": "%{output_filename}.zip"
     },
