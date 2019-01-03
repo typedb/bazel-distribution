@@ -90,7 +90,7 @@ def _tgz2zip_impl(ctx):
     return DefaultInfo(data_runfiles = ctx.runfiles(files=[ctx.outputs.zip]))
 
 
-def deb_package(name,
+def deploy_deb(name,
                 package_name,
                 installation_dir,
                 maintainer,
@@ -137,7 +137,7 @@ def deb_package(name,
     )
 
 
-def rpm_package(name,
+def deploy_rpm(name,
                 package_name,
                 installation_dir,
                 version_file,
