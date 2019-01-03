@@ -39,45 +39,6 @@ def _java_deps_impl(ctx):
     )
 
 
-def _old_distribution_impl(ctx):
-    # files to put into archive
-    files = []
-    # maps real fs paths to paths inside archive
-    names = {}
-
-    for target in ctx.attr.targets:
-        for file in target.data_runfiles.files.to_list():
-            if file.extension == 'jar':
-                names[file.path] = ctx.attr.java_deps_root + file.basename
-                files.append(file)
-
-    for label, filename in ctx.attr.additional_files.items():
-        if len(label.files.to_list()) != 1:
-            fail("should specify target producing single file instead of {}".format(label))
-        single_file = label.files.to_list()[0]
-        names[single_file.path] = filename
-
-    archiver_script = ctx.actions.declare_file('_archiver.py')
-
-    ctx.actions.expand_template(
-        template = ctx.file._distribution_py,
-        output = archiver_script,
-        substitutions = {
-            "{moves}": str(names),
-            "{distribution_zip_location}": ctx.outputs.distribution.path,
-            "{empty_directories}": str(ctx.attr.empty_directories)
-        },
-        is_executable = True
-    )
-
-    ctx.actions.run(
-        outputs = [ctx.outputs.distribution],
-        inputs = files + ctx.files.additional_files,
-        executable = archiver_script
-    )
-
-    return DefaultInfo(data_runfiles = ctx.runfiles(files=[ctx.outputs.distribution]))
-
 def _tgz2zip_impl(ctx):
     ctx.actions.run(
         inputs = [ctx.file.tgz],
@@ -166,6 +127,7 @@ def deploy_rpm(name,
         srcs = [version_file],
         outs = [rpm_version_file.replace("-version", ".VERSION")],
         cmd = "sed -e 's|-|_|g' $< > $@"
+        # replaces any `-` with `_` since RPM does not allow a version number containing a `-` such as `1.5.0-SNAPSHOT`
     )
 
     pkg_tar(
@@ -258,35 +220,4 @@ tgz2zip = rule(
         "zip": "%{output_filename}.zip"
     },
     output_to_genfiles = True
-)
-
-old_distribution = rule(
-    attrs = {
-        "targets": attr.label_list(mandatory=True),
-        "java_deps_root": attr.string(
-            default = "services/lib/",
-            doc = "Folder inside archive to put JARs into"
-        ),
-        "additional_files": attr.label_keyed_string_dict(
-            allow_files = True,
-            doc = "Additional files to put into the archive"
-        ),
-        "empty_directories": attr.string_list(
-            doc = "List of names to create empty directories inside the archive"
-        ),
-        "output_filename": attr.string(
-            doc = "Filename for result of rule execution",
-            mandatory = True
-        ),
-        "_distribution_py": attr.label(
-            allow_single_file = True,
-            default="//distribution:archiver.py"
-        )
-    },
-    implementation = _old_distribution_impl,
-    outputs = {
-        "distribution": "%{output_filename}.zip"
-    },
-    output_to_genfiles = True,
-    doc = "Create a distribution of Java program(s) containing additional files"
 )
