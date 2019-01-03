@@ -19,12 +19,23 @@
 #
 
 from __future__ import print_function
+import sys
+import zipfile
 import tarfile
 
-import sys
-_, moves, distribution_tgz_location = sys.argv
-moves = eval(moves)
+_, tgz_fn, zip_fn = sys.argv
 
-with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
-    for fn, arcfn in moves.items():
-        tgz.add(fn, arcfn)
+with tarfile.open(tgz_fn, mode='r') as tgz:
+    with zipfile.ZipFile(zip_fn, 'w', compression=zipfile.ZIP_DEFLATED) as zip:
+        for tarinfo in tgz.getmembers():
+            f = ''
+            name = tarinfo.name
+            if not tarinfo.isdir():
+                f = tgz.extractfile(tarinfo).read()
+            else:
+                name += '/'
+            zi = zipfile.ZipInfo(name)
+            zi.compress_type = zipfile.ZIP_DEFLATED
+            zi.external_attr = tarinfo.mode << 16
+            zip.writestr(zi, f)
+
