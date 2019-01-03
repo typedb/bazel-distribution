@@ -89,23 +89,22 @@ def _tgz2zip_impl(ctx):
 
     return DefaultInfo(data_runfiles = ctx.runfiles(files=[ctx.outputs.zip]))
 
-def linux_packages(package_name,
-                   installation_dir,
-                   maintainer,
-                   version_file,
-                   description,
-                   rpm_spec_file,
-                   postinst = None,
-                   prerm = None,
-                   target = None,
-                   empty_dirs = [],
-                   files = {},
-                   depends = [],
-                   symlinks = {},
-                   modes = {}):
+
+def deb_package(name,
+                package_name,
+                installation_dir,
+                maintainer,
+                version_file,
+                description,
+                target = None,
+                empty_dirs = [],
+                files = {},
+                depends = [],
+                symlinks = {},
+                permissions = {}):
     java_deps_tar = []
     if target:
-        java_deps_name = "_{}-deps".format(package_name)
+        java_deps_name = "_{}-deb-deps".format(package_name)
         java_deps(
             name = java_deps_name,
             target = target,
@@ -113,7 +112,7 @@ def linux_packages(package_name,
         )
         java_deps_tar.append(java_deps_name)
 
-    tar_name = "_{}-tar".format(package_name)
+    tar_name = "_{}-deb-tar".format(package_name)
 
     pkg_tar(
         name = tar_name,
@@ -124,26 +123,68 @@ def linux_packages(package_name,
         files = files,
         mode = "0755",
         symlinks = symlinks,
-        modes = modes,
+        modes = permissions,
     )
 
     pkg_deb(
-        name = "deploy-deb",
+        name = name,
         data = tar_name,
         package = package_name,
         depends = depends,
         maintainer = maintainer,
         version_file = version_file,
-        postinst = postinst,
-        prerm = prerm,
         description = description
     )
 
+
+def rpm_package(name,
+                package_name,
+                installation_dir,
+                version_file,
+                spec_file,
+                target = None,
+                empty_dirs = [],
+                files = {},
+                permissions = {},
+                symlinks = {}
+                ):
+    java_deps_tar = []
+    if target:
+        java_deps_name = "_{}-rpm-deps".format(package_name)
+        java_deps(
+            name = java_deps_name,
+            target = target,
+            java_deps_root = "services/lib/"
+        )
+        java_deps_tar.append(java_deps_name)
+
+    tar_name = "_{}-rpm-tar".format(package_name)
+    rpm_version_file = "_{}-rpm-version".format(package_name)
+
+    native.genrule(
+        name = rpm_version_file,
+        srcs = [version_file],
+        outs = [rpm_version_file.replace("-version", ".VERSION")],
+        cmd = "sed -e 's|-|_|g' $< > $@"
+    )
+
+    pkg_tar(
+        name = tar_name,
+        extension = "tgz",
+        deps = java_deps_tar,
+        package_dir = installation_dir,
+        empty_dirs = empty_dirs,
+        files = files,
+        mode = "0755",
+        symlinks = symlinks,
+        modes = permissions,
+    )
+
     pkg_rpm(
-        name = "deploy-rpm",
+        name = name,
         architecture = "x86_64",
-        spec_file = rpm_spec_file,
-        version_file = version_file,
+        spec_file = spec_file,
+        version_file = rpm_version_file,
         data = [tar_name],
     )
 
@@ -152,7 +193,7 @@ def distribution(targets,
                  additional_files,
                  output_filename,
                  empty_directories = [],
-                 modes = {}):
+                 permissions = {}):
     all_java_deps = []
     for target, java_deps_root in targets.items():
         target_name = "{}-deps".format(Label(target).package)
@@ -169,7 +210,7 @@ def distribution(targets,
         extension = "tgz",
         files = additional_files,
         empty_dirs = empty_directories,
-        modes = modes,
+        modes = permissions,
     )
 
     tgz2zip(
