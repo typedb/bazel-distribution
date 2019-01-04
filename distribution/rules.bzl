@@ -151,7 +151,8 @@ def deploy_rpm(name,
     )
 
 
-def distribution(targets,
+def distribution(name,
+                 targets,
                  additional_files,
                  output_filename,
                  empty_directories = [],
@@ -167,7 +168,7 @@ def distribution(targets,
         all_java_deps.append(target_name)
 
     pkg_tar(
-        name="distribution_tgz",
+        name="{}-tgz".format(name),
         deps = all_java_deps,
         extension = "tgz",
         files = additional_files,
@@ -176,8 +177,8 @@ def distribution(targets,
     )
 
     tgz2zip(
-        name = "distribution",
-        tgz = ":distribution_tgz",
+        name = "{}".format(name),
+        tgz = ":{}-tgz".format(name),
         output_filename = output_filename,
         visibility = ["//visibility:public"]
     )
