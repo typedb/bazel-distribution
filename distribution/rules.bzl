@@ -44,7 +44,7 @@ def _tgz2zip_impl(ctx):
         inputs = [ctx.file.tgz],
         outputs = [ctx.outputs.zip],
         executable = ctx.file._tgz2zip_py,
-        arguments = [ctx.file.tgz.path, ctx.outputs.zip.path],
+        arguments = [ctx.file.tgz.path, ctx.outputs.zip.path, ctx.attr.prefix],
         progress_message = "Converting {} to {}".format(ctx.file.tgz.short_path, ctx.outputs.zip.short_path)
     )
 
@@ -179,6 +179,7 @@ def distribution(targets,
         name = "distribution",
         tgz = ":distribution_tgz",
         output_filename = output_filename,
+        prefix = "./" + output_filename,
         visibility = ["//visibility:public"]
     )
 
@@ -209,6 +210,9 @@ tgz2zip = rule(
         ),
         "output_filename": attr.string(
             mandatory = True,
+        ),
+        "prefix": attr.string(
+            default="."
         ),
         "_tgz2zip_py": attr.label(
             allow_single_file = True,
