@@ -17,12 +17,10 @@
 #
 
 py_binary(
-    name = "make_deb",
-    srcs = ["make_deb.py"],
-    srcs_version = "PY2AND3",
+    name = "make_rpm",
+    srcs = ["make_rpm.py"],
     visibility = ["//visibility:public"],
     deps = [
-        ":archive",
         "@bazel_tools//third_party/py/gflags",
     ],
 )

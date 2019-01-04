@@ -17,7 +17,7 @@
 #
 
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar", "pkg_deb")
-load("@bazel_tools//tools/build_defs/pkg:rpm.bzl", "pkg_rpm")
+load("//rpm:rules.bzl", "pkg_rpm")
 
 def _java_deps_impl(ctx):
     names = {}
@@ -142,12 +142,34 @@ def deploy_rpm(name,
         modes = permissions,
     )
 
+    if "osx_build" not in native.existing_rules():
+        native.config_setting(
+           name = "osx_build",
+           constraint_values = [
+               "@bazel_tools//platforms:osx",
+               "@bazel_tools//platforms:x86_64",
+           ]
+        )
+
+    if "linux_build" not in native.existing_rules():
+        native.config_setting(
+            name = "linux_build",
+            constraint_values = [
+                "@bazel_tools//platforms:linux",
+                "@bazel_tools//platforms:x86_64",
+            ]
+        )
+
     pkg_rpm(
         name = name,
         architecture = "x86_64",
         spec_file = spec_file,
         version_file = rpm_version_file,
         data = [tar_name],
+        rpmbuild_path = select({
+            ":linux_build": "/usr/bin/rpmbuild",
+            ":osx_build": "/usr/local/bin/rpmbuild",
+        })
     )
 
 
