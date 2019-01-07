@@ -177,7 +177,7 @@ def distribution(name,
     )
 
     tgz2zip(
-        name = "{}".format(name),
+        name = name,
         tgz = ":{}-tgz".format(name),
         output_filename = output_filename,
         visibility = ["//visibility:public"]
