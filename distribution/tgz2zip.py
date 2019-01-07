@@ -19,17 +19,18 @@
 #
 
 from __future__ import print_function
+import os
 import sys
 import zipfile
 import tarfile
 
-_, tgz_fn, zip_fn = sys.argv
+_, tgz_fn, zip_fn, prefix = sys.argv
 
 with tarfile.open(tgz_fn, mode='r') as tgz:
     with zipfile.ZipFile(zip_fn, 'w', compression=zipfile.ZIP_DEFLATED) as zip:
         for tarinfo in tgz.getmembers():
             f = ''
-            name = tarinfo.name
+            name = './' + os.path.normpath(os.path.join(prefix, tarinfo.name))
             if not tarinfo.isdir():
                 f = tgz.extractfile(tarinfo).read()
             else:
