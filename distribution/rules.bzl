@@ -17,7 +17,7 @@
 #
 
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar", "pkg_deb")
-load("//rpm:rules.bzl", "pkg_rpm")
+load("//rpm/pkg_rpm_modified_from_bazel:rules.bzl", "pkg_rpm")
 
 def _java_deps_impl(ctx):
     names = {}
