@@ -51,18 +51,18 @@ def _tgz2zip_impl(ctx):
     return DefaultInfo(data_runfiles = ctx.runfiles(files=[ctx.outputs.zip]))
 
 
-def deploy_deb(name,
-                package_name,
-                installation_dir,
-                maintainer,
-                version_file,
-                description,
-                target = None,
-                empty_dirs = [],
-                files = {},
-                depends = [],
-                symlinks = {},
-                permissions = {}):
+def distribution_deb(name,
+                     package_name,
+                     installation_dir,
+                     maintainer,
+                     version_file,
+                     description,
+                     target = None,
+                     empty_dirs = [],
+                     files = {},
+                     depends = [],
+                     symlinks = {},
+                     permissions = {}):
     java_deps_tar = []
     if target:
         java_deps_name = "_{}-deb-deps".format(package_name)
@@ -98,17 +98,16 @@ def deploy_deb(name,
     )
 
 
-def deploy_rpm(name,
-                package_name,
-                installation_dir,
-                version_file,
-                spec_file,
-                target = None,
-                empty_dirs = [],
-                files = {},
-                permissions = {},
-                symlinks = {}
-                ):
+def distribution_rpm(name,
+                     package_name,
+                     installation_dir,
+                     version_file,
+                     spec_file,
+                     target = None,
+                     empty_dirs = [],
+                     files = {},
+                     permissions = {},
+                     symlinks = {}):
     java_deps_tar = []
     if target:
         java_deps_name = "_{}-rpm-deps".format(package_name)
