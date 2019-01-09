@@ -169,7 +169,8 @@ def deploy_rpm(name,
         rpmbuild_path = select({
             ":linux_build": "/usr/bin/rpmbuild",
             ":osx_build": "/usr/local/bin/rpmbuild",
-        })
+        }),
+        tags = ["no-remote"]
     )
 
 
