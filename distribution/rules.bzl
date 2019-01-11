@@ -57,28 +57,17 @@ def distribution_deb(name,
                      maintainer,
                      version_file,
                      description,
-                     target = None,
+                     distribution_structures = [],
                      empty_dirs = [],
                      files = {},
                      depends = [],
                      symlinks = {},
                      permissions = {}):
-    java_deps_tar = []
-    if target:
-        java_deps_name = "_{}-deb-deps".format(package_name)
-        java_deps(
-            name = java_deps_name,
-            target = target,
-            java_deps_root = "services/lib/"
-        )
-        java_deps_tar.append(java_deps_name)
-
     tar_name = "_{}-deb-tar".format(package_name)
-
     pkg_tar(
         name = tar_name,
-        extension = "tgz",
-        deps = java_deps_tar,
+        extension = "tar.gz",
+        deps = distribution_structures,
         package_dir = installation_dir,
         empty_dirs = empty_dirs,
         files = files,
@@ -103,21 +92,11 @@ def distribution_rpm(name,
                      installation_dir,
                      version_file,
                      spec_file,
-                     target = None,
+                     distribution_structures = [],
                      empty_dirs = [],
                      files = {},
                      permissions = {},
                      symlinks = {}):
-    java_deps_tar = []
-    if target:
-        java_deps_name = "_{}-rpm-deps".format(package_name)
-        java_deps(
-            name = java_deps_name,
-            target = target,
-            java_deps_root = "services/lib/"
-        )
-        java_deps_tar.append(java_deps_name)
-
     tar_name = "_{}-rpm-tar".format(package_name)
     rpm_version_file = "_{}-rpm-version".format(package_name)
 
@@ -131,8 +110,8 @@ def distribution_rpm(name,
 
     pkg_tar(
         name = tar_name,
-        extension = "tgz",
-        deps = java_deps_tar,
+        extension = "tar.gz",
+        deps = distribution_structures,
         package_dir = installation_dir,
         empty_dirs = empty_dirs,
         files = files,
@@ -171,13 +150,12 @@ def distribution_rpm(name,
         })
     )
 
-
-def distribution(name,
-                 targets,
-                 additional_files,
-                 output_filename,
-                 empty_directories = [],
-                 permissions = {}):
+def distribution_structure(name,
+                           visibility = ["//visibility:private"],
+                           targets = {},
+                           additional_files = {},
+                           empty_directories = [],
+                           permissions = {}):
     all_java_deps = []
     for target, java_deps_root in targets.items():
         target_name = "{}-deps".format(Label(target).package)
@@ -189,9 +167,27 @@ def distribution(name,
         all_java_deps.append(target_name)
 
     pkg_tar(
-        name="{}-tgz".format(name),
+        name=name,
         deps = all_java_deps,
-        extension = "tgz",
+        extension = "tar.gz",
+        mode = "0755",
+        files = additional_files,
+        empty_dirs = empty_directories,
+        modes = permissions,
+        visibility = visibility
+    )
+
+
+def distribution_zip(name,
+                     output_filename,
+                     distribution_structures = [],
+                     additional_files = {},
+                     empty_directories = [],
+                     permissions = {}):
+    pkg_tar(
+        name="{}-tgz".format(name),
+        deps = distribution_structures,
+        extension = "tar.gz",
         files = additional_files,
         empty_dirs = empty_directories,
         modes = permissions,
@@ -227,7 +223,7 @@ java_deps = rule(
 tgz2zip = rule(
     attrs = {
         "tgz": attr.label(
-            allow_single_file=[".tgz"],
+            allow_single_file=[".tar.gz"],
             mandatory = True
         ),
         "output_filename": attr.string(

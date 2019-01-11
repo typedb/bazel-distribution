@@ -26,7 +26,7 @@ import tarfile
 
 _, tgz_fn, zip_fn, prefix = sys.argv
 
-with tarfile.open(tgz_fn, mode='r') as tgz:
+with tarfile.open(tgz_fn, mode='r:gz') as tgz:
     with zipfile.ZipFile(zip_fn, 'w', compression=zipfile.ZIP_DEFLATED) as zip:
         for tarinfo in tgz.getmembers():
             f = ''
