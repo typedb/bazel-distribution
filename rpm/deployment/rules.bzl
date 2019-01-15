@@ -4,6 +4,16 @@ RpmInfo = provider(
     }
 )
 
+def _collect_rpm_package_name(target, ctx):
+    spec_filename = ctx.rule.attr.spec_file.label.name
+    package_name = spec_filename.replace('.spec', '')
+    return RpmInfo(package_name=package_name)
+
+
+collect_rpm_package_name = aspect(
+    implementation = _collect_rpm_package_name
+)
+
 def _deploy_rpm_impl(ctx):
     ctx.actions.expand_template(
         template = ctx.file._deployment_script,
@@ -24,21 +34,11 @@ def _deploy_rpm_impl(ctx):
                            files=[ctx.files.target[0], ctx.file.deployment_properties],
                            symlinks = symlinks))
 
-def _collect_attr(target, ctx):
-    spec_filename = ctx.rule.attr.spec_file.label.name
-    package_name = spec_filename.replace('.spec', '')
-    return RpmInfo(package_name=package_name)
-
-
-collect_attr = aspect(
-    implementation = _collect_attr
-)
-
 
 deploy_rpm = rule(
     attrs = {
         "target": attr.label(
-            aspects = [collect_attr]
+            aspects = [collect_rpm_package_name]
         ),
         "deployment_properties": attr.label(
             allow_single_file = True,
