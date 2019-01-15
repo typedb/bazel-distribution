@@ -19,7 +19,6 @@
 #!/usr/bin/env bash
 
 set -ex
-pwd
 
 if [[ $# -ne 3 ]]; then
     echo "Should pass <test> <rpm-username> <rpm-password> as arguments"
