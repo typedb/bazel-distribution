@@ -40,7 +40,8 @@ DEPLOYMENT_PROPERTIES_STRIPPED_FILE=$(mktemp)
 awk '!/^#/ && /./' deployment.properties > ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE}
 DEB_URL=$(grep "deb.repository-url.$DEB_REPO_TYPE" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
 
-http_status_code_from_upload=$(curl --silent --output /dev/stderr --write-out "%{http_code}" -X POST -u $DEB_USERNAME:$DEB_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@package.deb" $DEB_URL)
+http_status_code_from_upload=$(curl --silent --output /dev/stderr --write-out "%{http_code}" -X POST \
+    -u $DEB_USERNAME:$DEB_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@package.deb" $DEB_URL)
 if [[ ${http_status_code_from_upload} -ne 201 ]]; then
     echo "Error: The upload failed, got HTTP status code $http_status_code_from_upload"
     exit 1
