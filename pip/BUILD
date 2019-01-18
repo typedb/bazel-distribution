@@ -16,4 +16,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-exports_files(["replace_imports.py"])
+exports_files(["replace_imports.py", "requirements.txt"])

@@ -63,7 +63,7 @@ TQDM_PATH=$(dirname $(pwd)/external/*tqdm*/tqdm/)
 # requests-toolbelt package needed as dependency of requests
 REQUESTS_TOOLBELT_PATH=$(dirname $(pwd)/external/*requests_toolbelt*/requests_toolbelt/)
 # six package needed as dependency of readme-renderer
-SIX_PATH="$(dirname $(pwd)/external/*six*/six.py)"
+SIX_PATH="$(dirname $(pwd)/external/pypi__six_1_12_0/six.py)"
 # docutils package needed as dependency of readme-renderer
 DOCUTILS_PATH=$(dirname $(pwd)/external/*docutils*/docutils/)
 # bleach package needed as dependency of readme-renderer

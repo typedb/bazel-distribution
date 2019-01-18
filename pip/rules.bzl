@@ -60,13 +60,18 @@ def _deploy_pip_impl(ctx):
       is_executable = True
   )
 
+  all_python_files = []
+  for dep in ctx.attr.deps:
+    all_python_files.extend(dep.data_runfiles.files.to_list())
+    all_python_files.extend(dep.default_runfiles.files.to_list())
+
   return DefaultInfo(executable = ctx.outputs.deployment_script,
                      runfiles = ctx.runfiles(
                          files = [
                             ctx.file.deployment_properties,
                             ctx.outputs.setup_py,
                             ctx.file.long_description_file
-                         ],
+                         ] + all_python_files,
                          symlinks = {
                              "deployment.properties": ctx.file.deployment_properties
                          }).merge(ctx.attr.target.default_runfiles))
@@ -146,6 +151,9 @@ deploy_pip = rule(
     "install_requires": attr.string_list(
         mandatory = True,
         doc = "A list of strings which are names of required packages for this one"
+    ),
+    "deps": attr.label_list(
+        mandatory = True
     ),
     "_setup_py_template": attr.label(
         allow_single_file = True,
