@@ -47,7 +47,7 @@ PKGINFO_PATH=$(dirname $(pwd)/external/*pkginfo*/pkginfo/)
 # readme_renderer package needed as dependency of twine
 README_RENDERER_PATH=$(dirname $(pwd)/external/*readme_renderer*/readme_renderer/)
 # Pygments package needed as dependency of twine
-PYGMENTS_PATH=$(dirname $(pwd)/external/*Pygments*/Pygments/)
+PYGMENTS_PATH=$(dirname $(pwd)/external/*Pygments*/pygments/)
 # requests package needed as dependency of twine
 REQUESTS_PATH=$(dirname $(pwd)/external/*requests*/requests/)
 # urllib3 package needed as dependency of requests
