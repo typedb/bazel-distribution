@@ -63,7 +63,7 @@ TQDM_PATH=$(dirname $(pwd)/external/*tqdm*/tqdm/)
 # requests-toolbelt package needed as dependency of requests
 REQUESTS_TOOLBELT_PATH=$(dirname $(pwd)/external/*requests_toolbelt*/requests_toolbelt/)
 # six package needed as dependency of readme-renderer
-SIX_PATH="$(dirname $(pwd)/external/*six*/six.py)"
+SIX_PATH="$(dirname $(pwd)/external/pypi__six_1_12_0/six.py)"
 # docutils package needed as dependency of readme-renderer
 DOCUTILS_PATH=$(dirname $(pwd)/external/*docutils*/docutils/)
 # bleach package needed as dependency of readme-renderer
@@ -79,6 +79,7 @@ SETUPTOOLS_PATH=$(dirname $(pwd)/external/*setuptools*/setuptools/)
 export PYTHONPATH="$TWINEPATH:$PKGINFO_PATH:$REQUESTS_PATH:$WEBENCODINGS_PATH:$SIX_PATH:$DOCUTILS_PATH:"\
 "$BLEACH_PATH:$URLLIB3_PATH:$SIX_PATH:$README_RENDERER_PATH:$PYGMENTS_PATH:$CHARDET_PATH:"\
 "$CERTIFI_PATH:$IDNA_PATH:$TQDM_PATH:$REQUESTS_TOOLBELT_PATH:$WHEELPATH:$SETUPTOOLS_PATH"
+
 TWINE_BINARY="python $(pwd)/external/*twine*/twine/__main__.py"
 
 # Replace with package root in rule
