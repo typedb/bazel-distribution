@@ -47,7 +47,7 @@ PKGINFO_PATH=$(dirname $(pwd)/external/*pkginfo*/pkginfo/)
 # readme_renderer package needed as dependency of twine
 README_RENDERER_PATH=$(dirname $(pwd)/external/*readme_renderer*/readme_renderer/)
 # Pygments package needed as dependency of twine
-PYGMENTS_PATH=$(dirname $(pwd)/external/*Pygments*/Pygments/)
+PYGMENTS_PATH=$(dirname $(pwd)/external/*Pygments*/pygments/)
 # requests package needed as dependency of twine
 REQUESTS_PATH=$(dirname $(pwd)/external/*requests*/requests/)
 # urllib3 package needed as dependency of requests
@@ -79,6 +79,7 @@ SETUPTOOLS_PATH=$(dirname $(pwd)/external/*setuptools*/setuptools/)
 export PYTHONPATH="$TWINEPATH:$PKGINFO_PATH:$REQUESTS_PATH:$WEBENCODINGS_PATH:$SIX_PATH:$DOCUTILS_PATH:"\
 "$BLEACH_PATH:$URLLIB3_PATH:$SIX_PATH:$README_RENDERER_PATH:$PYGMENTS_PATH:$CHARDET_PATH:"\
 "$CERTIFI_PATH:$IDNA_PATH:$TQDM_PATH:$REQUESTS_TOOLBELT_PATH:$WHEELPATH:$SETUPTOOLS_PATH"
+
 TWINE_BINARY="python $(pwd)/external/*twine*/twine/__main__.py"
 
 # Replace with package root in rule
