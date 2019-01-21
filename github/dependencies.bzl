@@ -18,7 +18,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 
-def dependencies_for_github_deployment():
+def github_dependencies_for_deployment():
     http_file(
         name = "ghr_osx_zip",
         urls = ["https://github.com/tcnksm/ghr/releases/download/v0.10.2/ghr_v0.10.2_darwin_386.zip"]
