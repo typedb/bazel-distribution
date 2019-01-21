@@ -39,13 +39,14 @@ def parse_deployment_properties(fn):
                 deployment_properties[k] = v.strip()
     return deployment_properties
 properties = parse_deployment_properties('deployment.properties')
-github_repository = properties['github.repository']
+github_organisation = properties['github.repository.organisation']
+github_repository = properties['github.repository.name']
 
-if len(sys.argv) != 3:
-    print("Error - needs two arguments: <github-username> <github-token>")
+if len(sys.argv) != 2:
+    print("Error - needs an argument: <github-token>")
     sys.exit(1)
 
-_, github_user, github_token = sys.argv
+_, github_token = sys.argv
 
 with open('VERSION') as version_file:
     distribution_version = version_file.read().strip()
@@ -54,18 +55,10 @@ with open('VERSION') as version_file:
 system = platform.system()
 tempdir = tempfile.mkdtemp()
 if system == 'Darwin':
-    ghr = glob.glob('external/ghr_osx_zip/file/*.zip')
-    if len(ghr) != 1:
-        print('There should be exactly one zip archive containing `ghr`')
-        sys.exit(1)
-    subprocess.call(['unzip', ghr[0], '-d', tempdir])
+    subprocess.call(['unzip', 'external/ghr_osx_zip/file/downloaded', '-d', tempdir])
     ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
 elif system == 'Linux':
-    ghr = glob.glob('external/ghr_linux_tar/file/*.tar.gz')
-    if len(ghr) != 1:
-        print('There should be exactly one tar archive containing `ghr`')
-        sys.exit(1)
-    subprocess.call(['tar', '-xf', ghr[0], '-C', tempdir])
+    subprocess.call(['tar', '-xf', 'external/ghr_linux_tar/file/downloaded', '-C', tempdir])
     ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
 else:
     print('Error - your platform ({}) is not supported. Try Linux or macOS instead.'.format(system))
@@ -73,11 +66,11 @@ else:
 
 moved_zipfile=os.path.join(tempdir, 'grakn-core-all.zip')
 
-shutil.copy(os.path.join('dist', 'grakn-core-all.zip'), moved_zipfile)
+shutil.copy(os.path.join('grakn-core-all.zip'), moved_zipfile)
 subprocess.call([
     ghr,
     '-t', github_token,
-    '-u', github_user,
+    '-u', github_organisation,
     '-r', github_repository,
     '-delete', '-draft', github_tag,
     moved_zipfile
