@@ -37,7 +37,7 @@ NPM_REPOSITORY_URL=$(grep "npm.repository-url" ${DEPLOYMENT_PROPERTIES_STRIPPED_
 
 export PATH="$(dirname $(readlink external/nodejs/bin/nodejs/bin/npm)):$PATH"
 export VERSION="{version}"
-cd "$BAZEL_PACKAGE_NAME/$BAZEL_TARGET_NAME"
+cd "./$BAZEL_PACKAGE_NAME/$BAZEL_TARGET_NAME"
 
 chmod a+w .
 sed -i '' "s/0.0.0-development/$VERSION/g" package.json
