@@ -82,9 +82,6 @@ export PYTHONPATH="$TWINEPATH:$PKGINFO_PATH:$REQUESTS_PATH:$WEBENCODINGS_PATH:$S
 
 TWINE_BINARY="python $(pwd)/external/*twine*/twine/__main__.py"
 
-# Replace with package root in rule
-cd "$PKG_DIR"
-
 # clean up previous distribution files
 rm -fv dist/*
 python setup.py sdist
