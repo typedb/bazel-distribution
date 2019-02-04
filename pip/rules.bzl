@@ -54,9 +54,7 @@ def _deploy_pip_impl(ctx):
   ctx.actions.expand_template(
       template = ctx.file._deployment_script_template,
       output = ctx.outputs.deployment_script,
-      substitutions = {
-          "$PKG_DIR": ctx.attr.target.label.package
-      },
+      substitutions = {},
       is_executable = True
   )
 
