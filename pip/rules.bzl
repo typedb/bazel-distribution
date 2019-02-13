@@ -1,7 +1,12 @@
 def _py_replace_imports_impl(ctx):
     outputs = []
     for file in ctx.files.src:
-        relativeFileName = file.short_path.replace(ctx.attr.src.label.package + '/', '')
+        relativeFileName = file.short_path
+        if not file.short_path.startswith('../'):
+            relativeFileName = relativeFileName.replace(ctx.attr.src.label.package + '/', '')
+        else:
+            _, workspaceName = ctx.attr.src.label.workspace_root.split('/')
+            relativeFileName = relativeFileName.replace(workspaceName + '/', '')
         outputFileName = relativeFileName.replace(ctx.attr.src.label.name, ctx.attr.name)
         outputFile = ctx.actions.declare_file(outputFileName)
         outputs.append(outputFile)
