@@ -29,11 +29,18 @@ def _java_deps_impl(ctx):
             names[file.path] = ctx.attr.java_deps_root + file.basename
             files.append(file)
 
+    jars_mapping = ctx.actions.declare_file("jars.mapping")
+
+    ctx.actions.write(
+        output = jars_mapping,
+        content = str(names)
+    )
+
     ctx.actions.run(
         outputs = [ctx.outputs.distribution],
-        inputs = files,
-        arguments = [str(names), ctx.outputs.distribution.path],
-        executable = ctx.file._java_deps_builder,
+        inputs = files + [jars_mapping],
+        arguments = [jars_mapping.path, ctx.outputs.distribution.path],
+        executable = ctx.executable._java_deps_builder,
         progress_message = "Generating tarball with Java deps: {}".format(
             ctx.outputs.distribution.short_path)
     )
@@ -43,7 +50,7 @@ def _tgz2zip_impl(ctx):
     ctx.actions.run(
         inputs = [ctx.file.tgz],
         outputs = [ctx.outputs.zip],
-        executable = ctx.file._tgz2zip_py,
+        executable = ctx.executable._tgz2zip_py,
         arguments = [ctx.file.tgz.path, ctx.outputs.zip.path, ctx.attr.prefix],
         progress_message = "Converting {} to {}".format(ctx.file.tgz.short_path, ctx.outputs.zip.short_path)
     )
@@ -210,8 +217,9 @@ java_deps = rule(
             doc = "Folder inside archive to put JARs into"
         ),
         "_java_deps_builder": attr.label(
-              allow_single_file = True,
-              default="//distribution:java_deps.py"
+            default = "//distribution:java_deps",
+            executable = True,
+            cfg = "host"
         )
     },
     implementation = _java_deps_impl,
@@ -233,8 +241,9 @@ tgz2zip = rule(
             default="."
         ),
         "_tgz2zip_py": attr.label(
-            allow_single_file = True,
-            default="//distribution:tgz2zip.py"
+            default = "//distribution:tgz2zip",
+            executable = True,
+            cfg = "host"
         )
     },
     implementation = _tgz2zip_impl,

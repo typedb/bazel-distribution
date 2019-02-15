@@ -16,4 +16,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-exports_files(["archiver.py", "java_deps.py", "tgz2zip.py"])
+exports_files(["archiver.py"])
+
+py_binary(
+    name = "java_deps",
+    srcs = ["java_deps.py"],
+    visibility = ["//visibility:public"]
+)
+
+py_binary(
+    name = "tgz2zip",
+    srcs = ["tgz2zip.py"],
+    visibility = ["//visibility:public"]
+)

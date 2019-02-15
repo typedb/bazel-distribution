@@ -20,10 +20,12 @@
 
 from __future__ import print_function
 import tarfile
+import json
 
 import sys
-_, moves, distribution_tgz_location = sys.argv
-moves = eval(moves)
+_, moves_file_location, distribution_tgz_location = sys.argv
+with open(moves_file_location) as moves_file:
+    moves = json.load(moves_file)
 
 with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
     for fn, arcfn in moves.items():
