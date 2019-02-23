@@ -21,7 +21,7 @@
 set -ex
 
 if [[ $# -ne 3 ]]; then
-    echo "Should pass <pypi|test> <pip-username> <pip-password> as arguments"
+    echo "Should pass <pypi|test|tpypi> <pip-username> <pip-password> as arguments"
     exit 1
 fi
 

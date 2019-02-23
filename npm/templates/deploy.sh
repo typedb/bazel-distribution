@@ -20,20 +20,21 @@
 
 set -ex
 
-if [[ $# -ne 3 ]]; then
-    echo "Should pass <npm-username> <npm-password> <npm-email> as arguments"
+if [[ $# -ne 4 ]]; then
+    echo "Should pass <npmjs|test> <npm-username> <npm-password> <npm-email> as arguments"
     exit 1
 fi
 
-NPM_USERNAME="$1"
-NPM_PASSWORD="$2"
-NPM_EMAIL="$3"
+NPM_REGISTRY_KEY="$1"
+NPM_USERNAME="$2"
+NPM_PASSWORD="$3"
+NPM_EMAIL="$4"
 
 # create a temporary file for preprocessing deployment.properties
 DEPLOYMENT_PROPERTIES_STRIPPED_FILE=$(mktemp)
 # awk in the next line strips out empty and comment lines
 awk '!/^#/ && /./' deployment.properties > ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE}
-NPM_REPOSITORY_URL=$(grep "npm.repository-url" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
+NPM_REPOSITORY_URL=$(grep "npm.repository-url.$NPM_REGISTRY_KEY" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
 
 export PATH="$(dirname $(readlink external/nodejs/bin/nodejs/bin/npm)):$PATH"
 export VERSION="{version}"
@@ -52,5 +53,4 @@ expect {
 }
 EOD
 
-# Use *without* packing instead because
-npm publish
+npm publish --registry=$NPM_REPOSITORY_URL
