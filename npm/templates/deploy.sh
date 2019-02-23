@@ -41,7 +41,7 @@ export VERSION="{version}"
 cd "./$BAZEL_PACKAGE_NAME/$BAZEL_TARGET_NAME"
 
 chmod a+w .
-sed -i '' "s/0.0.0-development/$VERSION/g" package.json
+sed -i.bak -e "s/0.0.0-development/$VERSION/g" package.json && rm package.json.bak
 
 # Log in to `npm`
 /usr/bin/expect <<EOD
