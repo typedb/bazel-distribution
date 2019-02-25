@@ -36,12 +36,14 @@ DEPLOYMENT_PROPERTIES_STRIPPED_FILE=$(mktemp)
 awk '!/^#/ && /./' deployment.properties > ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE}
 NPM_REPOSITORY_URL=$(grep "npm.repository-url.$NPM_REGISTRY_KEY" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
 
+GIT_COMMIT_HASH="$(git -C ${BUILD_WORKSPACE_DIRECTORY} rev-parse HEAD)"
+
 export PATH="$(dirname $(readlink external/nodejs/bin/nodejs/bin/npm)):$PATH"
-export VERSION="{version}"
+export VERSION=$(echo {version}|sed -e "s/SNAPSHOT/${GIT_COMMIT_HASH}/g")
 cd "./$BAZEL_PACKAGE_NAME/$BAZEL_TARGET_NAME"
 
 chmod a+w .
-sed -i.bak -e "s/0.0.0-development/$VERSION/g" package.json && rm package.json.bak
+sed -i.bak -e "s/0.0.0-development/$VERSION/g" package.json && rm -f package.json.bak
 
 # Log in to `npm`
 /usr/bin/expect <<EOD
