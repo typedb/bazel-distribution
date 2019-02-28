@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 #
 # GRAKN.AI - THE KNOWLEDGE GRAPH
 # Copyright (C) 2018 Grakn Labs Ltd
@@ -16,8 +18,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-#!/usr/bin/env python
-
 from __future__ import print_function
 import sys
 import os
@@ -26,6 +26,7 @@ import platform
 import glob
 import subprocess
 import tempfile
+
 
 def parse_deployment_properties(fn):
     deployment_properties = {}
@@ -38,6 +39,8 @@ def parse_deployment_properties(fn):
                 k, v = line.split('=')
                 deployment_properties[k] = v.strip()
     return deployment_properties
+
+
 properties = parse_deployment_properties('deployment.properties')
 github_organisation = properties['github.repository.organisation']
 github_repository = properties['github.repository.name']
@@ -64,7 +67,7 @@ else:
     print('Error - your platform ({}) is not supported. Try Linux or macOS instead.'.format(system))
     sys.exit(1)
 
-moved_zipfile=os.path.join(tempdir, 'grakn-core-all.zip')
+moved_zipfile = os.path.join(tempdir, 'grakn-core-all.zip')
 
 shutil.copy(os.path.join('grakn-core-all.zip'), moved_zipfile)
 subprocess.call([
