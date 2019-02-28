@@ -19,13 +19,15 @@
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar", "pkg_deb")
 load("//rpm/pkg_rpm_modified_from_bazel:rules.bzl", "pkg_rpm")
 
+LOCAL_JDK_PREFIX = "external/local_jdk/"
+
 def _java_deps_impl(ctx):
     names = {}
     files = []
     newfiles = []
 
     for file in ctx.attr.target.data_runfiles.files.to_list():
-        if file.extension == 'jar':
+        if file.extension == 'jar' and not file.path.startswith(LOCAL_JDK_PREFIX):
             names[file.path] = ctx.attr.java_deps_root + file.basename
             files.append(file)
 
