@@ -5,12 +5,15 @@ LOCAL_JDK_PREFIX = "external/local_jdk/"
 def _java_deps_impl(ctx):
     names = {}
     files = []
-    newfiles = []
+    filenames = []
 
     for file in ctx.attr.target.data_runfiles.files.to_list():
+        if file.basename in filenames:
+            continue # do not pack JARs with same name
         if file.extension == 'jar' and not file.path.startswith(LOCAL_JDK_PREFIX):
             names[file.path] = ctx.attr.java_deps_root + file.basename
             files.append(file)
+            filenames.append(file.basename)
 
     jars_mapping = ctx.actions.declare_file("jars.mapping")
 
@@ -33,7 +36,6 @@ java_deps = rule(
     attrs = {
         "target": attr.label(mandatory=True),
         "java_deps_root": attr.string(
-            default = "services/lib/",
             doc = "Folder inside archive to put JARs into"
         ),
         "_java_deps_builder": attr.label(
