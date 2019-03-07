@@ -18,7 +18,7 @@
 
 #!/usr/bin/env bash
 
-set -ex
+set -e
 
 ARTIFACT="$ARTIFACT"
 COORDINATES="$COORDINATES"

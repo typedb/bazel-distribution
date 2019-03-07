@@ -18,7 +18,7 @@
 
 #!/usr/bin/env bash
 
-set -ex
+set -e
 
 if [[ $# -ne 3 ]]; then
     echo "Should pass <pypi|test|tpypi> <pip-username> <pip-password> as arguments"

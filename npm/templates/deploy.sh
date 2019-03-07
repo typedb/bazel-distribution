@@ -18,7 +18,7 @@
 
 #!/usr/bin/env bash
 
-set -ex
+set -e
 
 if [[ $# -ne 4 ]]; then
     echo "Should pass <npmjs|test> <npm-username> <npm-password> <npm-email> as arguments"
