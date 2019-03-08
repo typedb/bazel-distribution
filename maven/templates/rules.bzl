@@ -123,38 +123,6 @@ def _generate_pom_xml(ctx, maven_coordinates):
 
     return pom_file
 
-def _generate_deployment_script(ctx, maven_coordinates):
-    # Final 'deploy.sh' is generated in 2 steps
-    preprocessed_script = ctx.actions.declare_file("_deploy.sh")
-    deployment_script = ctx.actions.declare_file("deploy.sh")
-
-    # Maven artifact coordinates split by slash i.e. io/grakn/grakn-graql/grakn-graql
-    coordinates = "/".join([
-        maven_coordinates.group_id.replace('.', '/'),
-        maven_coordinates.artifact_id
-    ])
-
-    # Step 1: fill in {pom_version} from version_file
-    ctx.actions.run_shell(
-        inputs = [ctx.file._deployment_script_template, ctx.file.version_file],
-        outputs = [preprocessed_script],
-        command = "VERSION=`cat %s` && sed -e s/{pom_version}/$VERSION/g %s > %s" % (
-            ctx.file.version_file.path, ctx.file._deployment_script_template.path, preprocessed_script.path)
-    )
-
-    # Step 2: fill in everything except version
-    ctx.actions.expand_template(
-        template = preprocessed_script,
-        output = deployment_script,
-        substitutions = {
-            "$ARTIFACT": maven_coordinates.artifact_id,
-            "$COORDINATES": coordinates,
-        },
-        is_executable = True
-    )
-
-    return deployment_script
-
 def _assemble_maven_impl(ctx):
     target = ctx.attr.target
 
@@ -163,7 +131,6 @@ def _assemble_maven_impl(ctx):
     maven_coordinates = _parse_maven_coordinates(target_string)
 
     pom_file = _generate_pom_xml(ctx, maven_coordinates)
-    deployment_script = _generate_deployment_script(ctx, maven_coordinates)
 
     # there is also .source_jar which produces '.srcjar'
     if hasattr(target, "java"):
@@ -247,10 +214,6 @@ assemble_maven = rule(
         "_pom_xml_template": attr.label(
             allow_single_file = True,
             default = "@graknlabs_bazel_distribution//maven/templates:pom.xml",
-        ),
-        "_deployment_script_template": attr.label(
-            allow_single_file = True,
-            default = "@graknlabs_bazel_distribution//maven/templates:deploy.sh",
         ),
         "_assemble_script": attr.label(
             default = "@graknlabs_bazel_distribution//maven:assemble",
