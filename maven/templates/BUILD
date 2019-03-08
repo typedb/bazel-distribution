@@ -16,4 +16,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-exports_files(["pom.xml", "deploy.sh", "rules.bzl"])
+exports_files(["pom.xml", "deploy.py", "rules.bzl"])

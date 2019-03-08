@@ -17,3 +17,9 @@
 #
 
 exports_files(["deployment_rules_builder.py"])
+
+py_binary(
+    name = "assemble",
+    srcs = ["assemble.py"],
+    visibility = ["//visibility:public"]
+)
