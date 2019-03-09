@@ -72,7 +72,7 @@ def assemble_rpm(name,
         )
 
     pkg_rpm(
-        name = name,
+        name = "{}__do_not_reference__rpm".format(name),
         architecture = "x86_64",
         spec_file = spec_file,
         version_file = rpm_version_file,
@@ -81,6 +81,13 @@ def assemble_rpm(name,
             ":linux_build": "/usr/bin/rpmbuild",
             ":osx_build": "/usr/local/bin/rpmbuild",
         })
+    )
+
+    native.genrule(
+        name = name,
+        srcs = ["{}__do_not_reference__rpm".format(name)],
+        cmd = "cp $$(echo $(SRCS) | awk '{print $$1}') $@",
+        outs = [package_name + ".rpm"]
     )
 
 
