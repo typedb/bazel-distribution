@@ -97,7 +97,7 @@ def assemble_targz(name,
                    permissions = {},
                    visibility = ["//visibility:private"]):
     pkg_tar(
-        name = "{}__do_not_reference__targz".format(name),
+        name = "{}__do_not_reference__targz_0".format(name),
         deps = targets,
         extension = "tar.gz",
         files = additional_files,
@@ -106,10 +106,19 @@ def assemble_targz(name,
     )
 
     pkg_tar(
-        name = name,
-        deps = [":{}__do_not_reference__targz".format(name)],
+        name = "{}__do_not_reference__targz_1".format(name),
+        deps = [":{}__do_not_reference__targz_0".format(name)],
         package_dir = output_filename,
-        extension = "tar.gz",
+        extension = "tar.gz"
+    )
+
+    output_filename = output_filename or name
+
+    native.genrule(
+        name = name,
+        srcs = [":{}__do_not_reference__targz_1".format(name)],
+        cmd = "cp $$(echo $(SRCS) | awk '{print $$1}') $@",
+        outs = [output_filename + ".tar.gz"],
         visibility = visibility
     )
 
