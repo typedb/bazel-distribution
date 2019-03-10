@@ -58,7 +58,7 @@ group_id, artifact_id, version = list(map(attrgetter('text'),
                                           pom_file_tree.getroot()[1:4]))
 
 
-properties = parse_deployment_properties('deployment.properties')
+properties = parse_deployment_properties('external/graknlabs_build_tools/deployment.properties')
 valid_keys = [x.replace(MAVEN_REPO_KEY_PREFIX, '') for x in properties if x.startswith(MAVEN_REPO_KEY_PREFIX)]
 
 

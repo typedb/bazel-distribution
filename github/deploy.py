@@ -41,7 +41,7 @@ def parse_deployment_properties(fn):
     return deployment_properties
 
 
-properties = parse_deployment_properties('deployment.properties')
+properties = parse_deployment_properties('external/graknlabs_build_tools/deployment.properties')
 github_organisation = properties['repo.github.organisation']
 github_repository = properties['repo.github.repository']
 
