@@ -39,7 +39,7 @@ fi
 DEPLOYMENT_PROPERTIES_STRIPPED_FILE=$(mktemp)
 # awk in the next line strips out empty and comment lines
 awk '!/^#/ && /./' deployment.properties > ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE}
-RPM_URL=$(grep "rpm.repository-url.$RPM_REPO_TYPE" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
+RPM_URL=$(grep "repo.rpm.$RPM_REPO_TYPE" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
 
 http_status_code_from_upload=$(curl --silent --output /dev/stderr --write-out "%{http_code}" -X PUT -u $RPM_USERNAME:$RPM_PASSWORD --upload-file package.rpm $RPM_URL/$RPM_PKG/)
 if [[ ${http_status_code_from_upload} -ne 200 ]]; then

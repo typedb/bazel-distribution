@@ -12,7 +12,7 @@ from xml.etree import ElementTree
 import os
 print(os.getcwd())
 
-MAVEN_REPO_KEY_PREFIX = 'maven.repository-url.'
+MAVEN_REPO_KEY_PREFIX = 'repo.maven'
 
 
 def parse_deployment_properties(fn):

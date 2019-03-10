@@ -34,7 +34,7 @@ NPM_EMAIL="$4"
 DEPLOYMENT_PROPERTIES_STRIPPED_FILE=$(mktemp)
 # awk in the next line strips out empty and comment lines
 awk '!/^#/ && /./' deployment.properties > ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE}
-NPM_REPOSITORY_URL=$(grep "npm.repository-url.$NPM_REGISTRY_KEY" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
+NPM_REPOSITORY_URL=$(grep "repo.npm.$NPM_REGISTRY_KEY" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
 
 GIT_COMMIT_HASH="$(git -C ${BUILD_WORKSPACE_DIRECTORY} rev-parse HEAD)"
 

@@ -42,8 +42,8 @@ def parse_deployment_properties(fn):
 
 
 properties = parse_deployment_properties('deployment.properties')
-github_organisation = properties['github.repository.organisation']
-github_repository = properties['github.repository.name']
+github_organisation = properties['repo.github.organisation']
+github_repository = properties['repo.github.repository']
 
 if len(sys.argv) != 2:
     print("Error - needs an argument: <github-token>")

@@ -38,7 +38,7 @@ fi
 DEPLOYMENT_PROPERTIES_STRIPPED_FILE=$(mktemp)
 # awk in the next line strips out empty and comment lines
 awk '!/^#/ && /./' deployment.properties > ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE}
-DEB_URL=$(grep "deb.repository-url.$DEB_REPO_TYPE" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
+DEB_URL=$(grep "repo.apt.$DEB_REPO_TYPE" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
 
 http_status_code_from_upload=$(curl --silent --output /dev/stderr --write-out "%{http_code}" -X POST \
     -u $DEB_USERNAME:$DEB_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@package.deb" $DEB_URL)

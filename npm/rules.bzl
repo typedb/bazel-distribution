@@ -57,7 +57,7 @@ deploy_npm = rule(
         "deployment_properties": attr.label(
             allow_single_file = True,
             mandatory = True,
-            doc = "File containing Node repository url by `npm.repository-url` key"
+            doc = "File containing Node repository url by `repo.npm` key"
         ),
         "_deployment_script_template": attr.label(
             allow_single_file = True,

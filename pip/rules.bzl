@@ -112,7 +112,7 @@ deploy_pip = rule(
     "deployment_properties": attr.label(
         allow_single_file = True,
         mandatory = True,
-        doc = "File containing Python pip repository url by `pip.repository-url` key"
+        doc = "File containing Python pip repository url by `repo.pypi` key"
     ),
     "package_name": attr.string(
         mandatory = True,

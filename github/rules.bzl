@@ -24,7 +24,7 @@ deploy_github = rule(
         "deployment_properties": attr.label(
             allow_single_file = True,
             mandatory = True,
-            doc = "File containing `github.repository.organisation` and `github.repository.name` keys"
+            doc = "File containing `repo.github.organisation` and `repo.github.repository` keys"
         ),
         "version_file": attr.label(
             allow_single_file = True,

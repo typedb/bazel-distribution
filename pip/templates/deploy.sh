@@ -38,7 +38,7 @@ fi
 DEPLOYMENT_PROPERTIES_STRIPPED_FILE=$(mktemp)
 # awk in the next line strips out empty and comment lines
 awk '!/^#/ && /./' deployment.properties > ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE}
-PIP_REPOSITORY_URL=$(grep "pip.repository-url.$PIP_REPO_TYPE" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
+PIP_REPOSITORY_URL=$(grep "repo.pypi.$PIP_REPO_TYPE" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
 
 # needed for uploading the built package
 TWINEPATH=$(dirname $(pwd)/external/*twine*/twine/)
