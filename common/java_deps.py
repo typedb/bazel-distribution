@@ -23,10 +23,13 @@ import tarfile
 import json
 
 import sys
-_, moves_file_location, distribution_tgz_location = sys.argv
+_, moves_file_location, distribution_tgz_location, version_file_location = sys.argv
 with open(moves_file_location) as moves_file:
     moves = json.load(moves_file)
 
+with open(version_file_location) as version_file:
+    version = version_file.read().strip()
+
 with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
     for fn, arcfn in moves.items():
-        tgz.add(fn, arcfn)
+        tgz.add(fn, arcfn.replace('{pom_version}', version))
