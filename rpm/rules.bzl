@@ -82,12 +82,14 @@ def assemble_rpm(name,
             ":osx_build": "/usr/local/bin/rpmbuild",
         })
     )
+    tag = "rpm_package_name={}".format(spec_file.split(':')[-1].replace('.spec', ''))
 
     native.genrule(
         name = name,
         srcs = ["{}__do_not_reference__rpm".format(name)],
         cmd = "cp $$(echo $(SRCS) | awk '{print $$1}') $@",
-        outs = [package_name + ".rpm"]
+        outs = [package_name + ".rpm"],
+        tags = [tag]
     )
 
 
@@ -98,8 +100,8 @@ RpmInfo = provider(
 )
 
 def _collect_rpm_package_name(target, ctx):
-    spec_filename = ctx.rule.attr.spec_file.label.name
-    package_name = spec_filename.replace('.spec', '')
+    rpm_tag = ctx.rule.attr.tags[0]
+    package_name = rpm_tag.replace('rpm_package_name=', '')
     return RpmInfo(package_name=package_name)
 
 
