@@ -41,7 +41,10 @@ def parse_deployment_properties(fn):
     return deployment_properties
 
 
-properties = parse_deployment_properties('external/graknlabs_build_tools/deployment.properties')
+targets = "{targets}".split(',')
+has_release_description = bool(int("{has_release_description}"))
+
+properties = parse_deployment_properties('deployment.properties')
 github_organisation = properties['repo.github.organisation']
 github_repository = properties['repo.github.repository']
 
@@ -67,14 +70,18 @@ else:
     print('Error - your platform ({}) is not supported. Try Linux or macOS instead.'.format(system))
     sys.exit(1)
 
-moved_zipfile = os.path.join(tempdir, 'grakn-core-all.zip')
+directory_to_upload = tempfile.mkdtemp()
+for fl in targets:
+    shutil.copy(fl, os.path.join(directory_to_upload, os.path.basename(fl)))
 
-shutil.copy(os.path.join('grakn-core-all.zip'), moved_zipfile)
-subprocess.call([
-    ghr,
-    '-t', github_token,
-    '-u', github_organisation,
-    '-r', github_repository,
-    '-delete', '-draft', github_tag,
-    moved_zipfile
-])
+try:
+    subprocess.call([
+        ghr,
+        '-u', github_organisation,
+        '-r', github_repository,
+        '-b', open('release_description.txt').read() if has_release_description else '',
+        '-delete', '-draft', github_tag,
+        directory_to_upload
+    ], env={'GITHUB_TOKEN': github_token})
+finally:
+    shutil.rmtree(directory_to_upload)
