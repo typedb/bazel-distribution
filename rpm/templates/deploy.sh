@@ -20,18 +20,24 @@
 
 set -e
 
-if [[ $# -ne 3 ]]; then
-    echo "Should pass <test> <rpm-username> <rpm-password> as arguments"
-    exit 1
-fi
 
 RPM_PKG="{RPM_PKG}"
-RPM_REPO_TYPE="$1"
-RPM_USERNAME="$2"
-RPM_PASSWORD="$3"
+RPM_REPO_TYPE="${1-${DEPLOYMENT_REPO_TYPE-notset}}"
+RPM_USERNAME="${2-${DEPLOYMENT_USERNAME-notset}}"
+RPM_PASSWORD="${3-${DEPLOYMENT_PASSWORD-notset}}"
 
 if [[ "$RPM_REPO_TYPE" != "test" ]]; then
     echo "Error: first argument should be 'test', not '$RPM_REPO_TYPE'"
+    exit 1
+fi
+
+if [[ "$RPM_USERNAME" == "notset" ]]; then
+    echo "Error: username should be either passed via cmdline or \$DEPLOYMENT_USERNAME env variable"
+    exit 1
+fi
+
+if [[ "$RPM_PASSWORD" == "notset" ]]; then
+    echo "Error: password should be either passed via cmdline or \$DEPLOYMENT_PASSWORD env variable"
     exit 1
 fi
 

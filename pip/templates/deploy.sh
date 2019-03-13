@@ -20,17 +20,22 @@
 
 set -e
 
-if [[ $# -ne 3 ]]; then
-    echo "Should pass <pypi|test|tpypi> <pip-username> <pip-password> as arguments"
-    exit 1
-fi
-
-PIP_REPO_TYPE="$1"
-PIP_USERNAME="$2"
-PIP_PASSWORD="$3"
+PIP_REPO_TYPE="${1-${DEPLOYMENT_REPO_TYPE-notset}}"
+PIP_USERNAME="${2-${DEPLOYMENT_USERNAME-notset}}"
+PIP_PASSWORD="${3-${DEPLOYMENT_PASSWORD-notset}}"
 
 if [[ "$PIP_REPO_TYPE" != "pypi" ]] && [[ "$PIP_REPO_TYPE" != "test" ]]; then
     echo "Error: first argument should be 'pypi' or 'test', not '$PIP_REPO_TYPE'"
+    exit 1
+fi
+
+if [[ "$PIP_USERNAME" == "notset" ]]; then
+    echo "Error: username should be either passed via cmdline or \$DEPLOYMENT_USERNAME env variable"
+    exit 1
+fi
+
+if [[ "$PIP_PASSWORD" == "notset" ]]; then
+    echo "Error: password should be either passed via cmdline or \$DEPLOYMENT_PASSWORD env variable"
     exit 1
 fi
 
