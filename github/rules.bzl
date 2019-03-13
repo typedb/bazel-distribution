@@ -34,7 +34,6 @@ deploy_github = rule(
     attrs = {
         "target": attr.label(
             allow_single_file = [".zip"],
-            mandatory = True,
             doc = "`distribution_zip` label to be deployed. Deprecated: use 'targets' attribute instead",
         ),
         "targets": attr.label_list(
