@@ -20,17 +20,23 @@
 
 set -e
 
-if [[ $# -ne 3 ]]; then
-    echo "Should pass <test> <deb-username> <deb-password> as arguments"
-    exit 1
-fi
 
-DEB_REPO_TYPE="$1"
-DEB_USERNAME="$2"
-DEB_PASSWORD="$3"
+DEB_REPO_TYPE="${1-${DEPLOYMENT_REPO_TYPE-notset}}"
+DEB_USERNAME="${2-${DEPLOYMENT_USERNAME-notset}}"
+DEB_PASSWORD="${3-${DEPLOYMENT_PASSWORD-notset}}"
 
 if [[ "$DEB_REPO_TYPE" != "test" ]]; then
     echo "Error: first argument should be 'test', not '$DEB_REPO_TYPE'"
+    exit 1
+fi
+
+if [[ "$DEB_USERNAME" == "notset" ]]; then
+    echo "Error: username should be either passed via cmdline or \$DEPLOYMENT_USERNAME env variable"
+    exit 1
+fi
+
+if [[ "$DEB_PASSWORD" == "notset" ]]; then
+    echo "Error: password should be either passed via cmdline or \$DEPLOYMENT_PASSWORD env variable"
     exit 1
 fi
 

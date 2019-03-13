@@ -20,21 +20,36 @@
 
 set -e
 
-if [[ $# -ne 4 ]]; then
-    echo "Should pass <npmjs|test> <npm-username> <npm-password> <npm-email> as arguments"
+NPM_REPO_TYPE="${1-${DEPLOYMENT_REPO_TYPE-notset}}"
+NPM_USERNAME="${2-${DEPLOYMENT_USERNAME-notset}}"
+NPM_PASSWORD="${3-${DEPLOYMENT_PASSWORD-notset}}"
+NPM_EMAIL="${4-${DEPLOYMENT_EMAIL-notset}}"
+
+if [[ "$NPM_REPO_TYPE" != "npmjs" ]] && [[ "$NPM_REPO_TYPE" != "test" ]]; then
+    echo "Error: first argument should be 'npmjs|test', not '$NPM_REPO_TYPE'"
     exit 1
 fi
 
-NPM_REGISTRY_KEY="$1"
-NPM_USERNAME="$2"
-NPM_PASSWORD="$3"
-NPM_EMAIL="$4"
+if [[ "$NPM_USERNAME" == "notset" ]]; then
+    echo "Error: username should be either passed via cmdline or \$DEPLOYMENT_USERNAME env variable"
+    exit 1
+fi
+
+if [[ "$NPM_PASSWORD" == "notset" ]]; then
+    echo "Error: password should be either passed via cmdline or \$DEPLOYMENT_PASSWORD env variable"
+    exit 1
+fi
+
+if [[ "$NPM_EMAIL" == "notset" ]]; then
+    echo "Error: email should be either passed via cmdline or \$DEPLOYMENT_EMAIL env variable"
+    exit 1
+fi
 
 # create a temporary file for preprocessing deployment.properties
 DEPLOYMENT_PROPERTIES_STRIPPED_FILE=$(mktemp)
 # awk in the next line strips out empty and comment lines
 awk '!/^#/ && /./' deployment.properties > ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE}
-NPM_REPOSITORY_URL=$(grep "repo.npm.$NPM_REGISTRY_KEY" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
+NPM_REPOSITORY_URL=$(grep "repo.npm.$NPM_REPO_TYPE" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
 
 GIT_COMMIT_HASH="$(git -C ${BUILD_WORKSPACE_DIRECTORY} rev-parse HEAD)"
 
