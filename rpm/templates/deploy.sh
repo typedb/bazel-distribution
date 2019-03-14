@@ -47,7 +47,9 @@ DEPLOYMENT_PROPERTIES_STRIPPED_FILE=$(mktemp)
 awk '!/^#/ && /./' deployment.properties > ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE}
 RPM_URL=$(grep "repo.rpm.$RPM_REPO_TYPE" ${DEPLOYMENT_PROPERTIES_STRIPPED_FILE} | cut -d '=' -f 2)
 
-http_status_code_from_upload=$(curl --silent --output /dev/stderr --write-out "%{http_code}" -X PUT -u $RPM_USERNAME:$RPM_PASSWORD --upload-file package.rpm $RPM_URL/$RPM_PKG/)
+PACKAGE_NAME="$(rpm -qp package.rpm).rpm"
+
+http_status_code_from_upload=$(curl --silent --output /dev/stderr --write-out "%{http_code}" -X PUT -u $RPM_USERNAME:$RPM_PASSWORD --upload-file package.rpm $RPM_URL/$RPM_PKG/$PACKAGE_NAME)
 if [[ ${http_status_code_from_upload} -ne 200 ]]; then
     echo "Error: The upload failed, got HTTP status code $http_status_code_from_upload"
     exit 1
