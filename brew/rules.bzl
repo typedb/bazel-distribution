@@ -14,7 +14,7 @@ def _deploy_brew_impl(ctx):
                 ctx.file.version_file
             ],
             symlinks = {
-                'checksum': ctx.file.checksum,
+                'checksum.sha256': ctx.file.checksum,
                 'deployment.properties': ctx.file.deployment_properties,
                 'formula': ctx.file.formula,
                 'VERSION': ctx.file.version_file
