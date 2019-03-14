@@ -16,4 +16,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-exports_files(["deploy.py", "deploy_tap.py"])
+exports_files(["deploy.py"])
