@@ -246,3 +246,22 @@ def assemble_zip(name,
         prefix = "./" + output_filename,
         visibility = visibility
     )
+
+
+def _checksum(ctx):
+    ctx.actions.run_shell(
+        inputs = [ctx.file.target],
+        outputs = [ctx.outputs.checksum_file],
+        command = 'shasum -a 256 {} > {}'.format(ctx.file.target.path, ctx.outputs.checksum_file.path)
+    )
+
+checksum = rule(
+    attrs = {
+        'target': attr.label(allow_single_file = True, mandatory = True)
+    },
+    outputs = {
+        'checksum_file': '%{name}.sha256'
+    },
+    implementation = _checksum
+
+)
