@@ -22,9 +22,16 @@ def parse_deployment_properties(fn):
     return deployment_properties
 
 
+def get_distribution_url_from_formula(content):
+    url_line = filter(lambda l: l.lstrip().startswith('url'), content.split('\n'))[0]
+    url = url_line.strip().split(' ')[1].replace('"', '')
+    return url
+
+
 if not os.getenv('GRABL_CREDENTIAL'):
     print('Error - $GRABL_CREDENTIAL must be defined')
     sys.exit(1)
+
 
 if len(sys.argv) != 2:
     print('Error - needs an argument: <test|release>')
@@ -36,33 +43,39 @@ properties = parse_deployment_properties('deployment.properties')
 formula_filename = os.path.basename(os.readlink('formula'))
 with open('formula') as formula_file:
     formula_template = formula_file.read()
-with open('VERSION') as v:
-    version = v.read().strip()
+with open('VERSION') as version_file:
+    version = version_file.read().strip()
 tap_type = sys.argv[1]
 tap_url = properties['repo.brew.{}'.format(tap_type)]
-checksum_of_distribution_local = open('checksum.sha256').read().strip().split(' ')[0]
+with open('checksum.sha256') as checksum_file:
+    checksum_of_distribution_local = checksum_file.read().strip().split(' ')[0]
 
 tap_localpath = tempfile.mkdtemp()
 try:
     print('Cloning brew tap: "{}"...'.format(tap_url))
     sp.check_call(['git', 'clone', tap_url, tap_localpath])
     sp.check_call(['mkdir', '-p', 'Formula'], cwd=tap_localpath)
-    formula_file = open(os.path.join(tap_localpath, 'Formula', formula_filename), 'w')
     formula_content = formula_template.replace('{version}', version).replace('{sha256}', checksum_of_distribution_local)
-    url_line = filter(lambda l: l.lstrip().startswith('url'), formula_content.split('\n'))[0]
-    url = url_line.strip().split(' ')[1].replace('"', '')
-    print('Attempting to verify that the checksum of local distribution and {} match...'.format(url))
-    urllib.urlretrieve(url, 'distribution-github.zip')
+    distribution_url = get_distribution_url_from_formula(formula_content)
+    print('Attempting to match the checksums of local distribution and Github distribution from "{}"...'.format(distribution_url))
+    # urllib.urlretrieve(distribution_url, 'distribution-github.zip')
     checksum_of_distribution_github = sp.check_output(['shasum', '-a', '256', 'distribution-github.zip']).split(' ')[0]
     if checksum_of_distribution_local != checksum_of_distribution_github:
-        print('Error - checksum mismatch between local distribution (sha256 = {}) and "{}" (sha256 = {}).'
-              .format(checksum_of_distribution_local, url, checksum_of_distribution_github))
+        print('Error - unable to proceed with deploying to brew! The checksums do not match:')
+        print('- The checksum of local distribution: {}'.format(checksum_of_distribution_local))
+        print('- The checksum of Github distribution: {}'.format(checksum_of_distribution_github))
         sys.exit(1)
-    print('Checksum matched. Proceeding with updating brew tap...')
-    formula_file.write(formula_content)
+    print('The checksums matched. Proceeding with deploying to brew...')
+    with open(os.path.join(tap_localpath, 'Formula', formula_filename), 'w') as f:
+        f.write(formula_content)
     sp.check_call(['git', 'add', '.'], cwd=tap_localpath)
-    sp.check_call(['git', 'commit', '-m', 'Update the {} formula to {}'.format(formula_filename, version)], cwd=tap_localpath)
-    sp.check_call(['bash', '-c', 'git push https://"$GRABL_CREDENTIAL"@github.com/lolski/homebrew-tap master'], cwd=tap_localpath)
+    try:
+        sp.check_call(['git', 'commit', '-m', 'Update the {} formula to {}'.format(formula_filename, version)], cwd=tap_localpath)
+    except sp.CalledProcessError as e:
+        print('Error - unable to proceed with deploying to brew due to the following error:')
+        raise e
+    scheme, rest = tap_url.split('://')
+    sp.check_call(['bash', '-c', 'git push ' + scheme + '://"$GRABL_CREDENTIAL"@' + rest + ' master'], cwd=tap_localpath)
     print("Done! That'll be five bucks.")
 finally:
     shutil.rmtree(tap_localpath)
