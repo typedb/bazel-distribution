@@ -235,6 +235,8 @@ class RpmBuilder(object):
             '_topdir %s' % dirname,
             '--define',
             '_tmppath %s/TMP' % dirname,
+            '--target',
+            'noarch-any-linux',
             '--bb',
             '--buildroot',
             os.path.join(dirname, 'BUILDROOT'),
