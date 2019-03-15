@@ -28,6 +28,11 @@ def get_distribution_url_from_formula(content):
     return url
 
 
+def url_with_credential(url, credential):
+    scheme, rest = url.split('://')
+    return scheme + '://"' + credential + '"@' + rest
+
+
 if not os.getenv('GRABL_CREDENTIAL'):
     print('Error - $GRABL_CREDENTIAL must be defined')
     sys.exit(1)
@@ -58,7 +63,7 @@ try:
     formula_content = formula_template.replace('{version}', version).replace('{sha256}', checksum_of_distribution_local)
     distribution_url = get_distribution_url_from_formula(formula_content)
     print('Attempting to match the checksums of local distribution and Github distribution from "{}"...'.format(distribution_url))
-    # urllib.urlretrieve(distribution_url, 'distribution-github.zip')
+    urllib.urlretrieve(distribution_url, 'distribution-github.zip')
     checksum_of_distribution_github = sp.check_output(['shasum', '-a', '256', 'distribution-github.zip']).split(' ')[0]
     if checksum_of_distribution_local != checksum_of_distribution_github:
         print('Error - unable to proceed with deploying to brew! The checksums do not match:')
@@ -74,8 +79,8 @@ try:
     except sp.CalledProcessError as e:
         print('Error - unable to proceed with deploying to brew due to the following error:')
         raise e
-    scheme, rest = tap_url.split('://')
-    sp.check_call(['bash', '-c', 'git push ' + scheme + '://"$GRABL_CREDENTIAL"@' + rest + ' master'], cwd=tap_localpath)
-    print("Done! That'll be five bucks.")
+
+    sp.check_call(['bash', '-c', 'git push ' + url_with_credential(tap_url, '$GRABL_CREDENTIAL') + ' master'], cwd=tap_localpath)
+    print("Done! Enjoy the beer.")
 finally:
     shutil.rmtree(tap_localpath)
