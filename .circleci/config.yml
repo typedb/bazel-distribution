@@ -1,0 +1,58 @@
+#
+# GRAKN.AI - THE KNOWLEDGE GRAPH
+# Copyright (C) 2018 Grakn Labs Ltd
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+version: 2.1
+commands:
+  install-bazel:
+    steps:
+      - run:
+          name: Install bazel and RBE credential
+          command: |
+            # Install bazel
+            curl -OL https://github.com/bazelbuild/bazel/releases/download/0.20.0/bazel-0.20.0-installer-linux-x86_64.sh
+            chmod +x bazel-0.20.0-installer-linux-x86_64.sh
+            sudo ./bazel-0.20.0-installer-linux-x86_64.sh
+            rm ./bazel-0.20.0-installer-linux-x86_64.sh
+
+jobs:
+  build:
+    machine: true
+    working_directory: ~/bazel-distribution
+    steps:
+      - checkout
+      - install-bazel
+      - run: bazel build //...
+
+  sync-dependencies:
+    machine: true
+    working_directory: ~/build-tools
+    steps:
+      - install-bazel
+      - run: git clone git@github.com:graknlabs/build-tools.git .
+      - run: bazel run //ci:sync-dependencies -- --source bazel-distribution@$CIRCLE_SHA1 --targets build-tools:master
+
+workflows:
+  bazel-distribution:
+    jobs:
+      - build
+      - sync-dependencies:
+          filters:
+            branches:
+              only: master
+          requires:
+            - build
