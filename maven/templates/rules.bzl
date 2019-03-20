@@ -207,9 +207,8 @@ assemble_maven = rule(
         ),
         "package": attr.string(),
         "version_file": attr.label(
+            mandatory = True,
             allow_single_file = True,
-            mandatory = not bool(_default_version_file),
-            default = _default_version_file
         ),
         "_pom_xml_template": attr.label(
             allow_single_file = True,
