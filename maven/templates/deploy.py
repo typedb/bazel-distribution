@@ -73,7 +73,7 @@ if maven_repo_type not in valid_keys:
 maven_url = properties[MAVEN_REPO_KEY_PREFIX + maven_repo_type]
 
 filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format(
-    coordinates=group_id, version=version, artifact=artifact_id)
+    coordinates=group_id.replace('.', '/'), version=version, artifact=artifact_id)
 
 upload(maven_url, maven_username, maven_password, jar_path, filename_base + '.jar')
 upload(maven_url, maven_username, maven_password, pom_file_path, filename_base + '.pom')
