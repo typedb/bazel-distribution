@@ -37,7 +37,13 @@ def _java_lib_deps_impl(_target, ctx):
         if tag in ("maven:compile_only", "maven:shaded"):
             return _JAVA_LIB_INFO_EMPTY
         if tag.startswith(_TAG_KEY_MAVEN_COORDINATES):
-            maven_coordinates.append(tag[len(_TAG_KEY_MAVEN_COORDINATES):])
+            coordinate = tag[len(_TAG_KEY_MAVEN_COORDINATES):]
+            target_is_in_root_workspace = _target.label.workspace_root == ""
+            if coordinate.endswith('{pom_version}') and not target_is_in_root_workspace:
+                maven_coordinates.append(coordinate.replace('{pom_version}', _target.label.workspace_root.replace('external/', '')))
+            else:
+                maven_coordinates.append(coordinate)
+
         if len(maven_coordinates) > 1:
             fail("You should not set more than one maven_coordinates tag per java_library")
 
@@ -72,25 +78,22 @@ MavenPomInfo = provider(
 
 def _maven_pom_deps_impl(_target, ctx):
     deps_coordinates = []
-
     # This seems to be all the direct dependencies of this given _target
     for x in _target[JavaLibInfo].target_deps_coordinates.to_list():
         deps_coordinates.append(x)
 
     # Now we traverse all the dependencies of our direct-dependencies,
     # if our direct-depenencies is a sub-package of ourselves (_target)
-    for dep in getattr(ctx.rule.attr, "jars", []):
+    deps = \
+        getattr(ctx.rule.attr, "jars", []) + \
+        getattr(ctx.rule.attr, "deps", []) + \
+        getattr(ctx.rule.attr, "exports", []) + \
+        getattr(ctx.rule.attr, "runtime_deps", [])
+
+    for dep in deps:
         if dep.label.package.startswith(ctx.attr.package):
             deps_coordinates += dep[MavenPomInfo].maven_pom_deps
-    for dep in getattr(ctx.rule.attr, "deps", []):
-        if dep.label.package.startswith(ctx.attr.package):
-            deps_coordinates += dep[MavenPomInfo].maven_pom_deps
-    for dep in getattr(ctx.rule.attr, "exports", []):
-        if dep.label.package.startswith(ctx.attr.package):
-            deps_coordinates += dep[MavenPomInfo].maven_pom_deps
-    for dep in getattr(ctx.rule.attr, "runtime_deps", []):
-        if dep.label.package.startswith(ctx.attr.package):
-            deps_coordinates += dep[MavenPomInfo].maven_pom_deps
+
     return [MavenPomInfo(maven_pom_deps = deps_coordinates)]
 
 # Filled in by deployment_rules_builder
@@ -107,7 +110,8 @@ _maven_pom_deps = aspect(
     implementation = _maven_pom_deps_impl,
     attrs = {
         "package": attr.string(values = _maven_packages)
-    }
+    },
+    provides = [MavenPomInfo]
 )
 
 
@@ -142,7 +146,8 @@ def _generate_pom_xml(ctx, maven_coordinates):
 
     pom_file = ctx.actions.declare_file("pom.xml")
 
-    deps_coordinates = depset(ctx.attr.target[MavenPomInfo].maven_pom_deps).to_list()
+    maven_pom_deps = ctx.attr.target[MavenPomInfo].maven_pom_deps
+    deps_coordinates = depset(maven_pom_deps).to_list()
 
     # Indentation of the DEP_BLOCK string is such, so that it renders nicely in the output pom.xml
     DEP_BLOCK = """        <dependency>
@@ -166,11 +171,11 @@ def _generate_pom_xml(ctx, maven_coordinates):
     )
 
     # Step 2: fill in {pom_version} from version_file
-    ctx.actions.run_shell(
-        inputs = [preprocessed_template, ctx.file.version_file],
+    ctx.actions.run(
+        inputs = [preprocessed_template, ctx.file.workspace_refs, ctx.file.version_file],
+        executable = ctx.file._pom_replace_version,
+        arguments = [preprocessed_template.path, ctx.file.workspace_refs.path, ctx.file.version_file.path, pom_file.path],
         outputs = [pom_file],
-        command = "VERSION=`cat %s` && sed -e s/{pom_version}/$VERSION/g %s > %s" % (
-            ctx.file.version_file.path, preprocessed_template.path, pom_file.path)
     )
 
     return pom_file
@@ -219,6 +224,10 @@ assemble_maven = rule(
             mandatory = True,
             allow_single_file = True,
         ),
+        "workspace_refs": attr.label(
+            mandatory = True,
+            allow_single_file = True,
+        ),
         "_pom_xml_template": attr.label(
             allow_single_file = True,
             default = "@graknlabs_bazel_distribution//maven/templates:pom.xml",
@@ -227,6 +236,10 @@ assemble_maven = rule(
             default = "@graknlabs_bazel_distribution//maven:assemble",
             executable = True,
             cfg = "host"
+        ),
+        "_pom_replace_version": attr.label(
+            allow_single_file = True,
+            default = "@graknlabs_bazel_distribution//maven:_pom_replace_version.py"
         )
     },
     implementation = _assemble_maven_impl,

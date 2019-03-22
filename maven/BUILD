@@ -16,7 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-exports_files(["deployment_rules_builder.py"])
+exports_files(["deployment_rules_builder.py", "_pom_replace_version.py"])
 
 py_binary(
     name = "assemble",
