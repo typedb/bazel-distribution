@@ -1,48 +1,51 @@
-# Do not edit. deployment_rules_builder.py autogenerates this file from deployment/maven/templates/rules.bzl
+############################
+####    JAVA_LIB INFO   ####
+############################
 
-# Imported from google/bazel-commons: begin
-MavenInfo = provider(
+JavaLibInfo = provider(
     fields = {
-        "maven_artifacts": """
+        "target_coordinates": """
         The Maven coordinates for the artifacts that are exported by this target: i.e. the target
         itself and its transitively exported targets.
         """,
-        "maven_dependencies": """
+        "target_deps_coordinates": """
         The Maven coordinates of the direct dependencies, and the transitively exported targets, of
         this target.
         """,
     },
 )
 
-_EMPTY_MAVEN_INFO = MavenInfo(
-    maven_artifacts = depset(),
-    maven_dependencies = depset(),
+_JAVA_LIB_INFO_EMPTY = JavaLibInfo(
+    target_coordinates = "",
+    target_deps_coordinates = depset(),
 )
 
-_MAVEN_COORDINATES_PREFIX = "maven_coordinates="
+_TAG_KEY_MAVEN_COORDINATES = "maven_coordinates="
 
-def _maven_artifacts(targets):
-    return [target[MavenInfo].maven_artifacts for target in targets if MavenInfo in target]
+def _target_coordinates(targets):
+    return [target[JavaLibInfo].target_coordinates for target in targets]
 
-def _collect_maven_info_impl(_target, ctx):
+def _java_lib_deps_impl(_target, ctx):
     tags = getattr(ctx.rule.attr, "tags", [])
     deps = getattr(ctx.rule.attr, "deps", [])
     runtime_deps = getattr(ctx.rule.attr, "runtime_deps", [])
     exports = getattr(ctx.rule.attr, "exports", [])
+    deps_all = deps + exports + runtime_deps
 
-    maven_artifacts = []
+    maven_coordinates = []
     for tag in tags:
         if tag in ("maven:compile_only", "maven:shaded"):
-            return [_EMPTY_MAVEN_INFO]
-        if tag.startswith(_MAVEN_COORDINATES_PREFIX):
-            maven_artifacts.append(tag[len(_MAVEN_COORDINATES_PREFIX):])
+            return _JAVA_LIB_INFO_EMPTY
+        if tag.startswith(_TAG_KEY_MAVEN_COORDINATES):
+            maven_coordinates.append(tag[len(_TAG_KEY_MAVEN_COORDINATES):])
+        if len(maven_coordinates) > 1:
+            fail("You should not set more than one maven_coordinates tag per java_library")
 
-    return [MavenInfo(
-        maven_artifacts = depset(maven_artifacts, transitive = _maven_artifacts(exports)),
-        maven_dependencies = depset([], transitive = _maven_artifacts(deps + exports + runtime_deps)),
-    )]
+    java_lib_info = JavaLibInfo(target_coordinates = depset(maven_coordinates, transitive=_target_coordinates(exports)),
+                                target_deps_coordinates = depset([], transitive = _target_coordinates(deps_all)))
+    return [java_lib_info]
 
-_collect_maven_info = aspect(
+_java_lib_deps = aspect(
     attr_aspects = [
         "jars",
         "deps",
@@ -50,15 +53,79 @@ _collect_maven_info = aspect(
         "runtime_deps"
     ],
     doc = """
-    Collects the Maven information for targets, their dependencies, and their transitive exports.
+    Collects the Maven coordinats of a java_library, and its direct dependencies.
     """,
-    implementation = _collect_maven_info_impl,
-    provides = [MavenInfo]
+    implementation = _java_lib_deps_impl,
+    provides = [JavaLibInfo]
 )
-# Imported from google/bazel-commons: end
 
-def _warn(msg):
-    print('{red}{msg}{nc}'.format(red='\033[0;31m', msg=msg, nc='\033[0m'))
+
+#############################
+####    MAVEN POM INFO   ####
+#############################
+
+MavenPomInfo = provider(
+    fields = {
+        'maven_pom_deps': 'Maven coordinates for dependencies, transitively collected'
+    }
+)
+
+def _maven_pom_deps_impl(_target, ctx):
+    deps_coordinates = []
+
+    # This seems to be all the direct dependencies of this given _target
+    for x in _target[JavaLibInfo].target_deps_coordinates.to_list():
+        deps_coordinates.append(x)
+
+    # Now we traverse all the dependencies of our direct-dependencies,
+    # if our direct-depenencies is a sub-package of ourselves (_target)
+    for dep in getattr(ctx.rule.attr, "jars", []):
+        if dep.label.package.startswith(ctx.attr.package):
+            deps_coordinates += dep[MavenPomInfo].maven_pom_deps
+    for dep in getattr(ctx.rule.attr, "deps", []):
+        if dep.label.package.startswith(ctx.attr.package):
+            deps_coordinates += dep[MavenPomInfo].maven_pom_deps
+    for dep in getattr(ctx.rule.attr, "exports", []):
+        if dep.label.package.startswith(ctx.attr.package):
+            deps_coordinates += dep[MavenPomInfo].maven_pom_deps
+    for dep in getattr(ctx.rule.attr, "runtime_deps", []):
+        if dep.label.package.startswith(ctx.attr.package):
+            deps_coordinates += dep[MavenPomInfo].maven_pom_deps
+    return [MavenPomInfo(maven_pom_deps = deps_coordinates)]
+
+# Filled in by deployment_rules_builder
+_maven_packages = "{maven_packages}".split(",")
+_maven_pom_deps = aspect(
+    attr_aspects = [
+        "jars",
+        "deps",
+        "exports",
+        "runtime_deps",
+        "extension"
+    ],
+    required_aspect_providers = [JavaLibInfo],
+    implementation = _maven_pom_deps_impl,
+    attrs = {
+        "package": attr.string(values = _maven_packages)
+    }
+)
+
+
+####################################
+####    MAVEN DEPLOYMENT INFO   ####
+####################################
+
+MavenDeploymentInfo = provider(
+    fields = {
+        'jar': 'JAR file to deploy',
+        'pom': 'Accompanying pom.xml file'
+    }
+)
+
+
+#############################
+####    MAVEN ASSEMBLY   ####
+#############################
 
 def _parse_maven_coordinates(coordinate_string):
     group_id, artifact_id, version = coordinate_string.split(':')
@@ -69,47 +136,32 @@ def _parse_maven_coordinates(coordinate_string):
         artifact_id = artifact_id,
     )
 
-TransitiveMavenInfo = provider(
-    fields = {
-        'transitive_dependencies': 'Maven coordinates for dependencies, transitively collected'
-    }
-)
-
-MavenDeploymentInfo = provider(
-    fields = {
-        'jar': 'JAR file to deploy',
-        'pom': 'Accompanying pom.xml file'
-    }
-)
-
-DEP_BLOCK = """
-<dependency>
-  <groupId>{0}</groupId>
-  <artifactId>{1}</artifactId>
-  <version>{2}</version>
-</dependency>
-""".strip()
-
 def _generate_pom_xml(ctx, maven_coordinates):
     # Final 'pom.xml' is generated in 2 steps
     preprocessed_template = ctx.actions.declare_file("_pom.xml")
 
     pom_file = ctx.actions.declare_file("pom.xml")
 
-    tags = depset(ctx.attr.target[TransitiveMavenInfo].transitive_dependencies).to_list()
+    deps_coordinates = depset(ctx.attr.target[MavenPomInfo].maven_pom_deps).to_list()
 
+    # Indentation of the DEP_BLOCK string is such, so that it renders nicely in the output pom.xml
+    DEP_BLOCK = """        <dependency>
+            <groupId>{0}</groupId>
+            <artifactId>{1}</artifactId>
+            <version>{2}</version>
+        </dependency>"""
     xml_tags = []
-    for tag in tags:
-        xml_tags.append(DEP_BLOCK.format(*tag.split(":")))
+    for coord in deps_coordinates:
+        xml_tags.append(DEP_BLOCK.format(*coord.split(":")))
 
     # Step 1: fill in everything except version using `pom_file` rule implementation
     ctx.actions.expand_template(
         template = ctx.file._pom_xml_template,
         output = preprocessed_template,
         substitutions = {
-            "{group_id}": maven_coordinates.group_id,
-            "{artifact_id}": maven_coordinates.artifact_id,
-            "{maven_dependencies}": "\n".join(xml_tags)
+            "{target_group_id}": maven_coordinates.group_id,
+            "{target_artifact_id}": maven_coordinates.artifact_id,
+            "{target_deps_coordinates}": "\n".join(xml_tags)
         }
     )
 
@@ -125,8 +177,7 @@ def _generate_pom_xml(ctx, maven_coordinates):
 
 def _assemble_maven_impl(ctx):
     target = ctx.attr.target
-
-    target_string = target[MavenInfo].maven_artifacts.to_list()[0]
+    target_string = target[JavaLibInfo].target_coordinates.to_list()[0]
 
     maven_coordinates = _parse_maven_coordinates(target_string)
 
@@ -154,55 +205,13 @@ def _assemble_maven_impl(ctx):
         MavenDeploymentInfo(jar = output_jar, pom = pom_file)
     ]
 
-
-def _transitive_maven_dependencies(_target, ctx):
-    tags = []
-
-    if MavenInfo in _target:
-        for x in _target[MavenInfo].maven_dependencies.to_list():
-            tags.append(x)
-
-    for dep in getattr(ctx.rule.attr, "jars", []):
-        if dep.label.package.startswith(ctx.attr.package):
-            tags = tags + dep[TransitiveMavenInfo].transitive_dependencies
-    for dep in getattr(ctx.rule.attr, "deps", []):
-        if dep.label.package.startswith(ctx.attr.package):
-            tags = tags + dep[TransitiveMavenInfo].transitive_dependencies
-    for dep in getattr(ctx.rule.attr, "exports", []):
-        if dep.label.package.startswith(ctx.attr.package):
-            tags = tags + dep[TransitiveMavenInfo].transitive_dependencies
-    for dep in getattr(ctx.rule.attr, "runtime_deps", []):
-        if dep.label.package.startswith(ctx.attr.package):
-            tags = tags + dep[TransitiveMavenInfo].transitive_dependencies
-    return [TransitiveMavenInfo(transitive_dependencies = tags)]
-
-# Filled in by deployment_rules_builder
-_maven_packages = "{maven_packages}".split(",")
-_default_version_file = None if 'version_file_placeholder' in "{version_file_placeholder}" else "{version_file_placeholder}"
-_default_deployment_properties = None if 'deployment_properties_placeholder' in "{deployment_properties_placeholder}" else "{deployment_properties_placeholder}"
-
-_transitive_maven_info = aspect(
-    attr_aspects = [
-        "jars",
-        "deps",
-        "exports",
-        "runtime_deps",
-        "extension"
-    ],
-    required_aspect_providers = [MavenInfo],
-    implementation = _transitive_maven_dependencies,
-    attrs = {
-        "package": attr.string(values = _maven_packages)
-    }
-)
-
 assemble_maven = rule(
     attrs = {
         "target": attr.label(
             mandatory = True,
             aspects = [
-                _collect_maven_info,
-                _transitive_maven_info,
+                _java_lib_deps,
+                _maven_pom_deps,
             ]
         ),
         "package": attr.string(),
@@ -222,6 +231,11 @@ assemble_maven = rule(
     },
     implementation = _assemble_maven_impl,
 )
+
+
+###############################
+####    MAVEN DEPLOYMENT   ####
+###############################
 
 def _deploy_maven_impl(ctx):
     deploy_maven_script = ctx.actions.declare_file("deploy.py")
@@ -250,7 +264,7 @@ def _deploy_maven_impl(ctx):
         })
     )
 
-
+_default_deployment_properties = None if 'deployment_properties_placeholder' in "{deployment_properties_placeholder}" else "{deployment_properties_placeholder}"
 deploy_maven = rule(
     attrs = {
         "target": attr.label(

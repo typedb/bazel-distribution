@@ -22,11 +22,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>{group_id}</groupId>
-    <artifactId>{artifact_id}</artifactId>
+    <groupId>{target_group_id}</groupId>
+    <artifactId>{target_artifact_id}</artifactId>
     <version>{pom_version}</version>
 
     <dependencies>
-        {maven_dependencies}
+{target_deps_coordinates}
     </dependencies>
 </project>
