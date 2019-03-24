@@ -6,6 +6,7 @@ from xml.etree import ElementTree
 import hashlib
 import operator
 import os
+import re
 import subprocess as sp
 import sys
 import tempfile
@@ -50,14 +51,25 @@ def upload(url, username, password, local_fn, remote_fn):
 
 if len(sys.argv) != 5:
     raise ValueError('Should pass <snapshot|release> <maven-username> <maven-password> as arguments')
-
-_, maven_repo_type, version, maven_username, maven_password = sys.argv
-
-if maven_repo_type not in ['snapshot', 'release']:
-    raise ValueError("first argument should be one of these: {}".format(['snapshot', 'release']))
+_, repo_type, version, username, password = sys.argv
+repo_type_snapshot = 'snapshot'
+version_snapshot_regex = '^[0-9|a-f|A-F]{40}$'
+repo_type_release = 'release'
+version_release_regex = '^[0-9]+.[0-9]+.[0-9]+$'
+if repo_type not in [repo_type_snapshot, repo_type_release]:
+    raise ValueError("Invalid repository type: {}. It should be one of these: {}"
+                     .format(repo_type, [repo_type_snapshot, repo_type_release]))
+if repo_type == 'snapshot' and len(re.findall(version_snapshot_regex, version)) == 0:
+    raise ValueError('Invalid version: {}. An artifact uploaded to a {} repository '
+                     'must have a version which complies to this regex: {}'
+                     .format(version, repo_type, version_snapshot_regex))
+if repo_type == 'release' and len(re.findall(version_release_regex, version)) == 0:
+    raise ValueError('Invalid version: {}. An artifact uploaded to a {} repository '
+                     'must have a version which complies to this regex: {}'
+                     .format(version, repo_type, version_snapshot_regex))
 
 deployment_properties = parse_deployment_properties('external/graknlabs_build_tools/deployment.properties')
-maven_url = deployment_properties['repo.maven.' + maven_repo_type]
+maven_url = deployment_properties['repo.maven.' + repo_type]
 jar_path = "$JAR_PATH"
 pom_file_path = "$POM_PATH"
 group_id, artifact_id, version_placeholder = list(map(operator.attrgetter('text'),
@@ -65,30 +77,30 @@ group_id, artifact_id, version_placeholder = list(map(operator.attrgetter('text'
 filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format(
     coordinates=group_id.replace('.', '/'), version=version, artifact=artifact_id)
 
-upload(maven_url, maven_username, maven_password, jar_path, filename_base + '.jar')
+upload(maven_url, username, password, jar_path, filename_base + '.jar')
 
 with open(pom_file_path, 'r') as pom_original, tempfile.NamedTemporaryFile(delete=True) as pom_updated:
     updated = pom_original.read().replace(version_placeholder, version)
     pom_updated.write(updated)
     pom_updated.flush()
-    upload(maven_url, maven_username, maven_password, pom_updated.name, filename_base + '.pom')
+    upload(maven_url, username, password, pom_updated.name, filename_base + '.pom')
 
 with tempfile.NamedTemporaryFile(delete=True) as pom_md5:
     pom_md5.write(md5(pom_file_path))
     pom_md5.flush()
-    upload(maven_url, maven_username, maven_password, pom_md5.name, filename_base + '.pom.md5')
+    upload(maven_url, username, password, pom_md5.name, filename_base + '.pom.md5')
 
 with tempfile.NamedTemporaryFile(delete=True) as pom_sha1:
     pom_sha1.write(sha1(pom_file_path))
     pom_sha1.flush()
-    upload(maven_url, maven_username, maven_password, pom_sha1.name, filename_base + '.pom.sha1')
+    upload(maven_url, username, password, pom_sha1.name, filename_base + '.pom.sha1')
 
 with tempfile.NamedTemporaryFile(delete=True) as jar_md5:
     jar_md5.write(md5(jar_path))
     jar_md5.flush()
-    upload(maven_url, maven_username, maven_password, jar_md5.name, filename_base + '.jar.md5')
+    upload(maven_url, username, password, jar_md5.name, filename_base + '.jar.md5')
 
 with tempfile.NamedTemporaryFile(delete=True) as jar_sha1:
     jar_sha1.write(sha1(jar_path))
     jar_sha1.flush()
-    upload(maven_url, maven_username, maven_password, jar_sha1.name, filename_base + '.jar.sha1')
+    upload(maven_url, username, password, jar_sha1.name, filename_base + '.jar.sha1')
