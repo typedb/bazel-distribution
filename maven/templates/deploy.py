@@ -62,10 +62,10 @@ properties = parse_deployment_properties('external/graknlabs_build_tools/deploym
 valid_keys = [x.replace(MAVEN_REPO_KEY_PREFIX, '') for x in properties if x.startswith(MAVEN_REPO_KEY_PREFIX)]
 
 
-if len(sys.argv) != 4:
+if len(sys.argv) != 5:
     raise ValueError('Should pass <snapshot|release> <maven-username> <maven-password> as arguments')
 
-_, maven_repo_type, maven_username, maven_password = sys.argv
+_, maven_repo_type, version, maven_username, maven_password = sys.argv
 
 if maven_repo_type not in valid_keys:
     raise ValueError("first argument should be one of {}, not {}".format(valid_keys, maven_repo_type))
@@ -76,7 +76,12 @@ filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format
     coordinates=group_id.replace('.', '/'), version=version, artifact=artifact_id)
 
 upload(maven_url, maven_username, maven_password, jar_path, filename_base + '.jar')
-upload(maven_url, maven_username, maven_password, pom_file_path, filename_base + '.pom')
+
+with open(pom_file_path, 'r') as pom_original, tempfile.NamedTemporaryFile(delete=True) as pom_updated:
+    updated = pom_original.read().replace('{pom_version}', version)
+    pom_updated.write(updated)
+    pom_updated.flush()
+    upload(maven_url, maven_username, maven_password, pom_updated.name, filename_base + '.pom')
 
 with tempfile.NamedTemporaryFile(delete=True) as pom_md5:
     pom_md5.write(md5(pom_file_path))
