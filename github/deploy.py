@@ -41,7 +41,7 @@ def parse_deployment_properties(fn):
     return deployment_properties
 
 
-targets = list(filter(None, "{targets}".split(',')))
+targets = [] if not "{targets}" else "{targets}".split(',')
 has_release_description = bool(int("{has_release_description}"))
 
 properties = parse_deployment_properties('deployment.properties')
