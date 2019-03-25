@@ -68,7 +68,7 @@ if repo_type == 'release' and len(re.findall(version_release_regex, version)) ==
                      'must have a version which complies to this regex: {}'
                      .format(version, repo_type, version_snapshot_regex))
 
-deployment_properties = parse_deployment_properties('external/graknlabs_build_tools/deployment.properties')
+deployment_properties = parse_deployment_properties('deployment.properties')
 maven_url = deployment_properties['repo.maven.' + repo_type]
 jar_path = "$JAR_PATH"
 pom_file_path = "$POM_PATH"
