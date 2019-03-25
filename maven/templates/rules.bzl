@@ -274,6 +274,7 @@ def _deploy_maven_impl(ctx):
         ], symlinks = {
             lib_jar_link: ctx.attr.target[MavenDeploymentInfo].jar,
             pom_xml_link: ctx.attr.target[MavenDeploymentInfo].pom,
+            'deployment.properties': ctx.file.deployment_properties,
         })
     )
 
