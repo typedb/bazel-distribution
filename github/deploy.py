@@ -41,7 +41,7 @@ def parse_deployment_properties(fn):
     return deployment_properties
 
 
-targets = "{targets}".split(',')
+targets = list(filter(None, "{targets}".split(',')))
 has_release_description = bool(int("{has_release_description}"))
 
 properties = parse_deployment_properties('deployment.properties')
@@ -71,6 +71,13 @@ else:
     sys.exit(1)
 
 directory_to_upload = tempfile.mkdtemp()
+
+# TODO: ideally, this should be fixed in ghr itself
+# Currently it does not allow supplying empty folders
+# However, it also filters out folders inside the folder you supply
+# So if we have a folder within a folder, both conditions are
+# satisfied and we're able to proceed
+dummy_directory = tempfile.mkdtemp(dir=directory_to_upload)
 for fl in targets:
     shutil.copy(fl, os.path.join(directory_to_upload, os.path.basename(fl)))
 
