@@ -59,7 +59,7 @@ tap_localpath = tempfile.mkdtemp()
 try:
     print('Cloning brew tap: "{}"...'.format(tap_url))
     sp.check_call(['git', 'clone', tap_url, tap_localpath])
-    sp.check_call(['mkdir', '-p', 'Formula'], cwd=tap_localpath)
+    sp.check_call(['mkdir', '-p', '{brew_folder}'], cwd=tap_localpath)
     formula_content = formula_template.replace('{version}', version).replace('{sha256}', checksum_of_distribution_local)
     distribution_url = get_distribution_url_from_formula(formula_content)
     print('Attempting to match the checksums of local distribution and Github distribution from "{}"...'.format(distribution_url))
@@ -71,7 +71,7 @@ try:
         print('- The checksum of Github distribution: {}'.format(checksum_of_distribution_github))
         sys.exit(1)
     print('The checksums matched. Proceeding with deploying to brew...')
-    with open(os.path.join(tap_localpath, 'Formula', formula_filename), 'w') as f:
+    with open(os.path.join(tap_localpath, '{brew_folder}', formula_filename), 'w') as f:
         f.write(formula_content)
     sp.check_call(['git', 'add', '.'], cwd=tap_localpath)
     try:
