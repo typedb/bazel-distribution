@@ -48,11 +48,22 @@ properties = parse_deployment_properties('deployment.properties')
 github_organisation = properties['repo.github.organisation']
 github_repository = properties['repo.github.repository']
 
-if len(sys.argv) != 2:
-    print("Error - needs an argument: <github-token>")
-    sys.exit(1)
 
-_, github_token = sys.argv
+def get_github_token():
+    if 'DEPLOYMENT_GITHUB_TOKEN' in os.environ:
+        return os.getenv('DEPLOYMENT_GITHUB_TOKEN')
+    elif len(sys.argv) == 2:
+        _, token = sys.argv
+        return token
+    else:
+        raise ValueError(
+            'Token should be passed either '
+            'as $DEPLOYMENT_GITHUB_TOKEN or the only '
+            'commandline argument'
+        )
+
+
+github_token = get_github_token()
 
 with open('VERSION') as version_file:
     distribution_version = version_file.read().strip()
