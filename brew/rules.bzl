@@ -1,8 +1,15 @@
 def _deploy_brew_impl(ctx):
+    if ctx.attr.type == "brew":
+        brew_formula_folder = "Formula"
+    elif ctx.attr.type == "cask":
+        brew_formula_folder = "Casks"
+
     ctx.actions.expand_template(
         template = ctx.file._deploy_brew_template,
         output = ctx.outputs.deployment_script,
-        substitutions = {},
+        substitutions = {
+            "{brew_folder}": brew_formula_folder
+        },
         is_executable = True
     )
     return DefaultInfo(
@@ -33,6 +40,10 @@ deploy_brew = rule(
         "checksum": attr.label(
             allow_single_file = True,
             mandatory = True,
+        ),
+        "type": attr.string(
+            values = ["brew", "cask"],
+            default = "brew"
         ),
         "deployment_properties": attr.label(
             allow_single_file = True,
