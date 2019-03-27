@@ -45,13 +45,13 @@ def get_checksum():
                          '$DEPLOY_BREW_CHECKSUM env variable')
 
 
-if not os.getenv('GRABL_CREDENTIAL'):
-    print('Error - $GRABL_CREDENTIAL must be defined')
+if not os.getenv('DEPLOY_BREW_TOKEN'):
+    print('Error - $DEPLOY_BREW_TOKEN must be defined')
     sys.exit(1)
 
 
 if len(sys.argv) != 2:
-    print('Error - needs an argument: <test|release>')
+    print('Error - needs an argument: <snapshot|release>')
     sys.exit(1)
 
 
@@ -92,7 +92,7 @@ try:
         print('Error - unable to proceed with deploying to brew due to the following error:')
         raise e
 
-    sp.check_call(['bash', '-c', 'git push ' + url_with_credential(tap_url, '$GRABL_CREDENTIAL') + ' master'], cwd=tap_localpath)
+    sp.check_call(['bash', '-c', 'git push ' + url_with_credential(tap_url, '$DEPLOY_BREW_TOKEN') + ' master'], cwd=tap_localpath)
     print("Done! Enjoy the beer.")
 finally:
     shutil.rmtree(tap_localpath)

@@ -20,13 +20,13 @@
 
 set -e
 
-NPM_REPO_TYPE="${1-${DEPLOYMENT_REPO_TYPE-notset}}"
-NPM_USERNAME="${2-${DEPLOYMENT_USERNAME-notset}}"
-NPM_PASSWORD="${3-${DEPLOYMENT_PASSWORD-notset}}"
-NPM_EMAIL="${4-${DEPLOYMENT_EMAIL-notset}}"
+NPM_REPO_TYPE="$1"
+NPM_USERNAME="${DEPLOY_NPM_USERNAME-notset}"
+NPM_PASSWORD="${DEPLOY_NPM_PASSWORD-notset}"
+NPM_EMAIL="${DEPLOY_NPM_EMAIL-notset}"
 
-if [[ "$NPM_REPO_TYPE" != "npmjs" ]] && [[ "$NPM_REPO_TYPE" != "test" ]]; then
-    echo "Error: first argument should be 'npmjs|test', not '$NPM_REPO_TYPE'"
+if [[ "$NPM_REPO_TYPE" != "release" ]] && [[ "$NPM_REPO_TYPE" != "snapshot" ]]; then
+    echo "Error: first argument should be 'release|snapshot', not '$NPM_REPO_TYPE'"
     exit 1
 fi
 
