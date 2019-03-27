@@ -33,6 +33,18 @@ def url_with_credential(url, credential):
     return scheme + '://"' + credential + '"@' + rest
 
 
+def get_checksum():
+    if os.path.isfile('checksum.sha256'):
+        with open('checksum.sha256') as checksum_file:
+            return checksum_file.read().strip().split(' ')[0]
+    elif 'DEPLOY_BREW_CHECKSUM' in os.environ:
+        return os.getenv('DEPLOY_BREW_CHECKSUM')
+    else:
+        raise ValueError('Error - checksum should either be defined '
+                         'in checksum.sha256 file or '
+                         '$DEPLOY_BREW_CHECKSUM env variable')
+
+
 if not os.getenv('GRABL_CREDENTIAL'):
     print('Error - $GRABL_CREDENTIAL must be defined')
     sys.exit(1)
@@ -52,8 +64,8 @@ with open('VERSION') as version_file:
     version = version_file.read().strip()
 tap_type = sys.argv[1]
 tap_url = properties['repo.brew.{}'.format(tap_type)]
-with open('checksum.sha256') as checksum_file:
-    checksum_of_distribution_local = checksum_file.read().strip().split(' ')[0]
+
+checksum_of_distribution_local = get_checksum()
 
 tap_localpath = tempfile.mkdtemp()
 try:
