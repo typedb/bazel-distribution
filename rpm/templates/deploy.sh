@@ -22,12 +22,12 @@ set -e
 
 
 RPM_PKG="{RPM_PKG}"
-RPM_REPO_TYPE="${1-${DEPLOYMENT_REPO_TYPE-notset}}"
-RPM_USERNAME="${2-${DEPLOYMENT_USERNAME-notset}}"
-RPM_PASSWORD="${3-${DEPLOYMENT_PASSWORD-notset}}"
+RPM_REPO_TYPE="$1"
+RPM_USERNAME="${DEPLOY_RPM_USERNAME-notset}"
+RPM_PASSWORD="${DEPLOY_RPM_PASSWORD-notset}"
 
-if [[ "$RPM_REPO_TYPE" != "test" ]] && [[ "$RPM_REPO_TYPE" != "release" ]]; then
-    echo "Error: first argument should be 'test' or 'release', not '$RPM_REPO_TYPE'"
+if [[ "$RPM_REPO_TYPE" != "snapshot" ]] && [[ "$RPM_REPO_TYPE" != "release" ]]; then
+    echo "Error: first argument should be 'snapshot' or 'release', not '$RPM_REPO_TYPE'"
     exit 1
 fi
 
