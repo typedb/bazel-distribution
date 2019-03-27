@@ -25,8 +25,8 @@ DEB_REPO_TYPE="${1-${DEPLOYMENT_REPO_TYPE-notset}}"
 DEB_USERNAME="${2-${DEPLOYMENT_USERNAME-notset}}"
 DEB_PASSWORD="${3-${DEPLOYMENT_PASSWORD-notset}}"
 
-if [[ "$DEB_REPO_TYPE" != "test" ]]; then
-    echo "Error: first argument should be 'test', not '$DEB_REPO_TYPE'"
+if [[ "$DEB_REPO_TYPE" != "test" ]] && [[ "$DEB_REPO_TYPE" != "release" ]]; then
+    echo "Error: first argument should be 'test' or 'release', not '$DEB_REPO_TYPE'"
     exit 1
 fi
 

@@ -26,8 +26,8 @@ RPM_REPO_TYPE="${1-${DEPLOYMENT_REPO_TYPE-notset}}"
 RPM_USERNAME="${2-${DEPLOYMENT_USERNAME-notset}}"
 RPM_PASSWORD="${3-${DEPLOYMENT_PASSWORD-notset}}"
 
-if [[ "$RPM_REPO_TYPE" != "test" ]]; then
-    echo "Error: first argument should be 'test', not '$RPM_REPO_TYPE'"
+if [[ "$RPM_REPO_TYPE" != "test" ]] && [[ "$RPM_REPO_TYPE" != "release" ]]; then
+    echo "Error: first argument should be 'test' or 'release', not '$RPM_REPO_TYPE'"
     exit 1
 fi
 
