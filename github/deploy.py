@@ -89,8 +89,11 @@ directory_to_upload = tempfile.mkdtemp()
 # So if we have a folder within a folder, both conditions are
 # satisfied and we're able to proceed
 dummy_directory = tempfile.mkdtemp(dir=directory_to_upload)
+
 for fl in targets:
-    shutil.copy(fl, os.path.join(directory_to_upload, os.path.basename(fl)))
+    filename, extension = os.path.splitext(fl)
+    final_name = '{}-{}{}'.format(filename, distribution_version, extension)
+    shutil.copy(fl, os.path.join(directory_to_upload, final_name))
 
 try:
     subprocess.call([
