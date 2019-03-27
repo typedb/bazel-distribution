@@ -91,8 +91,15 @@ directory_to_upload = tempfile.mkdtemp()
 dummy_directory = tempfile.mkdtemp(dir=directory_to_upload)
 
 for fl in targets:
-    filename, extension = os.path.splitext(fl)
-    final_name = '{}-{}{}'.format(filename, distribution_version, extension)
+    if fl.endswith('zip'):
+        extension = 'zip'
+    elif fl.endswith('tar.gz'):
+        extension = 'tar.gz'
+    else:
+        raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(fl))
+
+    filename = fl[:-len(extension)-1]
+    final_name = os.path.basename('{}-{}.{}'.format(filename, distribution_version, extension))
     shutil.copy(fl, os.path.join(directory_to_upload, final_name))
 
 try:
