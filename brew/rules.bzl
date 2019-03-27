@@ -12,20 +12,26 @@ def _deploy_brew_impl(ctx):
         },
         is_executable = True
     )
+    files = [
+        ctx.file.deployment_properties,
+        ctx.file.formula,
+        ctx.file.version_file
+    ]
+
+    symlinks = {
+        'deployment.properties': ctx.file.deployment_properties,
+        'formula': ctx.file.formula,
+        'VERSION': ctx.file.version_file
+    }
+
+    if ctx.file.checksum:
+        files.append(ctx.file.checksum)
+        symlinks['checksum.sha256'] = ctx.file.checksum
+
     return DefaultInfo(
         runfiles = ctx.runfiles(
-            files = [
-                ctx.file.checksum,
-                ctx.file.deployment_properties,
-                ctx.file.formula,
-                ctx.file.version_file
-            ],
-            symlinks = {
-                'checksum.sha256': ctx.file.checksum,
-                'deployment.properties': ctx.file.deployment_properties,
-                'formula': ctx.file.formula,
-                'VERSION': ctx.file.version_file
-            }
+            files = files,
+            symlinks = symlinks
         ),
         executable = ctx.outputs.deployment_script
     )
@@ -39,7 +45,6 @@ deploy_brew = rule(
         ),
         "checksum": attr.label(
             allow_single_file = True,
-            mandatory = True,
         ),
         "type": attr.string(
             values = ["brew", "cask"],
