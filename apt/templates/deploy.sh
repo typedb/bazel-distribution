@@ -21,12 +21,12 @@
 set -e
 
 
-DEB_REPO_TYPE="${1-${DEPLOYMENT_REPO_TYPE-notset}}"
-DEB_USERNAME="${2-${DEPLOYMENT_USERNAME-notset}}"
-DEB_PASSWORD="${3-${DEPLOYMENT_PASSWORD-notset}}"
+DEB_REPO_TYPE=$1
+DEB_USERNAME="${DEPLOY_APT_USERNAME-notset}"
+DEB_PASSWORD="${DEPLOY_APT_PASSWORD-notset}"
 
-if [[ "$DEB_REPO_TYPE" != "test" ]] && [[ "$DEB_REPO_TYPE" != "release" ]]; then
-    echo "Error: first argument should be 'test' or 'release', not '$DEB_REPO_TYPE'"
+if [[ "$DEB_REPO_TYPE" != "snapshot" ]] && [[ "$DEB_REPO_TYPE" != "release" ]]; then
+    echo "Error: first argument should be 'snapshot' or 'release', not '$DEB_REPO_TYPE'"
     exit 1
 fi
 
