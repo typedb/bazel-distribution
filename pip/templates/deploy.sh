@@ -20,12 +20,12 @@
 
 set -e
 
-PIP_REPO_TYPE="${1-${DEPLOYMENT_REPO_TYPE-notset}}"
-PIP_USERNAME="${2-${DEPLOYMENT_USERNAME-notset}}"
-PIP_PASSWORD="${3-${DEPLOYMENT_PASSWORD-notset}}"
+PIP_REPO_TYPE="$1"
+PIP_USERNAME="${DEPLOY_PIP_USERNAME-notset}"
+PIP_PASSWORD="${DEPLOY_PIP_PASSWORD-notset}"
 
-if [[ "$PIP_REPO_TYPE" != "pypi" ]] && [[ "$PIP_REPO_TYPE" != "test" ]]; then
-    echo "Error: first argument should be 'pypi' or 'test', not '$PIP_REPO_TYPE'"
+if [[ "$PIP_REPO_TYPE" != "release" ]] && [[ "$PIP_REPO_TYPE" != "snapshot" ]]; then
+    echo "Error: first argument should be 'release' or 'snapshot', not '$PIP_REPO_TYPE'"
     exit 1
 fi
 
