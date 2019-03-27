@@ -49,9 +49,12 @@ def upload(url, username, password, local_fn, remote_fn):
             local_fn, upload_status_code))
 
 
-if len(sys.argv) != 5:
-    raise ValueError('Should pass <snapshot|release> <version> <maven-username> <maven-password> as arguments')
-_, repo_type, version, username, password = sys.argv
+if len(sys.argv) != 3:
+    raise ValueError('Should pass <snapshot|release> <version> as arguments')
+_, repo_type, version = sys.argv
+
+username, password = os.getenv('DEPLOY_MAVEN_USERNAME'), os.getenv('DEPLOY_MAVEN_PASSWORD')
+
 repo_type_snapshot = 'snapshot'
 version_snapshot_regex = '^[0-9|a-f|A-F]{40}$'
 repo_type_release = 'release'
