@@ -16,14 +16,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar", "pkg_deb")
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("//apt/pkg_deb_modified_from_bazel:pkg.bzl", "pkg_deb")
 
 def assemble_apt(name,
                      package_name,
-                     installation_dir,
                      maintainer,
                      version_file,
                      description,
+                     installation_dir = None,
                      archives = [],
                      empty_dirs = [],
                      files = {},
@@ -31,21 +32,27 @@ def assemble_apt(name,
                      symlinks = {},
                      permissions = {}):
     tar_name = "_{}-deb-tar".format(package_name)
-    pkg_tar(
-        name = tar_name,
-        extension = "tar.gz",
-        deps = archives,
-        package_dir = installation_dir,
-        empty_dirs = empty_dirs,
-        files = files,
-        mode = "0755",
-        symlinks = symlinks,
-        modes = permissions,
-    )
+    deb_data = None
+    if installation_dir:
+        pkg_tar(
+            name = tar_name,
+            extension = "tar.gz",
+            deps = archives,
+            package_dir = installation_dir,
+            empty_dirs = empty_dirs,
+            files = files,
+            mode = "0755",
+            symlinks = symlinks,
+            modes = permissions,
+        )
+        deb_data = tar_name
+    else:
+        pkg_tar(name = tar_name + "__do_not_reference__empty")
+        deb_data = tar_name + "__do_not_reference__empty"
 
     pkg_deb(
         name = name,
-        data = tar_name,
+        data = deb_data,
         package = package_name,
         depends = depends,
         maintainer = maintainer,
