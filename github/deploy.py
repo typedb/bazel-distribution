@@ -41,6 +41,22 @@ def parse_deployment_properties(fn):
     return deployment_properties
 
 
+def get_ghr():
+    system = platform.system()
+    tempdir = tempfile.mkdtemp()
+
+    if system == 'Darwin':
+        sp.call(['unzip', 'external/ghr_osx_zip/file/downloaded', '-d', tempdir])
+        ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
+    elif system == 'Linux':
+        sp.call(['tar', '-xf', 'external/ghr_linux_tar/file/downloaded', '-C', tempdir])
+        ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
+    else:
+        raise ValueError('Error - your platform ({}) is not supported. Try Linux or macOS instead.'.format(system))
+
+    return ghr
+
+
 def get_github_token():
     if 'DEPLOY_GITHUB_TOKEN' in os.environ:
         return os.getenv('DEPLOY_GITHUB_TOKEN')
@@ -55,30 +71,18 @@ def get_github_token():
         )
 
 
-github_token = get_github_token()
-
 targets = [] if not "{targets}" else "{targets}".split(',')
 has_release_description = bool(int("{has_release_description}"))
 
+github_token = get_github_token()
 properties = parse_deployment_properties('deployment.properties')
 github_organisation = properties['repo.github.organisation']
 github_repository = properties['repo.github.repository']
+ghr = get_ghr()
 
 with open('VERSION') as version_file:
     distribution_version = version_file.read().strip()
     github_tag = 'v{}'.format(distribution_version)
-
-system = platform.system()
-tempdir = tempfile.mkdtemp()
-if system == 'Darwin':
-    sp.call(['unzip', 'external/ghr_osx_zip/file/downloaded', '-d', tempdir])
-    ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
-elif system == 'Linux':
-    sp.call(['tar', '-xf', 'external/ghr_linux_tar/file/downloaded', '-C', tempdir])
-    ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
-else:
-    print('Error - your platform ({}) is not supported. Try Linux or macOS instead.'.format(system))
-    sys.exit(1)
 
 directory_to_upload = tempfile.mkdtemp()
 
@@ -95,14 +99,14 @@ for fl in targets:
         filename = fl[:-len(extension)-1]
         final_name = os.path.basename('{}-{}.{}'.format(filename, distribution_version, extension))
         print('copy({}, {}'.format(fl, os.path.join(directory_to_upload, final_name)))
-        
-        # shutil.copy(fl, os.path.join(directory_to_upload, final_name))
+
+        shutil.copy(fl, os.path.join(directory_to_upload, final_name))
     elif fl.endswith('tar.gz'):
         extension = 'tar.gz'
         filename = fl[:-len(extension)-1]
         final_name = os.path.basename('{}-{}.{}'.format(filename, distribution_version, extension))
         print('copy({}, {}'.format(fl, os.path.join(directory_to_upload, final_name)))
-        # shutil.copy(fl, os.path.join(directory_to_upload, final_name))
+        shutil.copy(fl, os.path.join(directory_to_upload, final_name))
     else:
         raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(fl))
 
@@ -110,15 +114,15 @@ for fl in targets:
     print('directory = {}'.format(directory_to_upload))
 
 try:
-    # sp.call([
-    #     ghr,
-    #     '-u', github_organisation,
-    #     '-r', github_repository,
-    #     '-b', open('release_description.txt').read() if has_release_description else '',
-    #     '-delete', '-draft', github_tag,
-    #     directory_to_upload
-    # ], env={'GITHUB_TOKEN': github_token})
-    pass
+    sp.call([
+        ghr,
+        '-u', github_organisation,
+        '-r', github_repository,
+        '-b', open('release_description.txt').read() if has_release_description else '',
+        '-delete', '-draft', github_tag,
+        directory_to_upload
+    ], env={'GITHUB_TOKEN': github_token})
+    # pass
 finally:
-    # shutil.rmtree(directory_to_upload)
-    pass
+    shutil.rmtree(directory_to_upload)
+    # pass
