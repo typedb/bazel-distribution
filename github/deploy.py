@@ -88,17 +88,30 @@ def ghr_extract():
     return ghr
 
 
-def zip_repackage_with_version(original_archive, version):
-    extension = 'zip'
-    original_archive_basedir = original_archive[:-len(extension) - 1]
-    repackaged_archive_basedir = '{}-{}'.format(original_archive_basedir, version)
-    ZipFile(original_archive, 'r').extractall()
-    os.rename(original_archive_basedir, repackaged_archive_basedir)
-    repackaged_archive = shutil.make_archive(base_name=repackaged_archive_basedir, format=extension, base_dir=repackaged_archive_basedir)
-    shutil.copy(repackaged_archive, os.path.join(directory_to_upload, os.path.basename(repackaged_archive)))
+def zip_repackage_with_version(original_zipfile, version, directory_to_upload):
+    ext = 'zip'
+    original_zip_basedir = original_zipfile[:-len(ext) - 1]
+    repackaged_zip_basedir = '{}-{}'.format(original_zip_basedir, version)
+    repackaged_zipfile = repackaged_zip_basedir+'.zip'
+    with ZipFile(original_zipfile, 'r') as original_zip,\
+            ZipFile(repackaged_zipfile, 'w', compression=zipfile.ZIP_DEFLATED) as repackaged_zip:
+        for orig in sorted(original_zip.infolist()):
+            f = ''
+            name = './' + os.path.normpath(os.path.join(orig.filename))
+            if not orig.filename.endswith('/'):
+                f = original_zip.read(orig)
+            else:
+                name += '/'
+            repkg = zipfile.ZipInfo(name)
+            repkg.compress_type = zipfile.ZIP_DEFLATED
+            repkg.external_attr = orig.external_attr
+            repkg.date_time = orig.date_time
+            repackaged_zip.writestr(repkg, f)
+
+    shutil.copy(repackaged_zipfile, os.path.join(directory_to_upload, os.path.basename(repackaged_zipfile)))
 
 
-def tar_repackage_with_version(original_archive, version):
+def tar_repackage_with_version(original_archive, version, directory_to_upload):
     extension = 'tar.gz'
     original_archive_basedir = original_archive[:-len(extension) - 1]
     repackaged_archive_basedir = '{}-{}'.format(original_archive_basedir, version)
@@ -106,46 +119,52 @@ def tar_repackage_with_version(original_archive, version):
     os.rename(original_archive_basedir, repackaged_archive_basedir)
     repackaged_archive = shutil.make_archive(base_name=repackaged_archive_basedir, format='gztar', base_dir=repackaged_archive_basedir)
     shutil.copy(repackaged_archive, os.path.join(directory_to_upload, os.path.basename(repackaged_archive)))
+    shutil.rmtree(repackaged_archive_basedir)
 
 
-targets = [] if not "{targets}" else "{targets}".split(',')
-has_release_description = bool(int("{has_release_description}"))
+if __name__ == '__main__':
+    targets = [] if not "{targets}" else "{targets}".split(',')
+    has_release_description = bool(int("{has_release_description}"))
 
-github_token = get_github_token()
-properties = parse_deployment_properties('deployment.properties')
-github_organisation = properties['repo.github.organisation']
-github_repository = properties['repo.github.repository']
-ghr = ghr_extract()
+    github_token = get_github_token()
+    properties = parse_deployment_properties('deployment.properties')
+    github_organisation = properties['repo.github.organisation']
+    github_repository = properties['repo.github.repository']
+    ghr = ghr_extract()
 
-with open('VERSION') as version_file:
-    distribution_version = version_file.read().strip()
-    github_tag = 'v{}'.format(distribution_version)
+    with open('VERSION') as version_file:
+        distribution_version = version_file.read().strip()
+        github_tag = 'v{}'.format(distribution_version)
 
-directory_to_upload = tempfile.mkdtemp()
+    directory_to_upload = tempfile.mkdtemp()
 
-# TODO: ideally, this should be fixed in ghr itself
-# Currently it does not allow supplying empty folders
-# However, it also filters out folders inside the folder you supply
-# So if we have a folder within a folder, both conditions are
-# satisfied and we're able to proceed
-dummy_directory = tempfile.mkdtemp(dir=directory_to_upload)
+    # TODO: remove
+    print('pwd = {}'.format(os.getcwd()))
+    print('directory = {}'.format(directory_to_upload))
 
-for fl in targets:
-    if fl.endswith('zip'):
-        zip_repackage_with_version(fl, distribution_version)
-    elif fl.endswith('tar.gz'):
-        tar_repackage_with_version(fl, distribution_version)
-    else:
-        raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(fl))
+    # TODO: ideally, this should be fixed in ghr itself
+    # Currently it does not allow supplying empty folders
+    # However, it also filters out folders inside the folder you supply
+    # So if we have a folder within a folder, both conditions are
+    # satisfied and we're able to proceed
+    dummy_directory = tempfile.mkdtemp(dir=directory_to_upload)
 
-try:
-    sp.call([
-        ghr,
-        '-u', github_organisation,
-        '-r', github_repository,
-        '-b', open('release_description.txt').read() if has_release_description else '',
-        '-delete', '-draft', github_tag,
-        directory_to_upload
-    ], env={'GITHUB_TOKEN': github_token})
-finally:
-    shutil.rmtree(directory_to_upload)
+    for fl in targets:
+        if fl.endswith('zip'):
+            zip_repackage_with_version(fl, distribution_version, directory_to_upload)
+        elif fl.endswith('tar.gz'):
+            tar_repackage_with_version(fl, distribution_version, directory_to_upload)
+        else:
+            raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(fl))
+
+    try:
+        sp.call([
+            ghr,
+            '-u', github_organisation,
+            '-r', github_repository,
+            '-b', open('release_description.txt').read() if has_release_description else '',
+            '-delete', '-draft', github_tag,
+            directory_to_upload
+        ], env={'GITHUB_TOKEN': github_token})
+    finally:
+        shutil.rmtree(directory_to_upload)
