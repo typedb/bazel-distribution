@@ -19,16 +19,17 @@
 #
 
 from __future__ import print_function
-import sys
-import os
-import shutil
-import platform
 import glob
+import os
+import platform
+import shutil
 import subprocess as sp
+import sys
 import tempfile
+import zipfile
 
 
-def parse_deployment_properties(fn):
+def deployment_properties_parse(fn):
     deployment_properties = {}
     with open(fn) as deployment_properties_file:
         for line in deployment_properties_file.readlines():
@@ -41,7 +42,7 @@ def parse_deployment_properties(fn):
     return deployment_properties
 
 
-def get_ghr():
+def ghr_extract():
     system = platform.system()
     tempdir = tempfile.mkdtemp()
 
@@ -57,7 +58,7 @@ def get_ghr():
     return ghr
 
 
-def get_github_token():
+def github_token_get():
     if 'DEPLOY_GITHUB_TOKEN' in os.environ:
         return os.getenv('DEPLOY_GITHUB_TOKEN')
     elif len(sys.argv) == 2:
@@ -71,14 +72,31 @@ def get_github_token():
         )
 
 
+def zip_repackage_with_version(original_archive, version):
+    extension = 'zip'
+    original_archive_basedir = original_archive[:-len(extension) - 1]
+    repackaged_archive_basedir = '{}-{}'.format(original_archive_basedir, version)
+    zipfile.ZipFile(original_archive, 'r').extractall()
+    os.rename(original_archive_basedir, repackaged_archive_basedir)
+    repackaged_archive = shutil.make_archive(base_name=repackaged_archive_basedir, format=extension, base_dir=repackaged_archive_basedir)
+    shutil.copy(repackaged_archive, os.path.join(directory_to_upload, os.path.basename(repackaged_archive)))
+
+
+def tar_repackage_with_version(original, version):
+    extension = 'tar.gz'
+    final_name = os.path.basename('{}-{}.{}'.format(original[:-len(extension)-1], version, extension))
+    print('copy({}, {}'.format(fl, os.path.join(directory_to_upload, final_name)))
+    shutil.copy(fl, os.path.join(directory_to_upload, final_name))
+
+
 targets = [] if not "{targets}" else "{targets}".split(',')
 has_release_description = bool(int("{has_release_description}"))
 
-github_token = get_github_token()
-properties = parse_deployment_properties('deployment.properties')
+github_token = github_token_get()
+properties = deployment_properties_parse('deployment.properties')
 github_organisation = properties['repo.github.organisation']
 github_repository = properties['repo.github.repository']
-ghr = get_ghr()
+ghr = ghr_extract()
 
 with open('VERSION') as version_file:
     distribution_version = version_file.read().strip()
@@ -95,18 +113,13 @@ dummy_directory = tempfile.mkdtemp(dir=directory_to_upload)
 
 for fl in targets:
     if fl.endswith('zip'):
-        extension = 'zip'
-        filename = fl[:-len(extension)-1]
-        final_name = os.path.basename('{}-{}.{}'.format(filename, distribution_version, extension))
-        print('copy({}, {}'.format(fl, os.path.join(directory_to_upload, final_name)))
-
-        shutil.copy(fl, os.path.join(directory_to_upload, final_name))
+        zip_repackage_with_version(fl, distribution_version)
     elif fl.endswith('tar.gz'):
-        extension = 'tar.gz'
-        filename = fl[:-len(extension)-1]
-        final_name = os.path.basename('{}-{}.{}'.format(filename, distribution_version, extension))
-        print('copy({}, {}'.format(fl, os.path.join(directory_to_upload, final_name)))
-        shutil.copy(fl, os.path.join(directory_to_upload, final_name))
+        # TODO: fix
+        # extension = 'tar.gz'
+        # filename = fl[:-len(extension)-1]
+        # tar_repackage_with_version(filename, distribution_version)
+        pass
     else:
         raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(fl))
 
@@ -122,7 +135,7 @@ try:
         '-delete', '-draft', github_tag,
         directory_to_upload
     ], env={'GITHUB_TOKEN': github_token})
-    # pass
+    pass
 finally:
-    shutil.rmtree(directory_to_upload)
-    # pass
+    # shutil.rmtree(directory_to_upload)
+    pass
