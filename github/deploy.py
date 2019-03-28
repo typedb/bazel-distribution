@@ -41,14 +41,6 @@ def parse_deployment_properties(fn):
     return deployment_properties
 
 
-targets = [] if not "{targets}" else "{targets}".split(',')
-has_release_description = bool(int("{has_release_description}"))
-
-properties = parse_deployment_properties('deployment.properties')
-github_organisation = properties['repo.github.organisation']
-github_repository = properties['repo.github.repository']
-
-
 def get_github_token():
     if 'DEPLOY_GITHUB_TOKEN' in os.environ:
         return os.getenv('DEPLOY_GITHUB_TOKEN')
@@ -64,6 +56,13 @@ def get_github_token():
 
 
 github_token = get_github_token()
+
+targets = [] if not "{targets}" else "{targets}".split(',')
+has_release_description = bool(int("{has_release_description}"))
+
+properties = parse_deployment_properties('deployment.properties')
+github_organisation = properties['repo.github.organisation']
+github_repository = properties['repo.github.repository']
 
 with open('VERSION') as version_file:
     distribution_version = version_file.read().strip()
@@ -93,15 +92,18 @@ dummy_directory = tempfile.mkdtemp(dir=directory_to_upload)
 for fl in targets:
     if fl.endswith('zip'):
         extension = 'zip'
+        filename = fl[:-len(extension)-1]
+        final_name = os.path.basename('{}-{}.{}'.format(filename, distribution_version, extension))
+
+        shutil.copy(fl, os.path.join(directory_to_upload, final_name))
     elif fl.endswith('tar.gz'):
         extension = 'tar.gz'
+        filename = fl[:-len(extension)-1]
+        final_name = os.path.basename('{}-{}.{}'.format(filename, distribution_version, extension))
+
+        shutil.copy(fl, os.path.join(directory_to_upload, final_name))
     else:
         raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(fl))
-
-    filename = fl[:-len(extension)-1]
-    final_name = os.path.basename('{}-{}.{}'.format(filename, distribution_version, extension))
-    shutil.copy(fl, os.path.join(directory_to_upload, final_name))
-
 try:
     subprocess.call([
         ghr,
