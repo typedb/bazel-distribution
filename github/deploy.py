@@ -74,12 +74,25 @@ def github_token_get():
 
 
 def zip_repackage_with_version(original_archive, version):
+    # This ZipFile extends Python's ZipFile and fixes the lost permission issue
+    class ZipFile(zipfile.ZipFile):
+        def extract(self, member, path=None, pwd=None):
+            if not isinstance(member, zipfile.ZipInfo):
+                member = self.getinfo(member)
+
+            if path is None:
+                path = os.getcwd()
+
+            ret_val = self._extract_member(member, path, pwd)
+            attr = member.external_attr >> 16
+            os.chmod(ret_val, attr)
+            return ret_val
+
     extension = 'zip'
     original_archive_basedir = original_archive[:-len(extension) - 1]
     repackaged_archive_basedir = '{}-{}'.format(original_archive_basedir, version)
-    zipfile.ZipFile(original_archive, 'r').extractall()
+    ZipFile(original_archive, 'r').extractall()
     os.rename(original_archive_basedir, repackaged_archive_basedir)
-    # TODO: add permission
     repackaged_archive = shutil.make_archive(base_name=repackaged_archive_basedir, format=extension, base_dir=repackaged_archive_basedir)
     shutil.copy(repackaged_archive, os.path.join(directory_to_upload, os.path.basename(repackaged_archive)))
 
@@ -109,6 +122,10 @@ with open('VERSION') as version_file:
 
 directory_to_upload = tempfile.mkdtemp()
 
+# TODO: remove
+print('pwd = {}'.format(os.getcwd()))
+print('directory = {}'.format(directory_to_upload))
+
 # TODO: ideally, this should be fixed in ghr itself
 # Currently it does not allow supplying empty folders
 # However, it also filters out folders inside the folder you supply
@@ -124,10 +141,6 @@ for fl in targets:
     else:
         raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(fl))
 
-    # TODO: remove
-    print('pwd = {}'.format(os.getcwd()))
-    print('directory = {}'.format(directory_to_upload))
-
 try:
     sp.call([
         ghr,
@@ -137,7 +150,7 @@ try:
         '-delete', '-draft', github_tag,
         directory_to_upload
     ], env={'GITHUB_TOKEN': github_token})
-    pass
+    # pass
 finally:
-    # shutil.rmtree(directory_to_upload)
-    pass
+    shutil.rmtree(directory_to_upload)
+    # pass
