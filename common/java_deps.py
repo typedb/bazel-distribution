@@ -23,6 +23,13 @@ import tarfile
 import json
 
 import sys
+
+
+def tarfile_remove_mtime(info):
+    info.mtime = 0
+    return info
+
+
 _, moves_file_location, distribution_tgz_location, version_file_location = sys.argv
 with open(moves_file_location) as moves_file:
     moves = json.load(moves_file)
@@ -31,5 +38,5 @@ with open(version_file_location) as version_file:
     version = version_file.read().strip()
 
 with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
-    for fn, arcfn in moves.items():
-        tgz.add(fn, arcfn.replace('{pom_version}', version))
+    for fn, arcfn in sorted(moves.items()):
+        tgz.add(fn, arcfn.replace('{pom_version}', version), filter=tarfile_remove_mtime)
