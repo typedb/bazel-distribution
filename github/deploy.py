@@ -30,6 +30,21 @@ import tempfile
 import zipfile
 
 
+# This ZipFile extends Python's ZipFile and fixes the lost permission issue
+class ZipFile(zipfile.ZipFile):
+    def extract(self, member, path=None, pwd=None):
+        if not isinstance(member, zipfile.ZipInfo):
+            member = self.getinfo(member)
+
+        if path is None:
+            path = os.getcwd()
+
+        ret_val = self._extract_member(member, path, pwd)
+        attr = member.external_attr >> 16
+        os.chmod(ret_val, attr)
+        return ret_val
+
+
 def parse_deployment_properties(fn):
     deployment_properties = {}
     with open(fn) as deployment_properties_file:
@@ -62,10 +77,10 @@ def ghr_extract():
     tempdir = tempfile.mkdtemp()
 
     if system == 'Darwin':
-        sp.call(['unzip', 'external/ghr_osx_zip/file/downloaded', '-d', tempdir])
+        ZipFile('external/ghr_osx_zip/file/downloaded', 'r').extractall(tempdir)
         ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
     elif system == 'Linux':
-        sp.call(['tar', '-xf', 'external/ghr_linux_tar/file/downloaded', '-C', tempdir])
+        tarfile.open('external/ghr_linux_tar/file/downloaded', mode='r:gz').extractall(tempdir)
         ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
     else:
         raise ValueError('Error - your platform ({}) is not supported. Try Linux or macOS instead.'.format(system))
@@ -74,20 +89,6 @@ def ghr_extract():
 
 
 def zip_repackage_with_version(original_archive, version):
-    # This ZipFile extends Python's ZipFile and fixes the lost permission issue
-    class ZipFile(zipfile.ZipFile):
-        def extract(self, member, path=None, pwd=None):
-            if not isinstance(member, zipfile.ZipInfo):
-                member = self.getinfo(member)
-
-            if path is None:
-                path = os.getcwd()
-
-            ret_val = self._extract_member(member, path, pwd)
-            attr = member.external_attr >> 16
-            os.chmod(ret_val, attr)
-            return ret_val
-
     extension = 'zip'
     original_archive_basedir = original_archive[:-len(extension) - 1]
     repackaged_archive_basedir = '{}-{}'.format(original_archive_basedir, version)
