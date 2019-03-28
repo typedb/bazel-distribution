@@ -25,6 +25,7 @@ import platform
 import shutil
 import subprocess as sp
 import sys
+import tarfile
 import tempfile
 import zipfile
 
@@ -78,15 +79,19 @@ def zip_repackage_with_version(original_archive, version):
     repackaged_archive_basedir = '{}-{}'.format(original_archive_basedir, version)
     zipfile.ZipFile(original_archive, 'r').extractall()
     os.rename(original_archive_basedir, repackaged_archive_basedir)
+    # TODO: add permission
     repackaged_archive = shutil.make_archive(base_name=repackaged_archive_basedir, format=extension, base_dir=repackaged_archive_basedir)
     shutil.copy(repackaged_archive, os.path.join(directory_to_upload, os.path.basename(repackaged_archive)))
 
 
-def tar_repackage_with_version(original, version):
+def tar_repackage_with_version(original_archive, version):
     extension = 'tar.gz'
-    final_name = os.path.basename('{}-{}.{}'.format(original[:-len(extension)-1], version, extension))
-    print('copy({}, {}'.format(fl, os.path.join(directory_to_upload, final_name)))
-    shutil.copy(fl, os.path.join(directory_to_upload, final_name))
+    original_archive_basedir = original_archive[:-len(extension) - 1]
+    repackaged_archive_basedir = '{}-{}'.format(original_archive_basedir, version)
+    tarfile.open(original_archive, mode='r:gz').extractall()
+    os.rename(original_archive_basedir, repackaged_archive_basedir)
+    repackaged_archive = shutil.make_archive(base_name=repackaged_archive_basedir, format='gztar', base_dir=repackaged_archive_basedir)
+    shutil.copy(repackaged_archive, os.path.join(directory_to_upload, os.path.basename(repackaged_archive)))
 
 
 targets = [] if not "{targets}" else "{targets}".split(',')
@@ -115,14 +120,11 @@ for fl in targets:
     if fl.endswith('zip'):
         zip_repackage_with_version(fl, distribution_version)
     elif fl.endswith('tar.gz'):
-        # TODO: fix
-        # extension = 'tar.gz'
-        # filename = fl[:-len(extension)-1]
-        # tar_repackage_with_version(filename, distribution_version)
-        pass
+        tar_repackage_with_version(fl, distribution_version)
     else:
         raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(fl))
 
+    # TODO: remove
     print('pwd = {}'.format(os.getcwd()))
     print('directory = {}'.format(directory_to_upload))
 
