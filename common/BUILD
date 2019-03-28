@@ -29,3 +29,9 @@ py_binary(
     srcs = ["tgz2zip.py"],
     visibility = ["//visibility:public"]
 )
+
+py_binary(
+    name = "assemble-versioned",
+    srcs = ["assemble-versioned.py"],
+    visibility = ["//visibility:public"]
+)
