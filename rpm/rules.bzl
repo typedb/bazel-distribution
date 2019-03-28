@@ -22,9 +22,9 @@ load("//rpm/pkg_rpm_modified_from_bazel:rules.bzl", "pkg_rpm")
 
 def assemble_rpm(name,
                      package_name,
-                     installation_dir,
                      version_file,
                      spec_file,
+                     installation_dir = None,
                      archives = [],
                      empty_dirs = [],
                      files = {},
@@ -41,17 +41,21 @@ def assemble_rpm(name,
         # replaces any `-` with `_` since RPM does not allow a version number containing a `-` such as `1.5.0-SNAPSHOT`
     )
 
-    pkg_tar(
-        name = tar_name,
-        extension = "tar.gz",
-        deps = archives,
-        package_dir = installation_dir,
-        empty_dirs = empty_dirs,
-        files = files,
-        mode = "0755",
-        symlinks = symlinks,
-        modes = permissions,
-    )
+    rpm_data = []
+
+    if installation_dir:
+        pkg_tar(
+            name = tar_name,
+            extension = "tar.gz",
+            deps = archives,
+            package_dir = installation_dir,
+            empty_dirs = empty_dirs,
+            files = files,
+            mode = "0755",
+            symlinks = symlinks,
+            modes = permissions,
+        )
+        rpm_data.append(tar_name)
 
     if "osx_build" not in native.existing_rules():
         native.config_setting(
@@ -71,12 +75,13 @@ def assemble_rpm(name,
             ]
         )
 
+
     pkg_rpm(
         name = "{}__do_not_reference__rpm".format(name),
         architecture = "x86_64",
         spec_file = spec_file,
         version_file = rpm_version_file,
-        data = [tar_name],
+        data = rpm_data,
         rpmbuild_path = select({
             ":linux_build": "/usr/bin/rpmbuild",
             ":osx_build": "/usr/local/bin/rpmbuild",
