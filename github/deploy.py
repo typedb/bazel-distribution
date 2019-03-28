@@ -30,7 +30,7 @@ import tempfile
 import zipfile
 
 
-def deployment_properties_parse(fn):
+def parse_deployment_properties(fn):
     deployment_properties = {}
     with open(fn) as deployment_properties_file:
         for line in deployment_properties_file.readlines():
@@ -41,6 +41,20 @@ def deployment_properties_parse(fn):
                 k, v = line.split('=')
                 deployment_properties[k] = v.strip()
     return deployment_properties
+
+
+def get_github_token():
+    if 'DEPLOY_GITHUB_TOKEN' in os.environ:
+        return os.getenv('DEPLOY_GITHUB_TOKEN')
+    elif len(sys.argv) == 2:
+        _, token = sys.argv
+        return token
+    else:
+        raise ValueError(
+            'Token should be passed either '
+            'as $DEPLOY_GITHUB_TOKEN or the only '
+            'commandline argument'
+        )
 
 
 def ghr_extract():
@@ -57,20 +71,6 @@ def ghr_extract():
         raise ValueError('Error - your platform ({}) is not supported. Try Linux or macOS instead.'.format(system))
 
     return ghr
-
-
-def github_token_get():
-    if 'DEPLOY_GITHUB_TOKEN' in os.environ:
-        return os.getenv('DEPLOY_GITHUB_TOKEN')
-    elif len(sys.argv) == 2:
-        _, token = sys.argv
-        return token
-    else:
-        raise ValueError(
-            'Token should be passed either '
-            'as $DEPLOY_GITHUB_TOKEN or the only '
-            'commandline argument'
-        )
 
 
 def zip_repackage_with_version(original_archive, version):
@@ -110,8 +110,8 @@ def tar_repackage_with_version(original_archive, version):
 targets = [] if not "{targets}" else "{targets}".split(',')
 has_release_description = bool(int("{has_release_description}"))
 
-github_token = github_token_get()
-properties = deployment_properties_parse('deployment.properties')
+github_token = get_github_token()
+properties = parse_deployment_properties('deployment.properties')
 github_organisation = properties['repo.github.organisation']
 github_repository = properties['repo.github.repository']
 ghr = ghr_extract()
@@ -121,10 +121,6 @@ with open('VERSION') as version_file:
     github_tag = 'v{}'.format(distribution_version)
 
 directory_to_upload = tempfile.mkdtemp()
-
-# TODO: remove
-print('pwd = {}'.format(os.getcwd()))
-print('directory = {}'.format(directory_to_upload))
 
 # TODO: ideally, this should be fixed in ghr itself
 # Currently it does not allow supplying empty folders
@@ -150,7 +146,5 @@ try:
         '-delete', '-draft', github_tag,
         directory_to_upload
     ], env={'GITHUB_TOKEN': github_token})
-    # pass
 finally:
     shutil.rmtree(directory_to_upload)
-    # pass
