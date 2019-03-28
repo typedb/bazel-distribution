@@ -131,7 +131,7 @@ def AddArFileEntry(fileobj, filename,
         fileobj.write(b'\n')  # 2-byte alignment padding
 
 
-def MakeDebianControlField(name, value, wrap=False):
+def MakeDebianControlField(name, value, wrap=False, substitutions=None):
     """Add a field to a debian control file."""
     result = name + ': '
     if isinstance(value, str):
@@ -145,18 +145,24 @@ def MakeDebianControlField(name, value, wrap=False):
                                break_long_words=False)
     else:
         result += value
+    if substitutions:
+        for k, v in substitutions.items():
+            result = result.replace(k, v)
     return result.replace(u'\n', u'\n ') + u'\n'
 
 
 def CreateDebControl(extrafiles=None, **kwargs):
     """Create the control.tar.gz file."""
     # create the control file
+    version = kwargs.get('version', '')
     controlfile = ''
     for values in DEBIAN_FIELDS:
         fieldname = values[0]
         key = fieldname[0].lower() + fieldname[1:].replace('-', '')
         if values[1] or (key in kwargs and kwargs[key]):
-            controlfile += MakeDebianControlField(fieldname, kwargs[key], values[2])
+            controlfile += MakeDebianControlField(fieldname, kwargs[key], values[2], {
+                '{version}': version
+            })
     # Create the control.tar file
     tar = BytesIO()
     with gzip.GzipFile('control.tar.gz', mode='w', fileobj=tar, mtime=0) as gz:
