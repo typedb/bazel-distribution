@@ -51,7 +51,7 @@ def _deploy_pip_impl(ctx):
   ctx.actions.run_shell(
       inputs = [preprocessed_setup_py, ctx.file.version_file],
       outputs = [ctx.outputs.setup_py],
-      command = "VERSION=`cat %s` && sed -e s/{pip_version}/$VERSION/g %s > %s" % (
+      command = "VERSION=`cat %s` && sed -e s/{version}/$VERSION/g %s > %s" % (
           ctx.file.version_file.path, preprocessed_setup_py.path, ctx.outputs.setup_py.path)
   )
 

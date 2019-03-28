@@ -31,15 +31,6 @@ def assemble_rpm(name,
                      permissions = {},
                      symlinks = {}):
     tar_name = "_{}-rpm-tar".format(package_name)
-    rpm_version_file = "_{}-rpm-version".format(package_name)
-
-    native.genrule(
-        name = rpm_version_file,
-        srcs = [version_file],
-        outs = [rpm_version_file.replace("-version", ".VERSION")],
-        cmd = "sed -e 's|-|_|g' $< > $@"
-        # replaces any `-` with `_` since RPM does not allow a version number containing a `-` such as `1.5.0-SNAPSHOT`
-    )
 
     rpm_data = []
 
@@ -80,7 +71,7 @@ def assemble_rpm(name,
         name = "{}__do_not_reference__rpm".format(name),
         architecture = "x86_64",
         spec_file = spec_file,
-        version_file = rpm_version_file,
+        version_file = version_file,
         data = rpm_data,
         rpmbuild_path = select({
             ":linux_build": "/usr/bin/rpmbuild",

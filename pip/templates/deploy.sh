@@ -87,8 +87,12 @@ export PYTHONPATH="$TWINEPATH:$PKGINFO_PATH:$REQUESTS_PATH:$WEBENCODINGS_PATH:$S
 
 TWINE_BINARY="python $(pwd)/external/*twine*/twine/__main__.py"
 
-GIT_COMMIT_HASH="$(git -C ${BUILD_WORKSPACE_DIRECTORY} rev-parse HEAD)"
-sed -i.bak -e "s/SNAPSHOT/$GIT_COMMIT_HASH/g" setup.py && rm -f setup.py.bak
+if [[ "$PIP_REPO_TYPE" == "snapshot" ]]; then
+    GIT_COMMIT_HASH="$(git -C ${BUILD_WORKSPACE_DIRECTORY} rev-parse HEAD)"
+    sed -i.bak -e "s/-snapshot/-$GIT_COMMIT_HASH/g" setup.py && rm -f setup.py.bak
+else
+    sed -i.bak -e "s/-snapshot//g" setup.py && rm -f setup.py.bak
+fi
 
 # clean up previous distribution files
 rm -fv dist/*

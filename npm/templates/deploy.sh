@@ -53,8 +53,13 @@ NPM_REPOSITORY_URL=$(grep "repo.npm.$NPM_REPO_TYPE" ${DEPLOYMENT_PROPERTIES_STRI
 
 GIT_COMMIT_HASH="$(git -C ${BUILD_WORKSPACE_DIRECTORY} rev-parse HEAD)"
 
+if [[ "$NPM_REPO_TYPE" == "snapshot" ]]; then
+    export VERSION="{version}-$GIT_COMMIT_HASH"
+else
+    export VERSION="{version}"
+fi
+
 export PATH="$(dirname $(readlink external/nodejs/bin/nodejs/bin/npm)):$PATH"
-export VERSION=$(echo {version}|sed -e "s/SNAPSHOT/${GIT_COMMIT_HASH}/g")
 cd "./$BAZEL_PACKAGE_NAME/$BAZEL_TARGET_NAME"
 
 chmod a+w .

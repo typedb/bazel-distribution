@@ -16,7 +16,7 @@ packages = find_packages()
 
 setup(
     name = "{name}",
-    version = "{pip_version}",
+    version = "{version}-snapshot",
     description = "{description}",
     long_description = open('README.md').read(),
     long_description_content_type="text/markdown",
