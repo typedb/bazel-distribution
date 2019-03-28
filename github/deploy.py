@@ -24,7 +24,7 @@ import os
 import shutil
 import platform
 import glob
-import subprocess
+import subprocess as sp
 import tempfile
 
 
@@ -71,10 +71,10 @@ with open('VERSION') as version_file:
 system = platform.system()
 tempdir = tempfile.mkdtemp()
 if system == 'Darwin':
-    subprocess.call(['unzip', 'external/ghr_osx_zip/file/downloaded', '-d', tempdir])
+    sp.call(['unzip', 'external/ghr_osx_zip/file/downloaded', '-d', tempdir])
     ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
 elif system == 'Linux':
-    subprocess.call(['tar', '-xf', 'external/ghr_linux_tar/file/downloaded', '-C', tempdir])
+    sp.call(['tar', '-xf', 'external/ghr_linux_tar/file/downloaded', '-C', tempdir])
     ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
 else:
     print('Error - your platform ({}) is not supported. Try Linux or macOS instead.'.format(system))
@@ -94,24 +94,31 @@ for fl in targets:
         extension = 'zip'
         filename = fl[:-len(extension)-1]
         final_name = os.path.basename('{}-{}.{}'.format(filename, distribution_version, extension))
-
-        shutil.copy(fl, os.path.join(directory_to_upload, final_name))
+        print('copy({}, {}'.format(fl, os.path.join(directory_to_upload, final_name)))
+        
+        # shutil.copy(fl, os.path.join(directory_to_upload, final_name))
     elif fl.endswith('tar.gz'):
         extension = 'tar.gz'
         filename = fl[:-len(extension)-1]
         final_name = os.path.basename('{}-{}.{}'.format(filename, distribution_version, extension))
-
-        shutil.copy(fl, os.path.join(directory_to_upload, final_name))
+        print('copy({}, {}'.format(fl, os.path.join(directory_to_upload, final_name)))
+        # shutil.copy(fl, os.path.join(directory_to_upload, final_name))
     else:
         raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(fl))
+
+    print('pwd = {}'.format(os.getcwd()))
+    print('directory = {}'.format(directory_to_upload))
+
 try:
-    subprocess.call([
-        ghr,
-        '-u', github_organisation,
-        '-r', github_repository,
-        '-b', open('release_description.txt').read() if has_release_description else '',
-        '-delete', '-draft', github_tag,
-        directory_to_upload
-    ], env={'GITHUB_TOKEN': github_token})
+    # sp.call([
+    #     ghr,
+    #     '-u', github_organisation,
+    #     '-r', github_repository,
+    #     '-b', open('release_description.txt').read() if has_release_description else '',
+    #     '-delete', '-draft', github_tag,
+    #     directory_to_upload
+    # ], env={'GITHUB_TOKEN': github_token})
+    pass
 finally:
-    shutil.rmtree(directory_to_upload)
+    # shutil.rmtree(directory_to_upload)
+    pass
