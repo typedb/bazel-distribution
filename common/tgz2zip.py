@@ -28,7 +28,7 @@ _, tgz_fn, zip_fn, prefix = sys.argv
 
 with tarfile.open(tgz_fn, mode='r:gz') as tgz:
     with zipfile.ZipFile(zip_fn, 'w', compression=zipfile.ZIP_DEFLATED) as zip:
-        for tarinfo in tgz.getmembers():
+        for tarinfo in sorted(tgz.getmembers()):
             f = ''
             name = './' + os.path.normpath(os.path.join(prefix, tarinfo.name))
             if not tarinfo.isdir():
