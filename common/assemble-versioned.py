@@ -29,7 +29,7 @@ def zip_repackage_with_version(original_zipfile, version):
     repackaged_zipfile = repackaged_zip_basedir+'.'+ext
     with ZipFile(original_zipfile, 'r') as original_zip, \
             ZipFile(repackaged_zipfile, 'w', compression=zipfile.ZIP_DEFLATED) as repackaged_zip:
-        for orig_info in sorted(original_zip.infolist()):
+        for orig_info in sorted(original_zip.infolist(), key=lambda info: info.filename):
             repkg_name = orig_info.filename
             repkg_content = ''
             if not orig_info.filename.endswith('/'):
@@ -52,7 +52,7 @@ def tar_repackage_with_version(original_tarfile, version):
     repackaged_tarfile = repackaged_tar_basedir+'.'+ext
     with tarfile.open(original_tarfile, mode='r:gz') as original_tar, \
             tarfile.open(repackaged_tarfile, mode='w:gz') as repackaged_tar:
-        for info in sorted(original_tar.getmembers()):
+        for info in sorted(original_tar.getmembers(), key=lambda info: info.path):
             info.path = info.path.replace(original_tar_basedir, repackaged_tar_basedir, 1)
             info.mtime = 0
             content = original_tar.extractfile(info)

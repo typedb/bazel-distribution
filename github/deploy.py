@@ -110,10 +110,9 @@ try:
         '-u', github_organisation,
         '-r', github_repository,
         '-b', open('release_description.txt').read() if has_release_description else '',
-        '-delete', '-draft', github_tag,
+        '-delete', '-draft', github_tag, # TODO: tag must reference the current commit
         directory_to_upload
     ], env={'GITHUB_TOKEN': github_token})
 finally:
     shutil.rmtree(directory_to_upload)
-
 sys.exit(exit_code)
