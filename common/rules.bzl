@@ -251,7 +251,7 @@ def assemble_zip(name,
 def _assemble_versioned_impl(ctx):
     # assemble-version.py $output $version $targets
     ctx.actions.run(
-        inputs = ctx.files.targets,
+        inputs = ctx.files.targets + [ctx.file.version_file],
         outputs = [ctx.outputs.archive],
         executable = ctx.executable._assemble_versioned_py,
         arguments = [ctx.outputs.archive.path, ctx.file.version_file.path] + [target.path for target in ctx.files.targets],

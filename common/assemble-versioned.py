@@ -64,14 +64,13 @@ output_path = sys.argv[1]
 version_path = sys.argv[2]
 target_paths = sys.argv[3:]
 
-version = '1.5.0' # open(version_path, 'r').read()
-
 print('output = ' + str(output_path))
 print('version = ' + str(version_path))
 print('target = ' + str(target_paths))
-
 print('pwd = {}'.format(os.getcwd()))
-# print('directory = {}'.format(directory_to_upload))
+
+
+version = open(version_path, 'r').read().strip()
 
 with ZipFile(output_path, 'w', compression=zipfile.ZIP_DEFLATED) as output:
     for target in sorted(target_paths):
