@@ -37,7 +37,7 @@ if [[ "$RPM_USERNAME" == "notset" ]]; then
 fi
 
 if [[ "$RPM_PASSWORD" == "notset" ]]; then
-    echo "Error: password should be passed via \DEPLOY_RPM_PASSWORD env variable"
+    echo "Error: password should be passed via \$DEPLOY_RPM_PASSWORD env variable"
     exit 1
 fi
 
