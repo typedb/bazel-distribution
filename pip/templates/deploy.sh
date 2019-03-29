@@ -30,12 +30,12 @@ if [[ "$PIP_REPO_TYPE" != "release" ]] && [[ "$PIP_REPO_TYPE" != "snapshot" ]]; 
 fi
 
 if [[ "$PIP_USERNAME" == "notset" ]]; then
-    echo "Error: username should be either passed via cmdline or \$DEPLOYMENT_USERNAME env variable"
+    echo "Error: username should be passed via \$DEPLOY_PIP_USERNAME env variable"
     exit 1
 fi
 
 if [[ "$PIP_PASSWORD" == "notset" ]]; then
-    echo "Error: password should be either passed via cmdline or \$DEPLOYMENT_PASSWORD env variable"
+    echo "Error: password should be passed via \$DEPLOY_PIP_PASSWORD env variable"
     exit 1
 fi
 
