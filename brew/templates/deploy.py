@@ -71,10 +71,10 @@ checksum_of_distribution_local = get_checksum()
 
 tap_localpath = tempfile.mkdtemp()
 try:
-    sp.check_call(["git", "config", "user.email", git_email], cwd=tap_localpath)
-    sp.check_call(["git", "config", "user.name", git_username], cwd=tap_localpath)
     print('Cloning brew tap: "{}"...'.format(tap_url))
     sp.check_call(['bash', '-c', 'git clone ' + url_with_credential(tap_url, '$DEPLOY_BREW_TOKEN') + ' ' + tap_localpath])
+    sp.check_call(["git", "config", "user.email", git_email], cwd=tap_localpath)
+    sp.check_call(["git", "config", "user.name", git_username], cwd=tap_localpath)
     sp.check_call(['mkdir', '-p', '{brew_folder}'], cwd=tap_localpath)
     formula_content = formula_template.replace('{version}', version).replace('{sha256}', checksum_of_distribution_local)
     distribution_url = get_distribution_url_from_formula(formula_content)
