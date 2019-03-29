@@ -31,17 +31,17 @@ if [[ "$NPM_REPO_TYPE" != "release" ]] && [[ "$NPM_REPO_TYPE" != "snapshot" ]]; 
 fi
 
 if [[ "$NPM_USERNAME" == "notset" ]]; then
-    echo "Error: username should be either passed via cmdline or \$DEPLOYMENT_USERNAME env variable"
+    echo "Error: username should be passed via \$DEPLOY_NPM_USERNAME env variable"
     exit 1
 fi
 
 if [[ "$NPM_PASSWORD" == "notset" ]]; then
-    echo "Error: password should be either passed via cmdline or \$DEPLOYMENT_PASSWORD env variable"
+    echo "Error: password should be passed via \$DEPLOY_NPM_PASSWORD env variable"
     exit 1
 fi
 
 if [[ "$NPM_EMAIL" == "notset" ]]; then
-    echo "Error: email should be either passed via cmdline or \$DEPLOYMENT_EMAIL env variable"
+    echo "Error: email should be passed via \$DEPLOY_NPM_EMAIL env variable"
     exit 1
 fi
 

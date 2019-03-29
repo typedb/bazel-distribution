@@ -52,15 +52,8 @@ github_repository = properties['repo.github.repository']
 def get_github_token():
     if 'DEPLOY_GITHUB_TOKEN' in os.environ:
         return os.getenv('DEPLOY_GITHUB_TOKEN')
-    elif len(sys.argv) == 2:
-        _, token = sys.argv
-        return token
     else:
-        raise ValueError(
-            'Token should be passed either '
-            'as $DEPLOY_GITHUB_TOKEN or the only '
-            'commandline argument'
-        )
+        raise ValueError('Error: token should be passed via $DEPLOY_GITHUB_TOKEN env variable')
 
 
 github_token = get_github_token()

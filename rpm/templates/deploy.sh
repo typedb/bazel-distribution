@@ -32,12 +32,12 @@ if [[ "$RPM_REPO_TYPE" != "snapshot" ]] && [[ "$RPM_REPO_TYPE" != "release" ]]; 
 fi
 
 if [[ "$RPM_USERNAME" == "notset" ]]; then
-    echo "Error: username should be either passed via cmdline or \$DEPLOYMENT_USERNAME env variable"
+    echo "Error: username should be passed via \$DEPLOY_RPM_USERNAME env variable"
     exit 1
 fi
 
 if [[ "$RPM_PASSWORD" == "notset" ]]; then
-    echo "Error: password should be either passed via cmdline or \$DEPLOYMENT_PASSWORD env variable"
+    echo "Error: password should be passed via \$DEPLOY_RPM_PASSWORD env variable"
     exit 1
 fi
 
