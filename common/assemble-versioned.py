@@ -22,11 +22,11 @@ class ZipFile(zipfile.ZipFile):
         return ret_val
 
 
-def zip_repackage_with_version(original_zipfile, version, directory_to_upload):
+def zip_repackage_with_version(original_zipfile, version):
     ext = 'zip'
     original_zip_basedir = original_zipfile[:-len(ext) - 1]
     repackaged_zip_basedir = '{}-{}'.format(original_zip_basedir, version)
-    repackaged_zipfile = repackaged_zip_basedir+'.zip'
+    repackaged_zipfile = repackaged_zip_basedir+'.'+ext
     with ZipFile(original_zipfile, 'r') as original_zip, \
             ZipFile(repackaged_zipfile, 'w', compression=zipfile.ZIP_DEFLATED) as repackaged_zip:
         for orig in sorted(original_zip.infolist()):
@@ -45,13 +45,29 @@ def zip_repackage_with_version(original_zipfile, version, directory_to_upload):
     return repackaged_zipfile
 
 
-def tar_repackage_with_version(original_archive, version, directory_to_upload):
-    extension = 'tar.gz'
-    original_archive_basedir = original_archive[:-len(extension) - 1]
-    repackaged_archive_basedir = '{}-{}'.format(original_archive_basedir, version)
-    tarfile.open(original_archive, mode='r:gz').extractall()
-    os.rename(original_archive_basedir, repackaged_archive_basedir)
-    repackaged_archive = shutil.make_archive(base_name=repackaged_archive_basedir, format='gztar', base_dir=repackaged_archive_basedir)
+# def tar_repackage_with_version(original_archive, version, directory_to_upload):
+#     extension = 'tar.gz'
+#     original_archive_basedir = original_archive[:-len(extension) - 1]
+#     repackaged_archive_basedir = '{}-{}'.format(original_archive_basedir, version)
+#     tarfile.open(original_archive, mode='r:gz').extractall()
+#     print('')
+#     print('original_archive_basedir = {}'.format(original_archive_basedir))
+#     print('repackaged_archive_basedir = {}'.format(repackaged_archive_basedir))
+#     os.rename(original_archive_basedir, repackaged_archive_basedir)
+#     repackaged_archive = shutil.make_archive(base_name=repackaged_archive_basedir, format='gztar', base_dir=repackaged_archive_basedir)
+#     return repackaged_archive
+
+
+def tar_repackage_with_version(original_tarfile, version):
+    ext = 'tar.gz'
+    original_tar_basedir = original_tarfile[:-len(ext) - 1]
+    repackaged_tar_basedir = '{}-{}'.format(original_tar_basedir, version)
+    repackaged_tarfile = repackaged_tar_basedir+'.'+ext
+    with tarfile.open(original_tarfile, mode='r:gz') as original_tar, \
+            tarfile.open(repackaged_tarfile, mode='w:gz') as repackaged_tar:
+        for orig in sorted(original_tar.getmembers()):
+            repackaged_tar.addfile(orig)
+    return repackaged_tarfile
 
 
 output_path = sys.argv[1]
@@ -68,11 +84,13 @@ print('pwd = {}'.format(os.getcwd()))
 # print('directory = {}'.format(directory_to_upload))
 
 with ZipFile(output_path, 'w', compression=zipfile.ZIP_DEFLATED) as output:
-    for fl in target_paths:
-        if fl.endswith('zip'):
-            zip = zip_repackage_with_version(fl, version, '.')
-            output.write(zip)
-        elif fl.endswith('tar.gz'):
-            tar_repackage_with_version(fl, version, '.')
+    for target in target_paths:
+        filename = os.path.basename(target)
+        if target.endswith('zip'):
+            zip = zip_repackage_with_version(target, version)
+            output.write(zip, target)
+        elif target.endswith('tar.gz'):
+            tar = tar_repackage_with_version(target, version)
+            output.write(tar, target)
         else:
-            raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(fl))
+            raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(target))
