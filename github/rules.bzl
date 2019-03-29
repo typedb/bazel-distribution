@@ -1,3 +1,4 @@
+
 def _deploy_github_impl(ctx):
     _deploy_script = ctx.actions.declare_file("_deploy.py")
 
@@ -5,14 +6,17 @@ def _deploy_github_impl(ctx):
         template = ctx.file._deploy_script,
         output = _deploy_script,
         substitutions = {
-            "{archive}": ctx.file.archive.short_path,
+            "{archive}": ctx.file.archive.short_path if (ctx.file.archive!=None) else "",
             "{has_release_description}": str(int(bool(ctx.file.release_description)))
         }
     )
     files = [
         ctx.file.deployment_properties,
         ctx.file.version_file
-    ] + ctx.files._ghr + [ctx.file.archive]
+    ] + ctx.files._ghr
+
+    if ctx.file.archive!=None:
+        files.append(ctx.file.archive)
 
     symlinks = {
         "deployment.properties": ctx.file.deployment_properties
@@ -34,6 +38,7 @@ def _deploy_github_impl(ctx):
 deploy_github = rule(
     attrs = {
         "archive": attr.label(
+            mandatory = False,
             allow_single_file = [".zip"],
             doc = "`assemble_versioned` label to be deployed.",
         ),

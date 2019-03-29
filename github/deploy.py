@@ -93,16 +93,17 @@ with open('VERSION') as version_file:
     distribution_version = version_file.read().strip()
     github_tag = 'v{}'.format(distribution_version)
 
-directory_to_upload = tempfile.mkdtemp() # TODO: close
+directory_to_upload = tempfile.mkdtemp()
 
-# TODO: ideally, this should be fixed in ghr itself
-# Currently it does not allow supplying empty folders
-# However, it also filters out folders inside the folder you supply
-# So if we have a folder within a folder, both conditions are
-# satisfied and we're able to proceed
-dummy_directory = tempfile.mkdtemp(dir=directory_to_upload)  # TODO: close
-
-sp.call(['unzip', archive, '-d', directory_to_upload]) # TODO: replace with ZipFile
+if len(archive)>0:
+    sp.call(['unzip', archive, '-d', directory_to_upload])
+else:
+    tempfile.mkdtemp(dir=directory_to_upload)
+    # TODO: ideally, this should be fixed in ghr itself
+    # Currently it does not allow supplying empty folders
+    # However, it also filters out folders inside the folder you supply
+    # So if we have a folder within a folder, both conditions are
+    # satisfied and we're able to proceed
 
 try:
     exit_code = sp.call([
