@@ -96,7 +96,7 @@ for fl in targets:
     shutil.copy(fl, os.path.join(directory_to_upload, final_name))
 
 try:
-    subprocess.call([
+    exit_code = subprocess.call([
         ghr,
         '-u', github_organisation,
         '-r', github_repository,
@@ -106,3 +106,5 @@ try:
     ], env={'GITHUB_TOKEN': github_token})
 finally:
     shutil.rmtree(directory_to_upload)
+
+sys.exit(exit_code)
