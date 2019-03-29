@@ -54,6 +54,7 @@ def tar_repackage_with_version(original_tarfile, version):
             tarfile.open(repackaged_tarfile, mode='w:gz') as repackaged_tar:
         for info in sorted(original_tar.getmembers()):
             info.path = info.path.replace(original_tar_basedir, repackaged_tar_basedir, 1)
+            info.mtime = 0
             content = original_tar.extractfile(info)
             repackaged_tar.addfile(info, content)
     return repackaged_tarfile
@@ -73,7 +74,7 @@ print('pwd = {}'.format(os.getcwd()))
 # print('directory = {}'.format(directory_to_upload))
 
 with ZipFile(output_path, 'w', compression=zipfile.ZIP_DEFLATED) as output:
-    for target in target_paths:
+    for target in sorted(target_paths):
         if target.endswith('zip'):
             zip = zip_repackage_with_version(target, version)
             output.write(zip, os.path.basename(zip))
