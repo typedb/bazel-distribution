@@ -64,12 +64,6 @@ output_path = sys.argv[1]
 version_path = sys.argv[2]
 target_paths = sys.argv[3:]
 
-print('output = ' + str(output_path))
-print('version = ' + str(version_path))
-print('target = ' + str(target_paths))
-print('pwd = {}'.format(os.getcwd()))
-
-
 version = open(version_path, 'r').read().strip()
 
 with ZipFile(output_path, 'w', compression=zipfile.ZIP_DEFLATED) as output:
