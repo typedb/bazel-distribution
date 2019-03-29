@@ -73,12 +73,11 @@ print('pwd = {}'.format(os.getcwd()))
 
 with ZipFile(output_path, 'w', compression=zipfile.ZIP_DEFLATED) as output:
     for target in target_paths:
-        filename = os.path.basename(target)
         if target.endswith('zip'):
             zip = zip_repackage_with_version(target, version)
-            output.write(zip, filename)
+            output.write(zip, os.path.basename(zip))
         elif target.endswith('tar.gz'):
             tar = tar_repackage_with_version(target, version)
-            output.write(tar, filename)
+            output.write(tar, os.path.basename(tar))
         else:
             raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(target))
