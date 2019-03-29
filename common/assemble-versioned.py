@@ -45,19 +45,6 @@ def zip_repackage_with_version(original_zipfile, version):
     return repackaged_zipfile
 
 
-# def tar_repackage_with_version(original_archive, version, directory_to_upload):
-#     extension = 'tar.gz'
-#     original_archive_basedir = original_archive[:-len(extension) - 1]
-#     repackaged_archive_basedir = '{}-{}'.format(original_archive_basedir, version)
-#     tarfile.open(original_archive, mode='r:gz').extractall()
-#     print('')
-#     print('original_archive_basedir = {}'.format(original_archive_basedir))
-#     print('repackaged_archive_basedir = {}'.format(repackaged_archive_basedir))
-#     os.rename(original_archive_basedir, repackaged_archive_basedir)
-#     repackaged_archive = shutil.make_archive(base_name=repackaged_archive_basedir, format='gztar', base_dir=repackaged_archive_basedir)
-#     return repackaged_archive
-
-
 def tar_repackage_with_version(original_tarfile, version):
     ext = 'tar.gz'
     original_tar_basedir = original_tarfile[:-len(ext) - 1]
@@ -88,9 +75,9 @@ with ZipFile(output_path, 'w', compression=zipfile.ZIP_DEFLATED) as output:
         filename = os.path.basename(target)
         if target.endswith('zip'):
             zip = zip_repackage_with_version(target, version)
-            output.write(zip, target)
+            output.write(zip, filename)
         elif target.endswith('tar.gz'):
             tar = tar_repackage_with_version(target, version)
-            output.write(tar, target)
+            output.write(tar, filename)
         else:
             raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(target))
