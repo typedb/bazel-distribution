@@ -39,10 +39,6 @@ def _deploy_brew_impl(ctx):
 
 deploy_brew = rule(
     attrs = {
-        "_deploy_brew_template": attr.label(
-            allow_single_file = True,
-            default = "//brew/templates:deploy.py"
-        ),
         "checksum": attr.label(
             allow_single_file = True,
         ),
@@ -62,7 +58,11 @@ deploy_brew = rule(
         "version_file": attr.label(
             allow_single_file = True,
             mandatory = True
-        )
+        ),
+        "_deploy_brew_template": attr.label(
+            allow_single_file = True,
+            default = "//brew/templates:deploy.py"
+        ),
     },
     executable = True,
     outputs = {

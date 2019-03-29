@@ -248,16 +248,52 @@ def assemble_zip(name,
     )
 
 
+def _assemble_versioned_impl(ctx):
+    # assemble-version.py $output $version $targets
+    ctx.actions.run(
+        inputs = ctx.files.targets + [ctx.file.version_file],
+        outputs = [ctx.outputs.archive],
+        executable = ctx.executable._assemble_versioned_py,
+        arguments = [ctx.outputs.archive.path, ctx.file.version_file.path] + [target.path for target in ctx.files.targets],
+        progress_message = "Versioning assembled distributions to {}".format(ctx.attr.version_file.label)
+    )
+
+    return DefaultInfo(data_runfiles = ctx.runfiles(files=[ctx.outputs.archive]))
+
+assemble_versioned = rule(
+    attrs = {
+        "targets": attr.label_list(
+            allow_files = [".zip", ".tar.gz"]
+        ),
+        "version_file": attr.label(
+            allow_single_file = True,
+            mandatory = True,
+            doc = "File containing version string"
+        ),
+        "_assemble_versioned_py": attr.label(
+            default = "//common:assemble-versioned",
+            executable = True,
+            cfg = "host"
+        )
+    },
+    implementation = _assemble_versioned_impl,
+    outputs = {
+        "archive": "%{name}.zip"
+    },
+    output_to_genfiles = True
+)
+
+
 def _checksum(ctx):
     ctx.actions.run_shell(
-        inputs = [ctx.file.target],
+        inputs = [ctx.file.archive],
         outputs = [ctx.outputs.checksum_file],
-        command = 'shasum -a 256 {} > {}'.format(ctx.file.target.path, ctx.outputs.checksum_file.path)
+        command = 'mkdir tmp; unzip {} -d tmp; shasum -a 256 tmp/* > {}; rm -rf tmp/'.format(ctx.file.archive.path, ctx.outputs.checksum_file.path)
     )
 
 checksum = rule(
     attrs = {
-        'target': attr.label(allow_single_file = True, mandatory = True)
+        'archive': attr.label(allow_single_file = True, mandatory = True)
     },
     outputs = {
         'checksum_file': '%{name}.sha256'

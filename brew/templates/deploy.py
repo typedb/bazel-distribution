@@ -56,6 +56,8 @@ if len(sys.argv) != 2:
 
 
 # configurations #
+git_username = 'Grabl'
+git_email = 'grabl@grakn.ai'
 properties = parse_deployment_properties('deployment.properties')
 formula_filename = os.path.basename(os.readlink('formula'))
 with open('formula') as formula_file:
@@ -70,7 +72,9 @@ checksum_of_distribution_local = get_checksum()
 tap_localpath = tempfile.mkdtemp()
 try:
     print('Cloning brew tap: "{}"...'.format(tap_url))
-    sp.check_call(['git', 'clone', tap_url, tap_localpath])
+    sp.check_call(['bash', '-c', 'git clone ' + url_with_credential(tap_url, '$DEPLOY_BREW_TOKEN') + ' ' + tap_localpath])
+    sp.check_call(["git", "config", "user.email", git_email], cwd=tap_localpath)
+    sp.check_call(["git", "config", "user.name", git_username], cwd=tap_localpath)
     sp.check_call(['mkdir', '-p', '{brew_folder}'], cwd=tap_localpath)
     formula_content = formula_template.replace('{version}', version).replace('{sha256}', checksum_of_distribution_local)
     distribution_url = get_distribution_url_from_formula(formula_content)
@@ -87,7 +91,12 @@ try:
         f.write(formula_content)
     sp.check_call(['git', 'add', '.'], cwd=tap_localpath)
     try:
-        sp.check_call(['git', 'commit', '-m', 'Update the {} formula to {}'.format(formula_filename, version)], cwd=tap_localpath)
+        # the command returns 1 if there is a staged file. otherwise, it will return 0
+        should_commit = sp.call(["git", "diff", "--staged", "--exit-code"], cwd=tap_localpath) == 1
+        if should_commit:
+            sp.check_call(['git', 'commit', '-m', 'Update the {} formula to {}'.format(formula_filename, version)], cwd=tap_localpath)
+        else:
+            print('Formula {} is already at version {}! there is nothing to commit.'.format(formula_filename, version_file))
     except sp.CalledProcessError as e:
         print('Error - unable to proceed with deploying to brew due to the following error:')
         raise e
