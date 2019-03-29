@@ -38,7 +38,9 @@ jobs:
     steps:
       - install-bazel-linux
       - run: git clone git@github.com:graknlabs/build-tools.git .
-      - run: bazel run //ci:sync-dependencies -- --source bazel-distribution@$CIRCLE_SHA1 --targets build-tools:master
+      - run: |
+          export SYNC_DEPENDENCIES_TOKEN=$REPO_GITHUB_TOKEN_GRABL
+          bazel run //ci:sync-dependencies -- --source bazel-distribution@$CIRCLE_SHA1 --targets build-tools:master
 
 workflows:
   bazel-distribution:

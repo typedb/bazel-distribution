@@ -55,6 +55,12 @@ _, repo_type, version = sys.argv
 
 username, password = os.getenv('DEPLOY_MAVEN_USERNAME'), os.getenv('DEPLOY_MAVEN_PASSWORD')
 
+if not username:
+    raise ValueError('Error: username should be passed via $DEPLOY_MAVEN_USERNAME env variable')
+
+if not password:
+    raise ValueError('Error: password should be passed via $DEPLOY_MAVEN_PASSWORD env variable')
+
 repo_type_snapshot = 'snapshot'
 version_snapshot_regex = '^[0-9|a-f|A-F]{40}$'
 repo_type_release = 'release'

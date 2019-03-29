@@ -61,15 +61,8 @@ def parse_deployment_properties(fn):
 def get_github_token():
     if 'DEPLOY_GITHUB_TOKEN' in os.environ:
         return os.getenv('DEPLOY_GITHUB_TOKEN')
-    elif len(sys.argv) == 2:
-        _, token = sys.argv
-        return token
     else:
-        raise ValueError(
-            'Token should be passed either '
-            'as $DEPLOY_GITHUB_TOKEN or the only '
-            'commandline argument'
-        )
+        raise ValueError('Error: token should be passed via $DEPLOY_GITHUB_TOKEN env variable')
 
 
 def ghr_extract():
@@ -122,49 +115,50 @@ def tar_repackage_with_version(original_archive, version, directory_to_upload):
     shutil.rmtree(repackaged_archive_basedir)
 
 
-if __name__ == '__main__':
-    targets = [] if not "{targets}" else "{targets}".split(',')
-    has_release_description = bool(int("{has_release_description}"))
+targets = [] if not "{targets}" else "{targets}".split(',')
+has_release_description = bool(int("{has_release_description}"))
 
-    github_token = get_github_token()
-    properties = parse_deployment_properties('deployment.properties')
-    github_organisation = properties['repo.github.organisation']
-    github_repository = properties['repo.github.repository']
-    ghr = ghr_extract()
+github_token = get_github_token()
+properties = parse_deployment_properties('deployment.properties')
+github_organisation = properties['repo.github.organisation']
+github_repository = properties['repo.github.repository']
+ghr = ghr_extract()
 
-    with open('VERSION') as version_file:
-        distribution_version = version_file.read().strip()
-        github_tag = 'v{}'.format(distribution_version)
+with open('VERSION') as version_file:
+    distribution_version = version_file.read().strip()
+    github_tag = 'v{}'.format(distribution_version)
 
-    directory_to_upload = tempfile.mkdtemp()
+directory_to_upload = tempfile.mkdtemp()
 
-    # TODO: remove
-    print('pwd = {}'.format(os.getcwd()))
-    print('directory = {}'.format(directory_to_upload))
+# TODO: remove
+print('pwd = {}'.format(os.getcwd()))
+print('directory = {}'.format(directory_to_upload))
 
-    # TODO: ideally, this should be fixed in ghr itself
-    # Currently it does not allow supplying empty folders
-    # However, it also filters out folders inside the folder you supply
-    # So if we have a folder within a folder, both conditions are
-    # satisfied and we're able to proceed
-    dummy_directory = tempfile.mkdtemp(dir=directory_to_upload)
+# TODO: ideally, this should be fixed in ghr itself
+# Currently it does not allow supplying empty folders
+# However, it also filters out folders inside the folder you supply
+# So if we have a folder within a folder, both conditions are
+# satisfied and we're able to proceed
+dummy_directory = tempfile.mkdtemp(dir=directory_to_upload)
 
-    for fl in targets:
-        if fl.endswith('zip'):
-            zip_repackage_with_version(fl, distribution_version, directory_to_upload)
-        elif fl.endswith('tar.gz'):
-            tar_repackage_with_version(fl, distribution_version, directory_to_upload)
-        else:
-            raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(fl))
+for fl in targets:
+    if fl.endswith('zip'):
+        zip_repackage_with_version(fl, distribution_version, directory_to_upload)
+    elif fl.endswith('tar.gz'):
+        tar_repackage_with_version(fl, distribution_version, directory_to_upload)
+    else:
+        raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(fl))
 
-    try:
-        sp.call([
-            ghr,
-            '-u', github_organisation,
-            '-r', github_repository,
-            '-b', open('release_description.txt').read() if has_release_description else '',
-            '-delete', '-draft', github_tag,
-            directory_to_upload
-        ], env={'GITHUB_TOKEN': github_token})
-    finally:
-        shutil.rmtree(directory_to_upload)
+try:
+    exit_code = sp.call([
+        ghr,
+        '-u', github_organisation,
+        '-r', github_repository,
+        '-b', open('release_description.txt').read() if has_release_description else '',
+        '-delete', '-draft', github_tag,
+        directory_to_upload
+    ], env={'GITHUB_TOKEN': github_token})
+finally:
+    shutil.rmtree(directory_to_upload)
+
+sys.exit(exit_code)

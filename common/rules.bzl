@@ -105,7 +105,7 @@ def _java_deps_impl(ctx):
             files.append(file)
             filenames.append(file.basename)
 
-    jars_mapping = ctx.actions.declare_file("jars.mapping")
+    jars_mapping = ctx.actions.declare_file("{}_jars.mapping".format(ctx.attr.target.label.name))
 
     ctx.actions.write(
         output = jars_mapping,
