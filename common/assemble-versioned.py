@@ -52,8 +52,9 @@ def tar_repackage_with_version(original_tarfile, version):
     repackaged_tarfile = repackaged_tar_basedir+'.'+ext
     with tarfile.open(original_tarfile, mode='r:gz') as original_tar, \
             tarfile.open(repackaged_tarfile, mode='w:gz') as repackaged_tar:
-        for orig in sorted(original_tar.getmembers()):
-            repackaged_tar.addfile(orig)
+        for info in sorted(original_tar.getmembers()):
+            content = original_tar.extractfile(info)
+            repackaged_tar.addfile(info, content)
     return repackaged_tarfile
 
 
