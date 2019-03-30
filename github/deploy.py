@@ -90,8 +90,7 @@ github_repository = properties['repo.github.repository']
 ghr = ghr_extract()
 
 with open('VERSION') as version_file:
-    distribution_version = version_file.read().strip()
-    github_tag = 'v{}'.format(distribution_version)
+    github_tag = version_file.read().strip()
 
 directory_to_upload = tempfile.mkdtemp()
 
