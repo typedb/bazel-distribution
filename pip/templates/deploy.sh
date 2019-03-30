@@ -94,6 +94,11 @@ else
     sed -i.bak -e "s/-snapshot//g" setup.py && rm -f setup.py.bak
 fi
 
+cat > setup.cfg << EOF
+[bdist_wheel]
+universal = 1
+EOF
+
 # clean up previous distribution files
 rm -fv dist/*
 python setup.py sdist
