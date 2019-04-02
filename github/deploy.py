@@ -58,13 +58,6 @@ def parse_deployment_properties(fn):
     return deployment_properties
 
 
-def get_github_token():
-    if 'DEPLOY_GITHUB_TOKEN' in os.environ:
-        return os.getenv('DEPLOY_GITHUB_TOKEN')
-    else:
-        raise ValueError('Error: token should be passed via $DEPLOY_GITHUB_TOKEN env variable')
-
-
 def ghr_extract():
     system = platform.system()
     tempdir = tempfile.mkdtemp()
@@ -81,9 +74,18 @@ def ghr_extract():
     return ghr
 
 
+if not os.getenv('DEPLOY_GITHUB_TOKEN'):
+    print('Error - $DEPLOY_GITHUB_TOKEN must be defined')
+    sys.exit(1)
+
+if len(sys.argv) != 2:
+    print('Error - needs an argument: <commit-id>')
+    sys.exit(1)
+
 archive = "{archive}"
 has_release_description = bool(int("{has_release_description}"))
-github_token = get_github_token()
+github_token = os.getenv('DEPLOY_GITHUB_TOKEN')
+target_commit_id = sys.argv[1]
 properties = parse_deployment_properties('deployment.properties')
 github_organisation = properties['repo.github.organisation']
 github_repository = properties['repo.github.repository']
@@ -110,7 +112,7 @@ try:
         '-u', github_organisation,
         '-r', github_repository,
         '-b', open('release_description.txt').read() if has_release_description else '',
-        '-c', os.environ('CIRCLE_SHA1'),
+        '-c', target_commit_id,
         '-delete', '-draft', github_tag, # TODO: tag must reference the current commit
         directory_to_upload
     ], env={'GITHUB_TOKEN': github_token})
