@@ -20,6 +20,8 @@
 
 from __future__ import print_function
 import os
+import stat
+
 import sys
 import zipfile
 import tarfile
@@ -28,15 +30,21 @@ _, tgz_fn, zip_fn, prefix = sys.argv
 
 with tarfile.open(tgz_fn, mode='r:gz') as tgz:
     with zipfile.ZipFile(zip_fn, 'w', compression=zipfile.ZIP_DEFLATED) as zip:
-        for tarinfo in sorted(tgz.getmembers()):
+        for tarinfo in sorted(tgz.getmembers(), key=lambda x: x.name):
             f = ''
+            is_dir = tarinfo.isdir()
             name = './' + os.path.normpath(os.path.join(prefix, tarinfo.name))
-            if not tarinfo.isdir():
+            if not is_dir:
                 f = tgz.extractfile(tarinfo).read()
             else:
                 name += '/'
             zi = zipfile.ZipInfo(name)
             zi.compress_type = zipfile.ZIP_DEFLATED
             zi.external_attr = tarinfo.mode << 16
+            if not is_dir:
+                # Mark regular files with S_IFREG so
+                # permissions are preserved when unpacking
+                # in macOS's Finder
+                zi.external_attr |= (stat.S_IFREG << 16)
             zip.writestr(zi, f)
 
