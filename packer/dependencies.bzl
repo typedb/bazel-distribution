@@ -18,7 +18,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def deploy_gcp_dependencies():
+def deploy_packer_dependencies():
     http_archive(
          name = "packer_osx",
          url = "https://releases.hashicorp.com/packer/1.4.0/packer_1.4.0_darwin_amd64.zip",
