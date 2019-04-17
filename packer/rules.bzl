@@ -52,5 +52,3 @@ deploy_packer = rule(
     executable = True,
     implementation = _deploy_packer_impl
 )
-
-
