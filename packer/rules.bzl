@@ -15,7 +15,7 @@ def assemble_packer(name,
     )
 
 def _deploy_packer_impl(ctx):
-    deployment_script = ctx.actions.declare_file("deploy_packer.py")
+    deployment_script = ctx.actions.declare_file("{}_deploy_packer.py".format(ctx.attr.target.label.name))
 
     ctx.actions.expand_template(
         template = ctx.file._deployment_script_template,
