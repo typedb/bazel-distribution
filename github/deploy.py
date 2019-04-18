@@ -30,6 +30,15 @@ import tempfile
 import zipfile
 
 
+GHR_BINARIES = {
+    "Darwin": os.path.abspath("{ghr_osx_binary}"),
+    "Linux": os.path.abspath("{ghr_linux_binary}"),
+}
+
+system = platform.system()
+if system not in GHR_BINARIES:
+    raise ValueError('Error - your platform ({}) is not supported. Try Linux or macOS instead.'.format(system))
+
 # This ZipFile extends Python's ZipFile and fixes the lost permission issue
 class ZipFile(zipfile.ZipFile):
     def extract(self, member, path=None, pwd=None):
@@ -58,22 +67,6 @@ def parse_deployment_properties(fn):
     return deployment_properties
 
 
-def ghr_extract():
-    system = platform.system()
-    tempdir = tempfile.mkdtemp()
-
-    if system == 'Darwin':
-        ZipFile('external/ghr_osx_zip/file/downloaded', 'r').extractall(tempdir)
-        ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
-    elif system == 'Linux':
-        tarfile.open('external/ghr_linux_tar/file/downloaded', mode='r:gz').extractall(tempdir)
-        ghr = glob.glob(os.path.join(tempdir, '**/ghr'))[0]
-    else:
-        raise ValueError('Error - your platform ({}) is not supported. Try Linux or macOS instead.'.format(system))
-
-    return ghr
-
-
 if not os.getenv('DEPLOY_GITHUB_TOKEN'):
     print('Error - $DEPLOY_GITHUB_TOKEN must be defined')
     sys.exit(1)
@@ -89,7 +82,7 @@ target_commit_id = sys.argv[1]
 properties = parse_deployment_properties('deployment.properties')
 github_organisation = properties['repo.github.organisation']
 github_repository = properties['repo.github.repository']
-ghr = ghr_extract()
+ghr = GHR_BINARIES[system]
 
 with open('VERSION') as version_file:
     github_tag = version_file.read().strip()
