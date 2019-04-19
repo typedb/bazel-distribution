@@ -63,6 +63,7 @@ deploy_github = rule(
             default = "//github:deploy.py",
         ),
         "_ghr": attr.label_list(
+            allow_files = True,
             default = ["@ghr_osx_zip//:ghr", "@ghr_linux_tar//:ghr"]
         )
     },
