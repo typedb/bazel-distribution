@@ -7,7 +7,9 @@ def _deploy_github_impl(ctx):
         output = _deploy_script,
         substitutions = {
             "{archive}": ctx.file.archive.short_path if (ctx.file.archive!=None) else "",
-            "{has_release_description}": str(int(bool(ctx.file.release_description)))
+            "{has_release_description}": str(int(bool(ctx.file.release_description))),
+            "{ghr_osx_binary}": ctx.files._ghr[0].path,
+            "{ghr_linux_binary}": ctx.files._ghr[1].path,
         }
     )
     files = [
@@ -61,7 +63,8 @@ deploy_github = rule(
             default = "//github:deploy.py",
         ),
         "_ghr": attr.label_list(
-            default = ["@ghr_osx_zip//file:file", "@ghr_linux_tar//file:file"]
+            allow_files = True,
+            default = ["@ghr_osx_zip//:ghr", "@ghr_linux_tar//:ghr"]
         )
     },
     implementation = _deploy_github_impl,
