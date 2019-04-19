@@ -92,18 +92,14 @@ _transitive_collect_maven_coordinate = aspect(
 def _java_deps_impl(ctx):
     names = {}
     files = []
-    filenames = []
 
     mapping = ctx.attr.target[TransitiveJarToMavenCoordinatesMapping].mapping
 
     for file in ctx.attr.target.data_runfiles.files.to_list():
-        if file.basename in filenames:
-            continue # do not pack JARs with same name
         if file.extension == 'jar' and not file.path.startswith(LOCAL_JDK_PREFIX):
-            filename = mapping.get(file.path, file.basename).replace('.', '-').replace(':', '-')
+            filename = file.owner.package.replace('/', '-') + '__' + mapping.get(file.path, file.basename).replace('.', '-').replace(':', '-')
             names[file.path] = ctx.attr.java_deps_root + filename + ".jar"
             files.append(file)
-            filenames.append(file.basename)
 
     jars_mapping = ctx.actions.declare_file("{}_jars.mapping".format(ctx.attr.target.label.name))
 
