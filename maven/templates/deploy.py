@@ -29,7 +29,6 @@ import re
 import subprocess as sp
 import sys
 import tempfile
-
 import zipfile
 
 
@@ -46,6 +45,7 @@ class ZipFile(zipfile.ZipFile):
         attr = member.external_attr >> 16
         os.chmod(ret_val, attr)
         return ret_val
+
 
 def parse_deployment_properties(fn):
     deployment_properties = {}
