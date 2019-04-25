@@ -30,8 +30,22 @@ import subprocess as sp
 import sys
 import tempfile
 
-print(os.getcwd())
+import zipfile
 
+
+# This ZipFile extends Python's ZipFile and fixes the lost permission issue
+class ZipFile(zipfile.ZipFile):
+    def extract(self, member, path=None, pwd=None):
+        if not isinstance(member, zipfile.ZipInfo):
+            member = self.getinfo(member)
+
+        if path is None:
+            path = os.getcwd()
+
+        ret_val = self._extract_member(member, path, pwd)
+        attr = member.external_attr >> 16
+        os.chmod(ret_val, attr)
+        return ret_val
 
 def parse_deployment_properties(fn):
     deployment_properties = {}
@@ -52,6 +66,30 @@ def sha1(fn):
 
 def md5(fn):
     return hashlib.md5(open(fn).read()).hexdigest()
+
+
+def update_pom_within_jar(jar_path, new_pom_content):
+    ext = 'jar'
+    original_jar_basename = os.path.basename(jar_path[:-len(ext) - 1])
+    updated_jar_basename = original_jar_basename + '-updated'
+    updated_jar_path = updated_jar_basename + '.' + ext
+    with ZipFile(jar_path, 'r') as original_jar, \
+            ZipFile(updated_jar_path, 'w', compression=zipfile.ZIP_DEFLATED) as updated_jar:
+        for orig_info in sorted(original_jar.infolist(), key=lambda info: info.filename):
+            repkg_name = orig_info.filename
+            repkg_content = ''
+            if not orig_info.filename.endswith('/'):
+                if os.path.basename(orig_info.filename) == 'pom.xml':
+                    repkg_content = new_pom_content
+                else:
+                    repkg_content = original_jar.read(orig_info)
+            repkg_info = zipfile.ZipInfo(repkg_name.replace(original_jar_basename, updated_jar_basename))
+            repkg_info.compress_type = zipfile.ZIP_DEFLATED
+            repkg_info.external_attr = orig_info.external_attr
+            repkg_info.date_time = orig_info.date_time
+            updated_jar.writestr(repkg_info, repkg_content)
+
+    return updated_jar_path
 
 
 def upload(url, username, password, local_fn, remote_fn):
@@ -105,13 +143,16 @@ group_id, artifact_id, version_placeholder = list(map(operator.attrgetter('text'
 filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format(
     coordinates=group_id.replace('.', '/'), version=version, artifact=artifact_id)
 
-upload(maven_url, username, password, jar_path, filename_base + '.jar')
 
 with open(pom_file_path, 'r') as pom_original, tempfile.NamedTemporaryFile(delete=True) as pom_updated:
-    updated = pom_original.read().replace(version_placeholder, version)
-    pom_updated.write(updated)
+    pom_updated_content = pom_original.read().replace(version_placeholder, version)
+    pom_updated.write(pom_updated_content)
     pom_updated.flush()
+    jar_updated = update_pom_within_jar(jar_path, pom_updated_content)
+    print('pom_updated = {}'.format(pom_updated.name))
+    print('jar_updated = {}'.format(jar_updated))
     upload(maven_url, username, password, pom_updated.name, filename_base + '.pom')
+    upload(maven_url, username, password, jar_updated, filename_base + '.jar')
 
 with tempfile.NamedTemporaryFile(delete=True) as pom_md5:
     pom_md5.write(md5(pom_file_path))
