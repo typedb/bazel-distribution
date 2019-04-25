@@ -38,6 +38,5 @@ with open(preprocessed_template_path, 'r') as template_file, \
         pom = pom.replace(workspace, refs['commits'][workspace])
     for workspace in refs['tags']:
         pom = pom.replace(workspace, refs['tags'][workspace])
-    pom = pom.replace('{pom_version}', version)
 
     pom_file.write(pom)
