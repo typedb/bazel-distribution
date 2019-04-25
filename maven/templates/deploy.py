@@ -31,22 +31,6 @@ import sys
 import tempfile
 import zipfile
 
-
-# This ZipFile extends Python's ZipFile and fixes the lost permission issue
-class ZipFile(zipfile.ZipFile):
-    def extract(self, member, path=None, pwd=None):
-        if not isinstance(member, zipfile.ZipInfo):
-            member = self.getinfo(member)
-
-        if path is None:
-            path = os.getcwd()
-
-        ret_val = self._extract_member(member, path, pwd)
-        attr = member.external_attr >> 16
-        os.chmod(ret_val, attr)
-        return ret_val
-
-
 def parse_deployment_properties(fn):
     deployment_properties = {}
     with open(fn) as deployment_properties_file:
@@ -73,8 +57,8 @@ def update_pom_within_jar(jar_path, new_pom_content):
     original_jar_basename = os.path.basename(jar_path[:-len(ext) - 1])
     updated_jar_basename = original_jar_basename + '-updated'
     updated_jar_path = updated_jar_basename + '.' + ext
-    with ZipFile(jar_path, 'r') as original_jar, \
-            ZipFile(updated_jar_path, 'w', compression=zipfile.ZIP_DEFLATED) as updated_jar:
+    with zipfile.ZipFile(jar_path, 'r') as original_jar, \
+            zipfile.ZipFile(updated_jar_path, 'w', compression=zipfile.ZIP_DEFLATED) as updated_jar:
         for orig_info in sorted(original_jar.infolist(), key=lambda info: info.filename):
             repkg_name = orig_info.filename
             repkg_content = ''
@@ -83,7 +67,7 @@ def update_pom_within_jar(jar_path, new_pom_content):
                     repkg_content = new_pom_content
                 else:
                     repkg_content = original_jar.read(orig_info)
-            repkg_info = zipfile.ZipInfo(repkg_name.replace(original_jar_basename, updated_jar_basename))
+            repkg_info = zipfile.ZipInfo(repkg_name)
             repkg_info.compress_type = zipfile.ZIP_DEFLATED
             repkg_info.external_attr = orig_info.external_attr
             repkg_info.date_time = orig_info.date_time
