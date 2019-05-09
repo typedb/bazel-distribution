@@ -77,6 +77,7 @@ def assemble_rpm(name,
         rpmbuild_path = select({
             ":linux_build": "/usr/bin/rpmbuild",
             ":osx_build": "/usr/local/bin/rpmbuild",
+            "//conditions:default": ""
         })
     )
     tag = "rpm_package_name={}".format(spec_file.split(':')[-1].replace('.spec', ''))
