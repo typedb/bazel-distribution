@@ -31,7 +31,7 @@ def assemble_aws(name,
         name = generated_config_target_name,
         template = "@graknlabs_bazel_distribution//aws:packer.template.json",
         substitutions = {
-            "{ami_name}": ami_name, # grakn-kgms-{{user `version`}}
+            "{ami_name}": ami_name,
             "{install}": install_fn,
             "{region}": region
         }
