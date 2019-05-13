@@ -1,0 +1,44 @@
+{
+  "variables": {
+    "access_key": "{{env `DEPLOY_PACKER_AWS_ACCESS_KEY`}}",
+    "secret_key": "{{env `DEPLOY_PACKER_AWS_SECRET_KEY`}}",
+    "version": "{{env `DEPLOY_PACKER_VERSION`}}"
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "region": "{region}",
+    "source_ami_filter": {
+      "filters": {
+        "virtualization-type": "hvm",
+        "name": "ubuntu/images/*ubuntu-xenial-16.04-amd64-server-*",
+        "root-device-type": "ebs"
+      },
+      "owners": ["099720109477"],
+      "most_recent": true
+    },
+    "instance_type": "t2.medium",
+    "ssh_username": "ubuntu",
+    "ami_name": "{ami_name}",
+    "access_key": "{{user `access_key`}}",
+    "secret_key": "{{user `secret_key`}}",
+    "force_deregister": "true",
+    "force_delete_snapshot": "true"
+  }
+  ],
+
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [ "mkdir /tmp/deployment" ]
+    },
+    {
+      "type": "file",
+      "source": "files/",
+      "destination": "/tmp/deployment/"
+    },
+    {
+      "type": "shell",
+      "inline": ["sudo /tmp/deployment/{install}"]
+    }
+  ]
+}
