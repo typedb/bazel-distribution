@@ -28,7 +28,7 @@
     },
     {
       "type": "shell",
-      "inline": [ "sudo /tmp/deployment/install.sh" ]
+      "inline": [ "sudo /tmp/deployment/{install}" ]
     }
   ]
 }

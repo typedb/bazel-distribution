@@ -23,10 +23,12 @@ load("//common:generate_json_config.bzl", "generate_json_config")
 
 def assemble_gcp(name,
                  project_id,
+                 install,
                  zone,
                  image_name,
                  image_licenses,
                  files):
+    install_fn = Label(install).name
     generated_config_target_name = name + "__do_not_reference_config"
     generate_json_config(
         name = generated_config_target_name,
@@ -35,9 +37,11 @@ def assemble_gcp(name,
             "{project_id}": project_id,
             "{zone}": zone,
             "{image_name}": image_name,
-            "{image_licenses}": image_licenses
+            "{image_licenses}": image_licenses,
+            "{install}": install_fn
         }
     )
+    files[install] = install_fn
     assemble_packer(
         name = name,
         config = generated_config_target_name,
