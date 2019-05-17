@@ -31,8 +31,14 @@ py_binary(
     visibility = ["//visibility:public"]
 )
 
+py_library(
+    name = "common",
+    srcs = ["common.py"]
+)
+
 py_binary(
     name = "assemble-versioned",
     srcs = ["assemble-versioned.py"],
+    deps = [":common"],
     visibility = ["//visibility:public"]
 )
