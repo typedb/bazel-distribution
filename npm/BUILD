@@ -16,3 +16,13 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+bzl_library(
+    name = "lib",
+    srcs = [
+        "rules.bzl",
+    ],
+    visibility = ["//visibility:public"]
+)

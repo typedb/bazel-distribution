@@ -18,3 +18,13 @@
 #
 
 exports_files(["replace_imports.py", "requirements.txt"])
+
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+bzl_library(
+    name = "lib",
+    srcs = [
+        "rules.bzl",
+    ],
+    visibility = ["//visibility:public"]
+)

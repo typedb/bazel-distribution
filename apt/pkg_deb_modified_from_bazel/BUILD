@@ -17,6 +17,17 @@
 # under the License.
 #
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+bzl_library(
+    name = "lib",
+    srcs = [
+        "path.bzl",
+        "pkg.bzl"
+    ],
+    visibility = ["//visibility:public"]
+)
+
 py_library(
     name = "archive",
     srcs = ["archive.py"],

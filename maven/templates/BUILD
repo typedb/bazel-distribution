@@ -18,3 +18,13 @@
 #
 
 exports_files(["pom.xml", "deploy.py", "rules.bzl"])
+
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+bzl_library(
+    name = "lib",
+    srcs = [
+        "rules.bzl",
+    ],
+    visibility = ["//visibility:public"]
+)
