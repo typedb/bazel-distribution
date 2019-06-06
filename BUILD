@@ -16,3 +16,55 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+
+load("@io_bazel_skydoc//stardoc:stardoc.bzl", "stardoc")
+
+stardoc(
+    name = "docs",
+    input = "doc_hub.bzl",
+    out = "README.md",
+    deps = [
+        "//apt/pkg_deb_modified_from_bazel:lib",
+        "//apt:lib",
+        "//aws:lib",
+        "//brew:lib",
+        "//common:lib",
+        "//gcp:lib",
+        "//github:lib",
+        "//maven/templates:lib",
+        "//npm:lib",
+        "//packer:lib",
+        "//pip:lib",
+        "//rpm:lib",
+    ],
+    symbol_names = [
+        "pkg_deb",
+        "assemble_apt",
+        "deploy_apt",
+        "assemble_aws",
+        "deploy_brew",
+        "assemble_versioned",
+        "checksum",
+        "generate_json_config",
+        "JarToMavenCoordinatesMapping",
+        "java_deps",
+        "MAVEN_COORDINATES_PREFIX",
+        "TransitiveJarToMavenCoordinatesMapping",
+        "assemble_targz",
+        "assemble_zip",
+        "tgz2zip",
+        "assemble_gcp",
+        "deploy_github",
+        "assemble_maven",
+        "deploy_maven",
+        "JavaLibInfo",
+        "MavenDeploymentInfo",
+        "MavenPomInfo",
+        "deploy_npm",
+        "assemble_packer",
+        "deploy_packer",
+        "deploy_pip",
+        "assemble_rpm",
+        "deploy_rpm"
+    ],
+)

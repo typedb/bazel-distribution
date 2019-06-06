@@ -19,6 +19,21 @@
 
 exports_files(["archiver.py"])
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+bzl_library(
+    name = "lib",
+    srcs = [
+        "assemble_versioned.bzl",
+        "checksum.bzl",
+        "generate_json_config.bzl",
+        "java_deps.bzl",
+        "rules.bzl",
+        "tgz2zip.bzl",
+    ],
+    visibility = ["//visibility:public"]
+)
+
 py_binary(
     name = "java_deps",
     srcs = ["java_deps.py"],
