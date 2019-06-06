@@ -54,7 +54,7 @@ NPM_REPOSITORY_URL=$(grep "repo.npm.$NPM_REPO_TYPE" ${DEPLOYMENT_PROPERTIES_STRI
 GIT_COMMIT_HASH="$(git -C ${BUILD_WORKSPACE_DIRECTORY} rev-parse HEAD)"
 
 if [[ "$NPM_REPO_TYPE" == "snapshot" ]]; then
-    export VERSION="{version}-$GIT_COMMIT_HASH"
+    export VERSION="$GIT_COMMIT_HASH"
 else
     export VERSION="{version}"
 fi
