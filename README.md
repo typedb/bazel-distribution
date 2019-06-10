@@ -5,7 +5,7 @@
 ## assemble_maven
 
 <pre>
-assemble_maven(<a href="#assemble_maven-name">name</a>, <a href="#assemble_maven-package">package</a>, <a href="#assemble_maven-target">target</a>, <a href="#assemble_maven-version_file">version_file</a>, <a href="#assemble_maven-workspace_refs">workspace_refs</a>)
+assemble_maven(<a href="#assemble_maven-name">name</a>, <a href="#assemble_maven-developers">developers</a>, <a href="#assemble_maven-license">license</a>, <a href="#assemble_maven-package">package</a>, <a href="#assemble_maven-project_description">project_description</a>, <a href="#assemble_maven-project_name">project_name</a>, <a href="#assemble_maven-project_url">project_url</a>, <a href="#assemble_maven-scm_url">scm_url</a>, <a href="#assemble_maven-target">target</a>, <a href="#assemble_maven-version_file">version_file</a>, <a href="#assemble_maven-workspace_refs">workspace_refs</a>)
 </pre>
 
 
@@ -27,8 +27,44 @@ assemble_maven(<a href="#assemble_maven-name">name</a>, <a href="#assemble_maven
         </p>
       </td>
     </tr>
+    <tr id="assemble_maven-developers">
+      <td><code>developers</code></td>
+      <td>
+        <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> List of strings</a>; optional
+      </td>
+    </tr>
+    <tr id="assemble_maven-license">
+      <td><code>license</code></td>
+      <td>
+        String; optional
+      </td>
+    </tr>
     <tr id="assemble_maven-package">
       <td><code>package</code></td>
+      <td>
+        String; optional
+      </td>
+    </tr>
+    <tr id="assemble_maven-project_description">
+      <td><code>project_description</code></td>
+      <td>
+        String; optional
+      </td>
+    </tr>
+    <tr id="assemble_maven-project_name">
+      <td><code>project_name</code></td>
+      <td>
+        String; optional
+      </td>
+    </tr>
+    <tr id="assemble_maven-project_url">
+      <td><code>project_url</code></td>
+      <td>
+        String; optional
+      </td>
+    </tr>
+    <tr id="assemble_maven-scm_url">
+      <td><code>scm_url</code></td>
       <td>
         String; optional
       </td>
@@ -1068,7 +1104,7 @@ JavaLibInfo(<a href="#JavaLibInfo-target_coordinates">target_coordinates</a>, <a
 ## MavenDeploymentInfo
 
 <pre>
-MavenDeploymentInfo(<a href="#MavenDeploymentInfo-jar">jar</a>, <a href="#MavenDeploymentInfo-pom">pom</a>)
+MavenDeploymentInfo(<a href="#MavenDeploymentInfo-jar">jar</a>, <a href="#MavenDeploymentInfo-srcjar">srcjar</a>, <a href="#MavenDeploymentInfo-pom">pom</a>)
 </pre>
 
 
@@ -1085,6 +1121,12 @@ MavenDeploymentInfo(<a href="#MavenDeploymentInfo-jar">jar</a>, <a href="#MavenD
       <td><code>jar</code></td>
       <td>
         <p>JAR file to deploy</p>
+      </td>
+    </tr>
+    <tr id="MavenDeploymentInfo-srcjar">
+      <td><code>srcjar</code></td>
+      <td>
+        <p>JAR file with sources</p>
       </td>
     </tr>
     <tr id="MavenDeploymentInfo-pom">

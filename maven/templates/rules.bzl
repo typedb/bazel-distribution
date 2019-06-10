@@ -141,6 +141,7 @@ _maven_pom_deps = aspect(
 MavenDeploymentInfo = provider(
     fields = {
         'jar': 'JAR file to deploy',
+        'srcjar': 'JAR file with sources',
         'pom': 'Accompanying pom.xml file'
     }
 )
@@ -178,11 +179,43 @@ def _generate_pom_xml(ctx, maven_coordinates):
     for coord in deps_coordinates:
         xml_tags.append(DEP_BLOCK.format(*coord.split(":")))
 
+    license_name = "LICENSE_NAME"
+    license_url = "LICENSE_URL"
+    license_comments = "LICENSE_COMMENTS"
+
+    if ctx.attr.license == 'apache':
+        license_name = "Apache License, Version 2.0"
+        license_url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+
+    scm_connection = ctx.attr.scm_url
+    scm_developer_connection = ctx.attr.scm_url
+    scm_tag = "{pom_version}"
+
+    developers = ""
+    for dev, dev_info in ctx.attr.developers.items():
+        tag = "<developer>"
+        for x in dev_info:
+            k, v = x.split('=')
+            tag += "<{k}>{v}</{k}>".format(k=k, v=v)
+        tag += "</developer>"
+        developers += tag
+        developers += "\n"
+
     # Step 1: fill in everything except version using `pom_file` rule implementation
     ctx.actions.expand_template(
         template = ctx.file._pom_xml_template,
         output = preprocessed_template,
         substitutions = {
+            "{project_name}": ctx.attr.project_name,
+            "{project_description}": ctx.attr.project_description,
+            "{project_url}": ctx.attr.project_url,
+            "{license_name}": license_name,
+            "{license_url}": license_url,
+            "{scm_connection}": scm_connection,
+            "{scm_developer_connection}": scm_developer_connection,
+            "{scm_tag}": scm_tag,
+            "{scm_url}": ctx.attr.scm_url,
+            "{developers}": developers,
             "{target_group_id}": maven_coordinates.group_id,
             "{target_artifact_id}": maven_coordinates.artifact_id,
             "{target_deps_coordinates}": "\n".join(xml_tags)
@@ -210,6 +243,7 @@ def _assemble_maven_impl(ctx):
     # there is also .source_jar which produces '.srcjar'
     if hasattr(target, "java"):
         jar = target.java.outputs.jars[0].class_jar
+        srcjar = target.java.outputs.jars[0].source_jar
     elif hasattr(target, "files"):
         jar = target.files.to_list()[0]
     else:
@@ -225,8 +259,8 @@ def _assemble_maven_impl(ctx):
     )
 
     return [
-        DefaultInfo(files = depset([output_jar, pom_file])),
-        MavenDeploymentInfo(jar = output_jar, pom = pom_file)
+        DefaultInfo(files = depset([output_jar, pom_file, srcjar])),
+        MavenDeploymentInfo(jar = output_jar, pom = pom_file, srcjar = srcjar)
     ]
 
 assemble_maven = rule(
@@ -246,6 +280,25 @@ assemble_maven = rule(
         "workspace_refs": attr.label(
             mandatory = True,
             allow_single_file = True,
+        ),
+        "project_name": attr.string(
+            default = "PROJECT_NAME"
+        ),
+        "project_description": attr.string(
+            default = "PROJECT_DESCRIPTION"
+        ),
+        "project_url": attr.string(
+            default = "PROJECT_URL"
+        ),
+        "license": attr.string(
+            values=["apache"],
+            default = "apache"
+        ),
+        "scm_url": attr.string(
+            default = "PROJECT_URL"
+        ),
+        "developers": attr.string_list_dict(
+            default = {}
         ),
         "_pom_xml_template": attr.label(
             allow_single_file = True,
@@ -273,6 +326,7 @@ def _deploy_maven_impl(ctx):
     deploy_maven_script = ctx.actions.declare_file("deploy.py")
 
     lib_jar_link = "lib.jar"
+    src_jar_link = "lib.srcjar"
     pom_xml_link = "pom.xml"
 
     ctx.actions.expand_template(
@@ -280,6 +334,7 @@ def _deploy_maven_impl(ctx):
         output = deploy_maven_script,
         substitutions = {
             "$JAR_PATH": lib_jar_link,
+            "$SRCJAR_PATH": src_jar_link,
             "$POM_PATH": pom_xml_link,
         }
     )
@@ -289,10 +344,12 @@ def _deploy_maven_impl(ctx):
         runfiles = ctx.runfiles(files=[
             ctx.attr.target[MavenDeploymentInfo].jar,
             ctx.attr.target[MavenDeploymentInfo].pom,
+            ctx.attr.target[MavenDeploymentInfo].srcjar,
             ctx.file.deployment_properties
         ], symlinks = {
             lib_jar_link: ctx.attr.target[MavenDeploymentInfo].jar,
             pom_xml_link: ctx.attr.target[MavenDeploymentInfo].pom,
+            src_jar_link: ctx.attr.target[MavenDeploymentInfo].jar,
             'deployment.properties': ctx.file.deployment_properties,
         })
     )

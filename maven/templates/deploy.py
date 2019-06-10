@@ -90,6 +90,22 @@ def upload(url, username, password, local_fn, remote_fn):
             local_fn, upload_status_code))
 
 
+def sign(fn):
+    # TODO(vmax): current limitation of this functionality
+    # is that gpg key should already be present in keyring
+    # and should not require passphrase
+    asc_file = tempfile.mktemp()
+    sp.check_call([
+        'gpg',
+        '--detach-sign',
+        '--armor',
+        '--output',
+        asc_file,
+        fn
+    ])
+    return asc_file
+
+
 if len(sys.argv) != 3:
     raise ValueError('Should pass <snapshot|release> <version> as arguments')
 _, repo_type, version = sys.argv
@@ -122,13 +138,16 @@ deployment_properties = parse_deployment_properties('deployment.properties')
 maven_url = deployment_properties['repo.maven.' + repo_type]
 jar_path = "$JAR_PATH"
 pom_file_path = "$POM_PATH"
+srcjar_path = "$SRCJAR_PATH"
 group_id, artifact_id, version_placeholder = list(map(operator.attrgetter('text'),
                                                       ElementTree.parse(pom_file_path).getroot()[1:4]))
 filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format(
     coordinates=group_id.replace('.', '/'), version=version, artifact=artifact_id)
 
+pom_updated = None
+jar_updated = None
 
-with open(pom_file_path, 'r') as pom_original, tempfile.NamedTemporaryFile(delete=True) as pom_updated:
+with open(pom_file_path, 'r') as pom_original, tempfile.NamedTemporaryFile(delete=False) as pom_updated:
     pom_updated_content = pom_original.read().replace(version_placeholder, version)
     pom_updated.write(pom_updated_content)
     pom_updated.flush()
@@ -136,24 +155,45 @@ with open(pom_file_path, 'r') as pom_original, tempfile.NamedTemporaryFile(delet
     print('pom_updated = {}'.format(pom_updated.name))
     print('jar_updated = {}'.format(jar_updated))
     upload(maven_url, username, password, pom_updated.name, filename_base + '.pom')
+    upload(maven_url, username, password, sign(pom_updated.name), filename_base + '.pom.asc')
     upload(maven_url, username, password, jar_updated, filename_base + '.jar')
+    upload(maven_url, username, password, sign(jar_updated), filename_base + '.jar.asc')
+    upload(maven_url, username, password, srcjar_path, filename_base + '-sources.jar')
+    upload(maven_url, username, password, sign(srcjar_path), filename_base + '-sources.jar.asc')
+    # TODO(vmax): use real Javadoc instead of srcjar
+    upload(maven_url, username, password, srcjar_path, filename_base + '-javadoc.jar')
+    upload(maven_url, username, password, sign(srcjar_path), filename_base + '-javadoc.jar.asc')
 
 with tempfile.NamedTemporaryFile(delete=True) as pom_md5:
-    pom_md5.write(md5(pom_file_path))
+    pom_md5.write(md5(pom_updated.name))
     pom_md5.flush()
     upload(maven_url, username, password, pom_md5.name, filename_base + '.pom.md5')
 
 with tempfile.NamedTemporaryFile(delete=True) as pom_sha1:
-    pom_sha1.write(sha1(pom_file_path))
+    pom_sha1.write(sha1(pom_updated.name))
     pom_sha1.flush()
     upload(maven_url, username, password, pom_sha1.name, filename_base + '.pom.sha1')
 
 with tempfile.NamedTemporaryFile(delete=True) as jar_md5:
-    jar_md5.write(md5(jar_path))
+    jar_md5.write(md5(jar_updated))
     jar_md5.flush()
     upload(maven_url, username, password, jar_md5.name, filename_base + '.jar.md5')
 
 with tempfile.NamedTemporaryFile(delete=True) as jar_sha1:
-    jar_sha1.write(sha1(jar_path))
+    jar_sha1.write(sha1(jar_updated))
     jar_sha1.flush()
     upload(maven_url, username, password, jar_sha1.name, filename_base + '.jar.sha1')
+
+with tempfile.NamedTemporaryFile(delete=True) as srcjar_md5:
+    srcjar_md5.write(md5(srcjar_path))
+    srcjar_md5.flush()
+    upload(maven_url, username, password, srcjar_md5.name, filename_base + '-sources.jar.md5')
+    # TODO(vmax): use checksum of real Javadoc instead of srcjar
+    upload(maven_url, username, password, srcjar_md5.name, filename_base + '-javadoc.jar.md5')
+
+with tempfile.NamedTemporaryFile(delete=True) as srcjar_sha1:
+    srcjar_sha1.write(sha1(srcjar_path))
+    srcjar_sha1.flush()
+    upload(maven_url, username, password, srcjar_sha1.name, filename_base + '-sources.jar.sha1')
+    # TODO(vmax): use checksum of real Javadoc instead of srcjar
+    upload(maven_url, username, password, srcjar_sha1.name, filename_base + '-javadoc.jar.sha1')
