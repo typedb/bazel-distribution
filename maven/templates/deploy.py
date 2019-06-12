@@ -106,9 +106,15 @@ def sign(fn):
     return asc_file
 
 
-if len(sys.argv) != 3:
-    raise ValueError('Should pass <snapshot|release> <version> as arguments')
-_, repo_type, version = sys.argv
+def unpack_args(_, a, b, c=False):
+    return a, b, c == '--gpg'
+
+
+if len(sys.argv) < 3:
+    raise ValueError('Should pass <snapshot|release> <version> [--gpg] as arguments')
+
+
+repo_type, version, should_sign = unpack_args(*sys.argv)
 
 username, password = os.getenv('DEPLOY_MAVEN_USERNAME'), os.getenv('DEPLOY_MAVEN_PASSWORD')
 
@@ -155,14 +161,18 @@ with open(pom_file_path, 'r') as pom_original, tempfile.NamedTemporaryFile(delet
     print('pom_updated = {}'.format(pom_updated.name))
     print('jar_updated = {}'.format(jar_updated))
     upload(maven_url, username, password, pom_updated.name, filename_base + '.pom')
-    upload(maven_url, username, password, sign(pom_updated.name), filename_base + '.pom.asc')
+    if should_sign:
+        upload(maven_url, username, password, sign(pom_updated.name), filename_base + '.pom.asc')
     upload(maven_url, username, password, jar_updated, filename_base + '.jar')
-    upload(maven_url, username, password, sign(jar_updated), filename_base + '.jar.asc')
+    if should_sign:
+        upload(maven_url, username, password, sign(jar_updated), filename_base + '.jar.asc')
     upload(maven_url, username, password, srcjar_path, filename_base + '-sources.jar')
-    upload(maven_url, username, password, sign(srcjar_path), filename_base + '-sources.jar.asc')
+    if should_sign:
+        upload(maven_url, username, password, sign(srcjar_path), filename_base + '-sources.jar.asc')
     # TODO(vmax): use real Javadoc instead of srcjar
     upload(maven_url, username, password, srcjar_path, filename_base + '-javadoc.jar')
-    upload(maven_url, username, password, sign(srcjar_path), filename_base + '-javadoc.jar.asc')
+    if should_sign:
+        upload(maven_url, username, password, sign(srcjar_path), filename_base + '-javadoc.jar.asc')
 
 with tempfile.NamedTemporaryFile(delete=True) as pom_md5:
     pom_md5.write(md5(pom_updated.name))
