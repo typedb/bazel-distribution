@@ -90,20 +90,24 @@ def upload(url, username, password, local_fn, remote_fn):
             local_fn, upload_status_code))
 
 
+# noinspection PyBroadException
 def sign(fn):
     # TODO(vmax): current limitation of this functionality
     # is that gpg key should already be present in keyring
     # and should not require passphrase
-    asc_file = tempfile.mktemp()
-    sp.check_call([
-        'gpg',
-        '--detach-sign',
-        '--armor',
-        '--output',
-        asc_file,
-        fn
-    ])
-    return asc_file
+    try:
+        asc_file = tempfile.mktemp()
+        sp.check_call([
+            'gpg',
+            '--detach-sign',
+            '--armor',
+            '--output',
+            asc_file,
+            fn
+        ])
+        return asc_file
+    except:
+        return None
 
 
 if len(sys.argv) != 3:
@@ -152,17 +156,30 @@ with open(pom_file_path, 'r') as pom_original, tempfile.NamedTemporaryFile(delet
     pom_updated.write(pom_updated_content)
     pom_updated.flush()
     jar_updated = update_pom_within_jar(jar_path, pom_updated_content)
-    print('pom_updated = {}'.format(pom_updated.name))
-    print('jar_updated = {}'.format(jar_updated))
     upload(maven_url, username, password, pom_updated.name, filename_base + '.pom')
-    upload(maven_url, username, password, sign(pom_updated.name), filename_base + '.pom.asc')
+
+    signature = sign(pom_updated.name)
+    if signature:
+        upload(maven_url, username, password, signature, filename_base + '.pom.asc')
+
     upload(maven_url, username, password, jar_updated, filename_base + '.jar')
-    upload(maven_url, username, password, sign(jar_updated), filename_base + '.jar.asc')
+
+    signature = sign(jar_updated)
+    if signature:
+        upload(maven_url, username, password, signature, filename_base + '.jar.asc')
+
     upload(maven_url, username, password, srcjar_path, filename_base + '-sources.jar')
-    upload(maven_url, username, password, sign(srcjar_path), filename_base + '-sources.jar.asc')
+
+    signature = sign(srcjar_path)
+    if signature:
+        upload(maven_url, username, password, signature, filename_base + '-sources.jar.asc')
+
     # TODO(vmax): use real Javadoc instead of srcjar
     upload(maven_url, username, password, srcjar_path, filename_base + '-javadoc.jar')
-    upload(maven_url, username, password, sign(srcjar_path), filename_base + '-javadoc.jar.asc')
+
+    signature = sign(srcjar_path)
+    if signature:
+        upload(maven_url, username, password, signature, filename_base + '-javadoc.jar.asc')
 
 with tempfile.NamedTemporaryFile(delete=True) as pom_md5:
     pom_md5.write(md5(pom_updated.name))
