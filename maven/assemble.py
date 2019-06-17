@@ -30,9 +30,11 @@ from xml.etree import ElementTree
 
 _, output_jar_path, input_jar_path, pom_file_path = sys.argv
 
-pom_file_tree = ElementTree.parse(pom_file_path)
-group_id, artifact_id, version = list(map(attrgetter('text'),
-                                          pom_file_tree.getroot()[1:4]))
+namespace = { 'namespace': 'http://maven.apache.org/POM/4.0.0' }
+root = ElementTree.parse(pom_file_path).getroot()
+group_id = root.find('namespace:groupId', namespace).text
+artifact_id = root.find('namespace:artifactId', namespace).text
+version = root.find('namespace:version', namespace).text
 
 directory_inside_jar = 'META-INF/maven/{}/{}/'.format(group_id, artifact_id)
 
