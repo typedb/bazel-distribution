@@ -32,6 +32,14 @@ _, output_jar_path, input_jar_path, pom_file_path = sys.argv
 
 namespace = { 'namespace': 'http://maven.apache.org/POM/4.0.0' }
 root = ElementTree.parse(pom_file_path).getroot()
+
+if root.find('namespace:groupId', namespace) is None:
+    raise Exception("Could not get groupId from pom.xml")
+if root.find('namespace:artifactId', namespace) is None:
+    raise Exception("Could not get artifactId from pom.xml")
+if root.find('namespace:version', namespace) is None:
+    raise Exception("Could not get version from pom.xml")
+
 group_id = root.find('namespace:groupId', namespace).text
 artifact_id = root.find('namespace:artifactId', namespace).text
 version = root.find('namespace:version', namespace).text
