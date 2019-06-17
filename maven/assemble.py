@@ -35,13 +35,14 @@ root = ElementTree.parse(pom_file_path).getroot()
 group_id = root.find('namespace:groupId', namespace)
 artifact_id = root.find('namespace:artifactId', namespace)
 version = root.find('namespace:version', namespace)
-if not group_id:
+if group_id is None or len(group_id.text) == 0:
     raise Exception("Could not get groupId from pom.xml")
-if not artifact_id:
+if artifact_id is None or len(artifact_id.text) == 0:
     raise Exception("Could not get artifactId from pom.xml")
-if not version:
+if version is None or len(version.text) == 0:
     raise Exception("Could not get version from pom.xml")
 
+print(' hehehe {}'.format(len(group_id.text)))
 
 directory_inside_jar = 'META-INF/maven/{}/{}/'.format(group_id.text, artifact_id.text)
 
