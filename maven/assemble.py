@@ -42,8 +42,6 @@ if artifact_id is None or len(artifact_id.text) == 0:
 if version is None or len(version.text) == 0:
     raise Exception("Could not get version from pom.xml")
 
-print(' hehehe {}'.format(len(group_id.text)))
-
 directory_inside_jar = 'META-INF/maven/{}/{}/'.format(group_id.text, artifact_id.text)
 
 # Copy input file to output file

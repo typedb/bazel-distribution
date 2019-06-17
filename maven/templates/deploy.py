@@ -145,16 +145,27 @@ maven_url = deployment_properties['repo.maven.' + repo_type]
 jar_path = "$JAR_PATH"
 pom_file_path = "$POM_PATH"
 srcjar_path = "$SRCJAR_PATH"
-group_id, artifact_id, version_placeholder = list(map(operator.attrgetter('text'),
-                                                      ElementTree.parse(pom_file_path).getroot()[1:4]))
+
+namespace = { 'namespace': 'http://maven.apache.org/POM/4.0.0' }
+root = ElementTree.parse(pom_file_path).getroot()
+group_id = root.find('namespace:groupId', namespace)
+artifact_id = root.find('namespace:artifactId', namespace)
+version_placeholder = root.find('namespace:version', namespace)
+if group_id is None or len(group_id.text) == 0:
+    raise Exception("Could not get groupId from pom.xml")
+if artifact_id is None or len(artifact_id.text) == 0:
+    raise Exception("Could not get artifactId from pom.xml")
+if version_placeholder is None or len(version_placeholder.text) == 0:
+    raise Exception("Could not get version from pom.xml")
+
 filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format(
-    coordinates=group_id.replace('.', '/'), version=version, artifact=artifact_id)
+    coordinates=group_id.text.replace('.', '/'), version=version, artifact=artifact_id.text)
 
 pom_updated = None
 jar_updated = None
 
 with open(pom_file_path, 'r') as pom_original, tempfile.NamedTemporaryFile(delete=False) as pom_updated:
-    pom_updated_content = pom_original.read().replace(version_placeholder, version)
+    pom_updated_content = pom_original.read().replace(version_placeholder.text, version)
     pom_updated.write(pom_updated_content)
     pom_updated.flush()
     jar_updated = update_pom_within_jar(jar_path, pom_updated_content)
