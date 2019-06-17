@@ -35,11 +35,11 @@ root = ElementTree.parse(pom_file_path).getroot()
 group_id = root.find('namespace:groupId', namespace)
 artifact_id = root.find('namespace:artifactId', namespace)
 version = root.find('namespace:version', namespace)
-if group_id is None:
+if not group_id:
     raise Exception("Could not get groupId from pom.xml")
-if artifact_id is None:
+if not artifact_id:
     raise Exception("Could not get artifactId from pom.xml")
-if version is None:
+if not version:
     raise Exception("Could not get version from pom.xml")
 
 
