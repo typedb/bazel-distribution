@@ -734,7 +734,7 @@ generate_json_config(<a href="#generate_json_config-name">name</a>, <a href="#ge
 ## java_deps
 
 <pre>
-java_deps(<a href="#java_deps-name">name</a>, <a href="#java_deps-java_deps_root">java_deps_root</a>, <a href="#java_deps-target">target</a>, <a href="#java_deps-version_file">version_file</a>)
+java_deps(<a href="#java_deps-name">name</a>, <a href="#java_deps-java_deps_root">java_deps_root</a>, <a href="#java_deps-maven_name">maven_name</a>, <a href="#java_deps-target">target</a>, <a href="#java_deps-version_file">version_file</a>)
 </pre>
 
 
@@ -762,6 +762,15 @@ java_deps(<a href="#java_deps-name">name</a>, <a href="#java_deps-java_deps_root
         String; optional
         <p>
           Folder inside archive to put JARs into
+        </p>
+      </td>
+    </tr>
+    <tr id="java_deps-maven_name">
+      <td><code>maven_name</code></td>
+      <td>
+        Boolean; optional
+        <p>
+          Name JAR files inside archive based on Maven coordinates
         </p>
       </td>
     </tr>

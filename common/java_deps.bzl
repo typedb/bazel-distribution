@@ -117,6 +117,8 @@ def _java_deps_impl(ctx):
         if file.basename in filenames:
             continue # do not pack JARs with same name
         if file.extension == 'jar' and not file.path.startswith(LOCAL_JDK_PREFIX):
+            if ctx.attr.maven_name and file.path not in mapping:
+                fail("{} does not have associated Maven coordinate".format(file.owner))
             filename = mapping.get(file.path, file.basename).replace('.', '-').replace(':', '-')
             names[file.path] = ctx.attr.java_deps_root + filename + ".jar"
             files.append(file)
@@ -154,6 +156,10 @@ java_deps = rule(
         "version_file": attr.label(
             allow_single_file = True,
             mandatory = True
+        ),
+        "maven_name": attr.bool(
+            doc = "Name JAR files inside archive based on Maven coordinates",
+            default = False,
         ),
         "_java_deps_builder": attr.label(
             default = "//common:java_deps",
