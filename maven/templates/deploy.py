@@ -29,7 +29,7 @@ import subprocess as sp
 import sys
 import tempfile
 import zipfile
-from urlparse import urljoin
+from posixpath import join as urljoin
 
 
 def parse_deployment_properties(fn):
