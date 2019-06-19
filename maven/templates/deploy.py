@@ -23,13 +23,14 @@ from __future__ import print_function
 from xml.etree import ElementTree
 
 import hashlib
-import operator
 import os
 import re
 import subprocess as sp
 import sys
 import tempfile
 import zipfile
+from posixpath import join as urljoin
+
 
 def parse_deployment_properties(fn):
     deployment_properties = {}
@@ -82,7 +83,7 @@ def upload(url, username, password, local_fn, remote_fn):
         '--write-out', '%{http_code}',
         '-u', '{}:{}'.format(username, password),
         '--upload-file', local_fn,
-        url + remote_fn
+        urljoin(url, remote_fn)
     ]).strip()
 
     if upload_status_code != '201':
