@@ -286,7 +286,7 @@ deploy_brew(<a href="#deploy_brew-name">name</a>, <a href="#deploy_brew-checksum
 ## deploy_github
 
 <pre>
-deploy_github(<a href="#deploy_github-name">name</a>, <a href="#deploy_github-archive">archive</a>, <a href="#deploy_github-deployment_properties">deployment_properties</a>, <a href="#deploy_github-release_description">release_description</a>, <a href="#deploy_github-version_file">version_file</a>)
+deploy_github(<a href="#deploy_github-name">name</a>, <a href="#deploy_github-archive">archive</a>, <a href="#deploy_github-deployment_properties">deployment_properties</a>, <a href="#deploy_github-release_description">release_description</a>, <a href="#deploy_github-title">title</a>, <a href="#deploy_github-title_append_version">title_append_version</a>, <a href="#deploy_github-version_file">version_file</a>)
 </pre>
 
 
@@ -332,6 +332,24 @@ deploy_github(<a href="#deploy_github-name">name</a>, <a href="#deploy_github-ar
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
         <p>
           Description of GitHub release
+        </p>
+      </td>
+    </tr>
+    <tr id="deploy_github-title">
+      <td><code>title</code></td>
+      <td>
+        String; optional
+        <p>
+          Title of GitHub release
+        </p>
+      </td>
+    </tr>
+    <tr id="deploy_github-title_append_version">
+      <td><code>title_append_version</code></td>
+      <td>
+        Boolean; optional
+        <p>
+          Append version to GitHub release title
         </p>
       </td>
     </tr>

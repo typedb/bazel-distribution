@@ -22,15 +22,15 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 def github_dependencies_for_deployment():
     http_archive(
         name = "ghr_osx_zip",
-        urls = ["https://github.com/tcnksm/ghr/releases/download/v0.10.2/ghr_v0.10.2_darwin_386.zip"],
-        sha256 = "453fa48b6837f36ff32ccfe3f4f6ad7c131952c87370c38d18f83b6614c00bb3",
-        strip_prefix = "ghr_v0.10.2_darwin_386",
+        urls = ["https://github.com/tcnksm/ghr/releases/download/v0.12.1/ghr_v0.12.1_darwin_amd64.zip"],
+        sha256 = "b5d1379e519fc3b795f3b81e5404d427e0abd8837d9e249f483a72f999dd4f47",
+        strip_prefix = "ghr_v0.12.1_darwin_amd64",
         build_file_content = 'exports_files(["ghr"])'
     )
     http_archive(
         name = "ghr_linux_tar",
-        urls = ["https://github.com/tcnksm/ghr/releases/download/v0.10.2/ghr_v0.10.2_linux_386.tar.gz"],
-        sha256 = "214ec68b48516d2d2e627fbf4da1a4cc84d182de5945c63c07aea53c2b8cc166",
-        strip_prefix = "ghr_v0.10.2_linux_386",
+        urls = ["https://github.com/tcnksm/ghr/releases/download/v0.12.1/ghr_v0.12.1_linux_amd64.tar.gz"],
+        sha256 = "471c2eb1aee20dedffd00254f6c445abb5eb7d479bcae32c4210fdcf036b2dce",
+        strip_prefix = "ghr_v0.12.1_linux_amd64",
         build_file_content = 'exports_files(["ghr"])'
     )

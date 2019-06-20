@@ -28,6 +28,8 @@ def _deploy_github_impl(ctx):
             "{has_release_description}": str(int(bool(ctx.file.release_description))),
             "{ghr_osx_binary}": ctx.files._ghr[0].path,
             "{ghr_linux_binary}": ctx.files._ghr[1].path,
+            "{release_title}": ctx.attr.title or "",
+            "{title_append_version}": str(int(bool(ctx.attr.title_append_version)))
         }
     )
     files = [
@@ -61,6 +63,14 @@ deploy_github = rule(
             mandatory = False,
             allow_single_file = [".zip"],
             doc = "`assemble_versioned` label to be deployed.",
+        ),
+        "title": attr.string(
+            mandatory = False,
+            doc = "Title of GitHub release"
+        ),
+        "title_append_version": attr.bool(
+            default = False,
+            doc = "Append version to GitHub release title"
         ),
         "release_description": attr.label(
             allow_single_file = True,
