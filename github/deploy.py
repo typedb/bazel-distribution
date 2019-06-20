@@ -81,6 +81,10 @@ if args.archive and not os.path.isfile(args.archive):
     raise Exception("argument supplied in --archive is not a file")
 
 archive = "{archive}" or args.archive
+
+title = "{release_title}"
+title_append_version = bool(int("{title_append_version}"))
+
 has_release_description = bool(int("{has_release_description}"))
 github_token = os.getenv('DEPLOY_GITHUB_TOKEN')
 target_commit_id = args.commit_id
@@ -91,6 +95,9 @@ ghr = GHR_BINARIES[system]
 
 with open('VERSION') as version_file:
     github_tag = version_file.read().strip()
+
+if title and title_append_version:
+    title += " {}".format(github_tag)
 
 directory_to_upload = tempfile.mkdtemp()
 
@@ -109,6 +116,7 @@ try:
         ghr,
         '-u', github_organisation,
         '-r', github_repository,
+        '-n', title,
         '-b', open('release_description.txt').read() if has_release_description else '',
         '-c', target_commit_id,
         '-delete', '-draft', github_tag,  # TODO: tag must reference the current commit
