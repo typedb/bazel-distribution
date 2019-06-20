@@ -20,13 +20,12 @@
 #
 
 from __future__ import print_function
-import glob
+import argparse
 import os
 import platform
 import shutil
 import subprocess as sp
 import sys
-import tarfile
 import tempfile
 import zipfile
 
@@ -39,6 +38,7 @@ GHR_BINARIES = {
 system = platform.system()
 if system not in GHR_BINARIES:
     raise ValueError('Error - your platform ({}) is not supported. Try Linux or macOS instead.'.format(system))
+
 
 # This ZipFile extends Python's ZipFile and fixes the lost permission issue
 class ZipFile(zipfile.ZipFile):
@@ -72,14 +72,18 @@ if not os.getenv('DEPLOY_GITHUB_TOKEN'):
     print('Error - $DEPLOY_GITHUB_TOKEN must be defined')
     sys.exit(1)
 
-if len(sys.argv) != 2:
-    print('Error - needs an argument: <commit-id>')
-    sys.exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument('commit_id')
+parser.add_argument('--archive', help="Archive to deploy")
+args = parser.parse_args()
 
-archive = "{archive}"
+if args.archive and not os.path.isfile(args.archive):
+    raise Exception("argument supplied in --archive is not a file")
+
+archive = "{archive}" or args.archive
 has_release_description = bool(int("{has_release_description}"))
 github_token = os.getenv('DEPLOY_GITHUB_TOKEN')
-target_commit_id = sys.argv[1]
+target_commit_id = args.commit_id
 properties = parse_deployment_properties('deployment.properties')
 github_organisation = properties['repo.github.organisation']
 github_repository = properties['repo.github.repository']
@@ -90,7 +94,7 @@ with open('VERSION') as version_file:
 
 directory_to_upload = tempfile.mkdtemp()
 
-if len(archive)>0:
+if archive:
     sp.call(['unzip', archive, '-d', directory_to_upload])
 else:
     tempfile.mkdtemp(dir=directory_to_upload)
@@ -107,7 +111,7 @@ try:
         '-r', github_repository,
         '-b', open('release_description.txt').read() if has_release_description else '',
         '-c', target_commit_id,
-        '-delete', '-draft', github_tag, # TODO: tag must reference the current commit
+        '-delete', '-draft', github_tag,  # TODO: tag must reference the current commit
         directory_to_upload
     ], env={'GITHUB_TOKEN': github_token})
 finally:
