@@ -27,12 +27,16 @@ def _generate_json_config_impl(ctx):
 generate_json_config = rule(
     attrs = {
         "template": attr.label(
-            allow_single_file = [".json"]
+            allow_single_file = [".json"],
+            doc = "JSON template to fill in values"
         ),
-        "substitutions": attr.string_dict()
+        "substitutions": attr.string_dict(
+            doc = "Values to fill in"
+        )
     },
     implementation = _generate_json_config_impl,
     outputs = {
         "config": "%{name}.json"
-    }
+    },
+    doc = "Fills in JSON template with provided values"
 )

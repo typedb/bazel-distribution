@@ -270,35 +270,46 @@ assemble_maven = rule(
             aspects = [
                 _java_lib_deps,
                 _maven_pom_deps,
-            ]
+            ],
+            doc = "Java target for subsequent deployment"
         ),
-        "package": attr.string(),
+        "package": attr.string(
+            doc = "Bazel package of this target. Must match one defined in `_maven_packages`"
+        ),
         "version_file": attr.label(
             mandatory = True,
             allow_single_file = True,
+            doc = "File containing version string"
         ),
         "workspace_refs": attr.label(
             mandatory = True,
             allow_single_file = True,
+            doc = 'JSON file describing dependencies to other Bazel workspaces'
         ),
         "project_name": attr.string(
-            default = "PROJECT_NAME"
+            default = "PROJECT_NAME",
+            doc = 'Project name to fill into pom.xml'
         ),
         "project_description": attr.string(
-            default = "PROJECT_DESCRIPTION"
+            default = "PROJECT_DESCRIPTION",
+            doc = 'Project description to fill into pom.xml'
         ),
         "project_url": attr.string(
-            default = "PROJECT_URL"
+            default = "PROJECT_URL",
+            doc = 'Project URL to fill into pom.xml'
         ),
         "license": attr.string(
             values=["apache"],
-            default = "apache"
+            default = "apache",
+            doc = 'Project license to fill into pom.xml'
         ),
         "scm_url": attr.string(
-            default = "PROJECT_URL"
+            default = "PROJECT_URL",
+            doc = 'Project source control URL to fill into pom.xml'
         ),
         "developers": attr.string_list_dict(
-            default = {}
+            default = {},
+            doc = 'Project developers to fill into pom.xml'
         ),
         "_pom_xml_template": attr.label(
             allow_single_file = True,
@@ -315,6 +326,7 @@ assemble_maven = rule(
         )
     },
     implementation = _assemble_maven_impl,
+    doc = "Assemble Java package for subsequent deployment to Maven repo"
 )
 
 
@@ -358,12 +370,14 @@ _default_deployment_properties = None if 'deployment_properties_placeholder' in 
 deploy_maven = rule(
     attrs = {
         "target": attr.label(
-            providers = [MavenDeploymentInfo]
+            providers = [MavenDeploymentInfo],
+            doc = "assemble_maven target to deploy"
         ),
         "deployment_properties": attr.label(
             allow_single_file = True,
             mandatory = not bool(_default_deployment_properties),
-            default = _default_deployment_properties
+            default = _default_deployment_properties,
+            doc = 'Properties file containing repo.maven.(snapshot|release) key'
         ),
         "_deployment_script": attr.label(
             allow_single_file = True,
@@ -371,5 +385,6 @@ deploy_maven = rule(
         ),
     },
     executable = True,
-    implementation = _deploy_maven_impl
+    implementation = _deploy_maven_impl,
+    doc = "Deploy `assemble_maven` target into Maven repo"
 )

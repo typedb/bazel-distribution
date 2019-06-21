@@ -25,6 +25,15 @@ def assemble_aws(name,
                  install,
                  region,
                  files):
+    """Assemble files for AWS deployment
+
+    Args:
+        name: A unique name for this target.
+        ami_name: AMI name of deployed image
+        install: Bazel label for install file
+        region: AWS region to deploy image to
+        files: Files to include into AWS deployment
+    """
     install_fn = Label(install).name
     generated_config_target_name = name + "__do_not_reference_config"
     generate_json_config(

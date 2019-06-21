@@ -22,15 +22,31 @@ load("@bazel_tools//tools/build_defs/pkg:rpm.bzl", "pkg_rpm")
 
 
 def assemble_rpm(name,
-                     package_name,
-                     version_file,
-                     spec_file,
-                     installation_dir = None,
-                     archives = [],
-                     empty_dirs = [],
-                     files = {},
-                     permissions = {},
-                     symlinks = {}):
+                 package_name,
+                 version_file,
+                 spec_file,
+                 installation_dir = None,
+                 archives = [],
+                 empty_dirs = [],
+                 files = {},
+                 permissions = {},
+                 symlinks = {}):
+    """Assemble package for installation with RPM
+
+    Args:
+        name: A unique name for this target.
+        package_name: Package name for built .deb package
+        version_file: File containing version number of a package
+        spec_file: The RPM spec file to use
+        installation_dir: directory into which .rpm package is unpacked at installation
+        archives: Bazel labels of archives that go into .rpm package
+        empty_dirs: list of empty directories created at package installation
+        files: mapping between Bazel labels of archives that go into .rpm package
+            and their resulting location on .rpm package installation
+        permissions: mapping between paths and UNIX permissions
+        symlinks: mapping between source and target of symbolic links
+                    created at installation
+    """
     tar_name = "_{}-rpm-tar".format(package_name)
 
     rpm_data = []
@@ -131,11 +147,13 @@ def _deploy_rpm_impl(ctx):
 deploy_rpm = rule(
     attrs = {
         "target": attr.label(
-            aspects = [collect_rpm_package_name]
+            aspects = [collect_rpm_package_name],
+            doc = "`assemble_rpm` target to deploy"
         ),
         "deployment_properties": attr.label(
             allow_single_file = True,
-            mandatory = True
+            mandatory = True,
+            doc = 'Properties file containing repo.rpm.(snapshot|release) key'
         ),
         "_deployment_script": attr.label(
             allow_single_file = True,
@@ -147,4 +165,5 @@ deploy_rpm = rule(
     },
     implementation = _deploy_rpm_impl,
     executable = True,
+    doc = 'Deploy package built with `assemble_rpm` to RPM repository'
 )

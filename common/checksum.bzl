@@ -26,11 +26,15 @@ def _checksum(ctx):
 
 checksum = rule(
     attrs = {
-        'archive': attr.label(allow_single_file = True, mandatory = True)
+        'archive': attr.label(
+            allow_single_file = True,
+            mandatory = True,
+            doc = "Archive to compute checksum of"
+        )
     },
     outputs = {
         'checksum_file': '%{name}.sha256'
     },
-    implementation = _checksum
-
+    implementation = _checksum,
+    doc = "Computes SHA256 checksum of file"
 )

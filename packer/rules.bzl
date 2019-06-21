@@ -22,6 +22,13 @@ load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 def assemble_packer(name,
                     config,
                     files = {}):
+    """Assemble files for HashiCorp Packer deployment
+
+    Args:
+        name: A unique name for this target.
+        config: Packer JSON config
+        files: Files to include into deployment
+    """
     _files = {
         config: "config.json"
     }
@@ -57,7 +64,7 @@ deploy_packer = rule(
         "target": attr.label(
             mandatory = False,
             allow_single_file = [".packer.tar"],
-            doc = "Distribution to be deployed.",
+            doc = "`assemble_packer` label to be deployed.",
         ),
         "_deployment_script_template": attr.label(
             allow_single_file = True,
@@ -69,5 +76,6 @@ deploy_packer = rule(
         ),
     },
     executable = True,
-    implementation = _deploy_packer_impl
+    implementation = _deploy_packer_impl,
+    doc = "Execute Packer to perform deployment"
 )

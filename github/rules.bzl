@@ -96,5 +96,6 @@ deploy_github = rule(
         )
     },
     implementation = _deploy_github_impl,
-    executable = True
+    executable = True,
+    doc = "Deploy `assemble_versioned` target to GitHub Releases"
 )

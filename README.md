@@ -8,7 +8,7 @@
 assemble_maven(<a href="#assemble_maven-name">name</a>, <a href="#assemble_maven-developers">developers</a>, <a href="#assemble_maven-license">license</a>, <a href="#assemble_maven-package">package</a>, <a href="#assemble_maven-project_description">project_description</a>, <a href="#assemble_maven-project_name">project_name</a>, <a href="#assemble_maven-project_url">project_url</a>, <a href="#assemble_maven-scm_url">scm_url</a>, <a href="#assemble_maven-target">target</a>, <a href="#assemble_maven-version_file">version_file</a>, <a href="#assemble_maven-workspace_refs">workspace_refs</a>)
 </pre>
 
-
+Assemble Java package for subsequent deployment to Maven repo
 
 ### Attributes
 
@@ -31,60 +31,90 @@ assemble_maven(<a href="#assemble_maven-name">name</a>, <a href="#assemble_maven
       <td><code>developers</code></td>
       <td>
         <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> List of strings</a>; optional
+        <p>
+          Project developers to fill into pom.xml
+        </p>
       </td>
     </tr>
     <tr id="assemble_maven-license">
       <td><code>license</code></td>
       <td>
         String; optional
+        <p>
+          Project license to fill into pom.xml
+        </p>
       </td>
     </tr>
     <tr id="assemble_maven-package">
       <td><code>package</code></td>
       <td>
         String; optional
+        <p>
+          Bazel package of this target. Must match one defined in `_maven_packages`
+        </p>
       </td>
     </tr>
     <tr id="assemble_maven-project_description">
       <td><code>project_description</code></td>
       <td>
         String; optional
+        <p>
+          Project description to fill into pom.xml
+        </p>
       </td>
     </tr>
     <tr id="assemble_maven-project_name">
       <td><code>project_name</code></td>
       <td>
         String; optional
+        <p>
+          Project name to fill into pom.xml
+        </p>
       </td>
     </tr>
     <tr id="assemble_maven-project_url">
       <td><code>project_url</code></td>
       <td>
         String; optional
+        <p>
+          Project URL to fill into pom.xml
+        </p>
       </td>
     </tr>
     <tr id="assemble_maven-scm_url">
       <td><code>scm_url</code></td>
       <td>
         String; optional
+        <p>
+          Project source control URL to fill into pom.xml
+        </p>
       </td>
     </tr>
     <tr id="assemble_maven-target">
       <td><code>target</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          Java target for subsequent deployment
+        </p>
       </td>
     </tr>
     <tr id="assemble_maven-version_file">
       <td><code>version_file</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          File containing version string
+        </p>
       </td>
     </tr>
     <tr id="assemble_maven-workspace_refs">
       <td><code>workspace_refs</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          JSON file describing dependencies to other Bazel workspaces
+        </p>
       </td>
     </tr>
   </tbody>
@@ -99,7 +129,7 @@ assemble_maven(<a href="#assemble_maven-name">name</a>, <a href="#assemble_maven
 assemble_versioned(<a href="#assemble_versioned-name">name</a>, <a href="#assemble_versioned-targets">targets</a>, <a href="#assemble_versioned-version_file">version_file</a>)
 </pre>
 
-
+Version multiple archives for subsequent simultaneous deployment
 
 ### Attributes
 
@@ -122,6 +152,9 @@ assemble_versioned(<a href="#assemble_versioned-name">name</a>, <a href="#assemb
       <td><code>targets</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a>; optional
+        <p>
+          Archives to version and put into output archive
+        </p>
       </td>
     </tr>
     <tr id="assemble_versioned-version_file">
@@ -145,7 +178,7 @@ assemble_versioned(<a href="#assemble_versioned-name">name</a>, <a href="#assemb
 checksum(<a href="#checksum-name">name</a>, <a href="#checksum-archive">archive</a>)
 </pre>
 
-
+Computes SHA256 checksum of file
 
 ### Attributes
 
@@ -168,6 +201,9 @@ checksum(<a href="#checksum-name">name</a>, <a href="#checksum-archive">archive<
       <td><code>archive</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          Archive to compute checksum of
+        </p>
       </td>
     </tr>
   </tbody>
@@ -182,7 +218,7 @@ checksum(<a href="#checksum-name">name</a>, <a href="#checksum-archive">archive<
 deploy_apt(<a href="#deploy_apt-name">name</a>, <a href="#deploy_apt-deployment_properties">deployment_properties</a>, <a href="#deploy_apt-target">target</a>)
 </pre>
 
-
+Deploy package built with `assemble_apt` to APT repository
 
 ### Attributes
 
@@ -205,12 +241,18 @@ deploy_apt(<a href="#deploy_apt-name">name</a>, <a href="#deploy_apt-deployment_
       <td><code>deployment_properties</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          Properties file containing repo.apt.(snapshot|release) key
+        </p>
       </td>
     </tr>
     <tr id="deploy_apt-target">
       <td><code>target</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
+        <p>
+          assemble_apt label to deploy
+        </p>
       </td>
     </tr>
   </tbody>
@@ -225,7 +267,7 @@ deploy_apt(<a href="#deploy_apt-name">name</a>, <a href="#deploy_apt-deployment_
 deploy_brew(<a href="#deploy_brew-name">name</a>, <a href="#deploy_brew-checksum">checksum</a>, <a href="#deploy_brew-deployment_properties">deployment_properties</a>, <a href="#deploy_brew-formula">formula</a>, <a href="#deploy_brew-type">type</a>, <a href="#deploy_brew-version_file">version_file</a>)
 </pre>
 
-
+Deploy Homebrew (Caskroom) formula to Homebrew tap
 
 ### Attributes
 
@@ -248,12 +290,18 @@ deploy_brew(<a href="#deploy_brew-name">name</a>, <a href="#deploy_brew-checksum
       <td><code>checksum</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
+        <p>
+          Checksum of deployed artifact
+        </p>
       </td>
     </tr>
     <tr id="deploy_brew-deployment_properties">
       <td><code>deployment_properties</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          Properties file containing repo.brew.(snapshot|release) key
+        </p>
       </td>
     </tr>
     <tr id="deploy_brew-formula">
@@ -269,12 +317,19 @@ deploy_brew(<a href="#deploy_brew-name">name</a>, <a href="#deploy_brew-checksum
       <td><code>type</code></td>
       <td>
         String; optional
+        <p>
+          Type of deployment (Homebrew/Caskroom).
+            Cask is generally used for graphic applications
+        </p>
       </td>
     </tr>
     <tr id="deploy_brew-version_file">
       <td><code>version_file</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          File containing version string
+        </p>
       </td>
     </tr>
   </tbody>
@@ -289,7 +344,7 @@ deploy_brew(<a href="#deploy_brew-name">name</a>, <a href="#deploy_brew-checksum
 deploy_github(<a href="#deploy_github-name">name</a>, <a href="#deploy_github-archive">archive</a>, <a href="#deploy_github-deployment_properties">deployment_properties</a>, <a href="#deploy_github-release_description">release_description</a>, <a href="#deploy_github-title">title</a>, <a href="#deploy_github-title_append_version">title_append_version</a>, <a href="#deploy_github-version_file">version_file</a>)
 </pre>
 
-
+Deploy `assemble_versioned` target to GitHub Releases
 
 ### Attributes
 
@@ -374,7 +429,7 @@ deploy_github(<a href="#deploy_github-name">name</a>, <a href="#deploy_github-ar
 deploy_maven(<a href="#deploy_maven-name">name</a>, <a href="#deploy_maven-deployment_properties">deployment_properties</a>, <a href="#deploy_maven-target">target</a>)
 </pre>
 
-
+Deploy `assemble_maven` target into Maven repo
 
 ### Attributes
 
@@ -397,12 +452,18 @@ deploy_maven(<a href="#deploy_maven-name">name</a>, <a href="#deploy_maven-deplo
       <td><code>deployment_properties</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          Properties file containing repo.maven.(snapshot|release) key
+        </p>
       </td>
     </tr>
     <tr id="deploy_maven-target">
       <td><code>target</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
+        <p>
+          assemble_maven target to deploy
+        </p>
       </td>
     </tr>
   </tbody>
@@ -417,7 +478,7 @@ deploy_maven(<a href="#deploy_maven-name">name</a>, <a href="#deploy_maven-deplo
 deploy_npm(<a href="#deploy_npm-name">name</a>, <a href="#deploy_npm-deployment_properties">deployment_properties</a>, <a href="#deploy_npm-target">target</a>, <a href="#deploy_npm-version_file">version_file</a>)
 </pre>
 
-
+Deploy `npm_package` target into NPM repo
 
 ### Attributes
 
@@ -475,7 +536,7 @@ deploy_npm(<a href="#deploy_npm-name">name</a>, <a href="#deploy_npm-deployment_
 deploy_packer(<a href="#deploy_packer-name">name</a>, <a href="#deploy_packer-target">target</a>)
 </pre>
 
-
+Execute Packer to perform deployment
 
 ### Attributes
 
@@ -499,7 +560,7 @@ deploy_packer(<a href="#deploy_packer-name">name</a>, <a href="#deploy_packer-ta
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
         <p>
-          Distribution to be deployed.
+          `assemble_packer` label to be deployed.
         </p>
       </td>
     </tr>
@@ -515,7 +576,7 @@ deploy_packer(<a href="#deploy_packer-name">name</a>, <a href="#deploy_packer-ta
 deploy_pip(<a href="#deploy_pip-name">name</a>, <a href="#deploy_pip-author">author</a>, <a href="#deploy_pip-author_email">author_email</a>, <a href="#deploy_pip-classifiers">classifiers</a>, <a href="#deploy_pip-deployment_properties">deployment_properties</a>, <a href="#deploy_pip-deps">deps</a>, <a href="#deploy_pip-description">description</a>, <a href="#deploy_pip-install_requires">install_requires</a>, <a href="#deploy_pip-keywords">keywords</a>, <a href="#deploy_pip-license">license</a>, <a href="#deploy_pip-long_description_file">long_description_file</a>, <a href="#deploy_pip-package_name">package_name</a>, <a href="#deploy_pip-target">target</a>, <a href="#deploy_pip-url">url</a>, <a href="#deploy_pip-version_file">version_file</a>)
 </pre>
 
-
+Deploy package into PyPI repository
 
 ### Attributes
 
@@ -669,7 +730,7 @@ deploy_pip(<a href="#deploy_pip-name">name</a>, <a href="#deploy_pip-author">aut
 deploy_rpm(<a href="#deploy_rpm-name">name</a>, <a href="#deploy_rpm-deployment_properties">deployment_properties</a>, <a href="#deploy_rpm-target">target</a>)
 </pre>
 
-
+Deploy package built with `assemble_rpm` to RPM repository
 
 ### Attributes
 
@@ -692,12 +753,18 @@ deploy_rpm(<a href="#deploy_rpm-name">name</a>, <a href="#deploy_rpm-deployment_
       <td><code>deployment_properties</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          Properties file containing repo.rpm.(snapshot|release) key
+        </p>
       </td>
     </tr>
     <tr id="deploy_rpm-target">
       <td><code>target</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
+        <p>
+          `assemble_rpm` target to deploy
+        </p>
       </td>
     </tr>
   </tbody>
@@ -712,7 +779,7 @@ deploy_rpm(<a href="#deploy_rpm-name">name</a>, <a href="#deploy_rpm-deployment_
 generate_json_config(<a href="#generate_json_config-name">name</a>, <a href="#generate_json_config-substitutions">substitutions</a>, <a href="#generate_json_config-template">template</a>)
 </pre>
 
-
+Fills in JSON template with provided values
 
 ### Attributes
 
@@ -735,12 +802,18 @@ generate_json_config(<a href="#generate_json_config-name">name</a>, <a href="#ge
       <td><code>substitutions</code></td>
       <td>
         <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a>; optional
+        <p>
+          Values to fill in
+        </p>
       </td>
     </tr>
     <tr id="generate_json_config-template">
       <td><code>template</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
+        <p>
+          JSON template to fill in values
+        </p>
       </td>
     </tr>
   </tbody>
@@ -755,7 +828,7 @@ generate_json_config(<a href="#generate_json_config-name">name</a>, <a href="#ge
 java_deps(<a href="#java_deps-name">name</a>, <a href="#java_deps-java_deps_root">java_deps_root</a>, <a href="#java_deps-maven_name">maven_name</a>, <a href="#java_deps-target">target</a>, <a href="#java_deps-version_file">version_file</a>)
 </pre>
 
-
+Packs Java library alongside with its dependencies into archive
 
 ### Attributes
 
@@ -796,12 +869,18 @@ java_deps(<a href="#java_deps-name">name</a>, <a href="#java_deps-java_deps_root
       <td><code>target</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          Java target to pack into archive
+        </p>
       </td>
     </tr>
     <tr id="java_deps-version_file">
       <td><code>version_file</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          File containing version string
+        </p>
       </td>
     </tr>
   </tbody>
@@ -1015,7 +1094,7 @@ pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">archit
 tgz2zip(<a href="#tgz2zip-name">name</a>, <a href="#tgz2zip-output_filename">output_filename</a>, <a href="#tgz2zip-prefix">prefix</a>, <a href="#tgz2zip-tgz">tgz</a>)
 </pre>
 
-
+Converts .tar.gz into .zip
 
 ### Attributes
 
@@ -1038,18 +1117,27 @@ tgz2zip(<a href="#tgz2zip-name">name</a>, <a href="#tgz2zip-output_filename">out
       <td><code>output_filename</code></td>
       <td>
         String; required
+        <p>
+          Resulting filename
+        </p>
       </td>
     </tr>
     <tr id="tgz2zip-prefix">
       <td><code>prefix</code></td>
       <td>
         String; optional
+        <p>
+          Prefix of files in archive
+        </p>
       </td>
     </tr>
     <tr id="tgz2zip-tgz">
       <td><code>tgz</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          Input .tar.gz archive
+        </p>
       </td>
     </tr>
   </tbody>
@@ -1230,7 +1318,7 @@ TransitiveJarToMavenCoordinatesMapping(<a href="#TransitiveJarToMavenCoordinates
 assemble_apt(<a href="#assemble_apt-name">name</a>, <a href="#assemble_apt-package_name">package_name</a>, <a href="#assemble_apt-maintainer">maintainer</a>, <a href="#assemble_apt-version_file">version_file</a>, <a href="#assemble_apt-description">description</a>, <a href="#assemble_apt-installation_dir">installation_dir</a>, <a href="#assemble_apt-archives">archives</a>, <a href="#assemble_apt-empty_dirs">empty_dirs</a>, <a href="#assemble_apt-files">files</a>, <a href="#assemble_apt-depends">depends</a>, <a href="#assemble_apt-symlinks">symlinks</a>, <a href="#assemble_apt-permissions">permissions</a>)
 </pre>
 
-
+Assemble package for installation with APT
 
 ### Parameters
 
@@ -1244,72 +1332,116 @@ assemble_apt(<a href="#assemble_apt-name">name</a>, <a href="#assemble_apt-packa
       <td><code>name</code></td>
       <td>
         required.
+        <p>
+          A unique name for this target.
+        </p>
       </td>
     </tr>
     <tr id="assemble_apt-package_name">
       <td><code>package_name</code></td>
       <td>
         required.
+        <p>
+          Package name for built .deb package
+    https://www.debian.org/doc/debian-policy/ch-controlfields#package
+        </p>
       </td>
     </tr>
     <tr id="assemble_apt-maintainer">
       <td><code>maintainer</code></td>
       <td>
         required.
+        <p>
+          The package maintainer's name and email address.
+    The name must come first, then the email address
+    inside angle brackets <> (in RFC822 format)
+        </p>
       </td>
     </tr>
     <tr id="assemble_apt-version_file">
       <td><code>version_file</code></td>
       <td>
         required.
+        <p>
+          File containing version number of a package
+    https://www.debian.org/doc/debian-policy/ch-controlfields#version
+        </p>
       </td>
     </tr>
     <tr id="assemble_apt-description">
       <td><code>description</code></td>
       <td>
         required.
+        <p>
+          description of the built package
+    https://www.debian.org/doc/debian-policy/ch-controlfields#description
+        </p>
       </td>
     </tr>
     <tr id="assemble_apt-installation_dir">
       <td><code>installation_dir</code></td>
       <td>
         optional. default is <code>None</code>
+        <p>
+          directory into which .deb package is unpacked at installation
+        </p>
       </td>
     </tr>
     <tr id="assemble_apt-archives">
       <td><code>archives</code></td>
       <td>
         optional. default is <code>[]</code>
+        <p>
+          Bazel labels of archives that go into .deb package
+        </p>
       </td>
     </tr>
     <tr id="assemble_apt-empty_dirs">
       <td><code>empty_dirs</code></td>
       <td>
         optional. default is <code>[]</code>
+        <p>
+          list of empty directories created at package installation
+        </p>
       </td>
     </tr>
     <tr id="assemble_apt-files">
       <td><code>files</code></td>
       <td>
         optional. default is <code>{}</code>
+        <p>
+          mapping between Bazel labels of archives that go into .deb package
+    and their resulting location on .deb package installation
+        </p>
       </td>
     </tr>
     <tr id="assemble_apt-depends">
       <td><code>depends</code></td>
       <td>
         optional. default is <code>[]</code>
+        <p>
+          list of Debian packages this package depends on
+    https://www.debian.org/doc/debian-policy/ch-relationships.htm
+        </p>
       </td>
     </tr>
     <tr id="assemble_apt-symlinks">
       <td><code>symlinks</code></td>
       <td>
         optional. default is <code>{}</code>
+        <p>
+          mapping between source and target of symbolic links
+    created at installation
+        </p>
       </td>
     </tr>
     <tr id="assemble_apt-permissions">
       <td><code>permissions</code></td>
       <td>
         optional. default is <code>{}</code>
+        <p>
+          mapping between paths and UNIX permissions
+        </p>
       </td>
     </tr>
   </tbody>
@@ -1324,7 +1456,7 @@ assemble_apt(<a href="#assemble_apt-name">name</a>, <a href="#assemble_apt-packa
 assemble_aws(<a href="#assemble_aws-name">name</a>, <a href="#assemble_aws-ami_name">ami_name</a>, <a href="#assemble_aws-install">install</a>, <a href="#assemble_aws-region">region</a>, <a href="#assemble_aws-files">files</a>)
 </pre>
 
-
+Assemble files for AWS deployment
 
 ### Parameters
 
@@ -1338,30 +1470,45 @@ assemble_aws(<a href="#assemble_aws-name">name</a>, <a href="#assemble_aws-ami_n
       <td><code>name</code></td>
       <td>
         required.
+        <p>
+          A unique name for this target.
+        </p>
       </td>
     </tr>
     <tr id="assemble_aws-ami_name">
       <td><code>ami_name</code></td>
       <td>
         required.
+        <p>
+          AMI name of deployed image
+        </p>
       </td>
     </tr>
     <tr id="assemble_aws-install">
       <td><code>install</code></td>
       <td>
         required.
+        <p>
+          Bazel label for install file
+        </p>
       </td>
     </tr>
     <tr id="assemble_aws-region">
       <td><code>region</code></td>
       <td>
         required.
+        <p>
+          AWS region to deploy image to
+        </p>
       </td>
     </tr>
     <tr id="assemble_aws-files">
       <td><code>files</code></td>
       <td>
         required.
+        <p>
+          Files to include into AWS deployment
+        </p>
       </td>
     </tr>
   </tbody>
@@ -1376,7 +1523,7 @@ assemble_aws(<a href="#assemble_aws-name">name</a>, <a href="#assemble_aws-ami_n
 assemble_gcp(<a href="#assemble_gcp-name">name</a>, <a href="#assemble_gcp-project_id">project_id</a>, <a href="#assemble_gcp-install">install</a>, <a href="#assemble_gcp-zone">zone</a>, <a href="#assemble_gcp-image_name">image_name</a>, <a href="#assemble_gcp-image_licenses">image_licenses</a>, <a href="#assemble_gcp-files">files</a>)
 </pre>
 
-
+Assemble files for GCP deployment
 
 ### Parameters
 
@@ -1390,42 +1537,63 @@ assemble_gcp(<a href="#assemble_gcp-name">name</a>, <a href="#assemble_gcp-proje
       <td><code>name</code></td>
       <td>
         required.
+        <p>
+          A unique name for this target.
+        </p>
       </td>
     </tr>
     <tr id="assemble_gcp-project_id">
       <td><code>project_id</code></td>
       <td>
         required.
+        <p>
+          Google project id
+        </p>
       </td>
     </tr>
     <tr id="assemble_gcp-install">
       <td><code>install</code></td>
       <td>
         required.
+        <p>
+          Bazel label for install file
+        </p>
       </td>
     </tr>
     <tr id="assemble_gcp-zone">
       <td><code>zone</code></td>
       <td>
         required.
+        <p>
+          GCP zone to deploy image to
+        </p>
       </td>
     </tr>
     <tr id="assemble_gcp-image_name">
       <td><code>image_name</code></td>
       <td>
         required.
+        <p>
+          name of deployed image
+        </p>
       </td>
     </tr>
     <tr id="assemble_gcp-image_licenses">
       <td><code>image_licenses</code></td>
       <td>
         required.
+        <p>
+          licenses to attach to deployed image
+        </p>
       </td>
     </tr>
     <tr id="assemble_gcp-files">
       <td><code>files</code></td>
       <td>
         required.
+        <p>
+          Files to include into GCP deployment
+        </p>
       </td>
     </tr>
   </tbody>
@@ -1440,7 +1608,7 @@ assemble_gcp(<a href="#assemble_gcp-name">name</a>, <a href="#assemble_gcp-proje
 assemble_packer(<a href="#assemble_packer-name">name</a>, <a href="#assemble_packer-config">config</a>, <a href="#assemble_packer-files">files</a>)
 </pre>
 
-
+Assemble files for HashiCorp Packer deployment
 
 ### Parameters
 
@@ -1454,18 +1622,27 @@ assemble_packer(<a href="#assemble_packer-name">name</a>, <a href="#assemble_pac
       <td><code>name</code></td>
       <td>
         required.
+        <p>
+          A unique name for this target.
+        </p>
       </td>
     </tr>
     <tr id="assemble_packer-config">
       <td><code>config</code></td>
       <td>
         required.
+        <p>
+          Packer JSON config
+        </p>
       </td>
     </tr>
     <tr id="assemble_packer-files">
       <td><code>files</code></td>
       <td>
         optional. default is <code>{}</code>
+        <p>
+          Files to include into deployment
+        </p>
       </td>
     </tr>
   </tbody>
@@ -1480,7 +1657,7 @@ assemble_packer(<a href="#assemble_packer-name">name</a>, <a href="#assemble_pac
 assemble_rpm(<a href="#assemble_rpm-name">name</a>, <a href="#assemble_rpm-package_name">package_name</a>, <a href="#assemble_rpm-version_file">version_file</a>, <a href="#assemble_rpm-spec_file">spec_file</a>, <a href="#assemble_rpm-installation_dir">installation_dir</a>, <a href="#assemble_rpm-archives">archives</a>, <a href="#assemble_rpm-empty_dirs">empty_dirs</a>, <a href="#assemble_rpm-files">files</a>, <a href="#assemble_rpm-permissions">permissions</a>, <a href="#assemble_rpm-symlinks">symlinks</a>)
 </pre>
 
-
+Assemble package for installation with RPM
 
 ### Parameters
 
@@ -1494,60 +1671,92 @@ assemble_rpm(<a href="#assemble_rpm-name">name</a>, <a href="#assemble_rpm-packa
       <td><code>name</code></td>
       <td>
         required.
+        <p>
+          A unique name for this target.
+        </p>
       </td>
     </tr>
     <tr id="assemble_rpm-package_name">
       <td><code>package_name</code></td>
       <td>
         required.
+        <p>
+          Package name for built .deb package
+        </p>
       </td>
     </tr>
     <tr id="assemble_rpm-version_file">
       <td><code>version_file</code></td>
       <td>
         required.
+        <p>
+          File containing version number of a package
+        </p>
       </td>
     </tr>
     <tr id="assemble_rpm-spec_file">
       <td><code>spec_file</code></td>
       <td>
         required.
+        <p>
+          The RPM spec file to use
+        </p>
       </td>
     </tr>
     <tr id="assemble_rpm-installation_dir">
       <td><code>installation_dir</code></td>
       <td>
         optional. default is <code>None</code>
+        <p>
+          directory into which .rpm package is unpacked at installation
+        </p>
       </td>
     </tr>
     <tr id="assemble_rpm-archives">
       <td><code>archives</code></td>
       <td>
         optional. default is <code>[]</code>
+        <p>
+          Bazel labels of archives that go into .rpm package
+        </p>
       </td>
     </tr>
     <tr id="assemble_rpm-empty_dirs">
       <td><code>empty_dirs</code></td>
       <td>
         optional. default is <code>[]</code>
+        <p>
+          list of empty directories created at package installation
+        </p>
       </td>
     </tr>
     <tr id="assemble_rpm-files">
       <td><code>files</code></td>
       <td>
         optional. default is <code>{}</code>
+        <p>
+          mapping between Bazel labels of archives that go into .rpm package
+    and their resulting location on .rpm package installation
+        </p>
       </td>
     </tr>
     <tr id="assemble_rpm-permissions">
       <td><code>permissions</code></td>
       <td>
         optional. default is <code>{}</code>
+        <p>
+          mapping between paths and UNIX permissions
+        </p>
       </td>
     </tr>
     <tr id="assemble_rpm-symlinks">
       <td><code>symlinks</code></td>
       <td>
         optional. default is <code>{}</code>
+        <p>
+          mapping between source and target of symbolic links
+            created at installation
+        </p>
       </td>
     </tr>
   </tbody>
@@ -1562,7 +1771,7 @@ assemble_rpm(<a href="#assemble_rpm-name">name</a>, <a href="#assemble_rpm-packa
 assemble_targz(<a href="#assemble_targz-name">name</a>, <a href="#assemble_targz-output_filename">output_filename</a>, <a href="#assemble_targz-targets">targets</a>, <a href="#assemble_targz-additional_files">additional_files</a>, <a href="#assemble_targz-empty_directories">empty_directories</a>, <a href="#assemble_targz-permissions">permissions</a>, <a href="#assemble_targz-visibility">visibility</a>)
 </pre>
 
-
+Assemble distribution archive (.tar.gz)
 
 ### Parameters
 
@@ -1576,42 +1785,64 @@ assemble_targz(<a href="#assemble_targz-name">name</a>, <a href="#assemble_targz
       <td><code>name</code></td>
       <td>
         required.
+        <p>
+          A unique name for this target.
+        </p>
       </td>
     </tr>
     <tr id="assemble_targz-output_filename">
       <td><code>output_filename</code></td>
       <td>
         optional. default is <code>None</code>
+        <p>
+          filename of resulting archive
+        </p>
       </td>
     </tr>
     <tr id="assemble_targz-targets">
       <td><code>targets</code></td>
       <td>
         optional. default is <code>[]</code>
+        <p>
+          Bazel labels of archives that go into .tar.gz package
+        </p>
       </td>
     </tr>
     <tr id="assemble_targz-additional_files">
       <td><code>additional_files</code></td>
       <td>
         optional. default is <code>{}</code>
+        <p>
+          mapping between Bazel labels of files that go into archive
+    and their resulting location in archive
+        </p>
       </td>
     </tr>
     <tr id="assemble_targz-empty_directories">
       <td><code>empty_directories</code></td>
       <td>
         optional. default is <code>[]</code>
+        <p>
+          list of empty directories created at archive installation
+        </p>
       </td>
     </tr>
     <tr id="assemble_targz-permissions">
       <td><code>permissions</code></td>
       <td>
         optional. default is <code>{}</code>
+        <p>
+          mapping between paths and UNIX permissions
+        </p>
       </td>
     </tr>
     <tr id="assemble_targz-visibility">
       <td><code>visibility</code></td>
       <td>
         optional. default is <code>["//visibility:private"]</code>
+        <p>
+          controls whether the target can be used by other packages
+        </p>
       </td>
     </tr>
   </tbody>
@@ -1626,7 +1857,7 @@ assemble_targz(<a href="#assemble_targz-name">name</a>, <a href="#assemble_targz
 assemble_zip(<a href="#assemble_zip-name">name</a>, <a href="#assemble_zip-output_filename">output_filename</a>, <a href="#assemble_zip-targets">targets</a>, <a href="#assemble_zip-additional_files">additional_files</a>, <a href="#assemble_zip-empty_directories">empty_directories</a>, <a href="#assemble_zip-permissions">permissions</a>, <a href="#assemble_zip-visibility">visibility</a>)
 </pre>
 
-
+Assemble distribution archive (.zip)
 
 ### Parameters
 
@@ -1640,42 +1871,64 @@ assemble_zip(<a href="#assemble_zip-name">name</a>, <a href="#assemble_zip-outpu
       <td><code>name</code></td>
       <td>
         required.
+        <p>
+          A unique name for this target.
+        </p>
       </td>
     </tr>
     <tr id="assemble_zip-output_filename">
       <td><code>output_filename</code></td>
       <td>
         required.
+        <p>
+          filename of resulting archive
+        </p>
       </td>
     </tr>
     <tr id="assemble_zip-targets">
       <td><code>targets</code></td>
       <td>
         required.
+        <p>
+          Bazel labels of archives that go into .tar.gz package
+        </p>
       </td>
     </tr>
     <tr id="assemble_zip-additional_files">
       <td><code>additional_files</code></td>
       <td>
         optional. default is <code>{}</code>
+        <p>
+          mapping between Bazel labels of files that go into archive
+    and their resulting location in archive
+        </p>
       </td>
     </tr>
     <tr id="assemble_zip-empty_directories">
       <td><code>empty_directories</code></td>
       <td>
         optional. default is <code>[]</code>
+        <p>
+          list of empty directories created at archive installation
+        </p>
       </td>
     </tr>
     <tr id="assemble_zip-permissions">
       <td><code>permissions</code></td>
       <td>
         optional. default is <code>{}</code>
+        <p>
+          mapping between paths and UNIX permissions
+        </p>
       </td>
     </tr>
     <tr id="assemble_zip-visibility">
       <td><code>visibility</code></td>
       <td>
         optional. default is <code>["//visibility:private"]</code>
+        <p>
+          controls whether the target can be used by other packages
+        </p>
       </td>
     </tr>
   </tbody>

@@ -28,6 +28,17 @@ def assemble_gcp(name,
                  image_name,
                  image_licenses,
                  files):
+    """Assemble files for GCP deployment
+
+    Args:
+        name: A unique name for this target.
+        project_id: Google project id
+        install: Bazel label for install file
+        zone: GCP zone to deploy image to
+        image_name: name of deployed image
+        image_licenses: licenses to attach to deployed image
+        files: Files to include into GCP deployment
+    """
     install_fn = Label(install).name
     generated_config_target_name = name + "__do_not_reference_config"
     generate_json_config(

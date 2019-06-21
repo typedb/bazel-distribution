@@ -37,6 +37,18 @@ def assemble_targz(name,
                    empty_directories = [],
                    permissions = {},
                    visibility = ["//visibility:private"]):
+    """Assemble distribution archive (.tar.gz)
+
+    Args:
+        name: A unique name for this target.
+        output_filename: filename of resulting archive
+        targets: Bazel labels of archives that go into .tar.gz package
+        additional_files: mapping between Bazel labels of files that go into archive
+            and their resulting location in archive
+        empty_directories: list of empty directories created at archive installation
+        permissions: mapping between paths and UNIX permissions
+        visibility: controls whether the target can be used by other packages
+    """
     pkg_tar(
         name = "{}__do_not_reference__targz_0".format(name),
         deps = targets,
@@ -71,6 +83,18 @@ def assemble_zip(name,
                  empty_directories = [],
                  permissions = {},
                  visibility = ["//visibility:private"]):
+    """Assemble distribution archive (.zip)
+
+    Args:
+        name: A unique name for this target.
+        output_filename: filename of resulting archive
+        targets: Bazel labels of archives that go into .tar.gz package
+        additional_files: mapping between Bazel labels of files that go into archive
+            and their resulting location in archive
+        empty_directories: list of empty directories created at archive installation
+        permissions: mapping between paths and UNIX permissions
+        visibility: controls whether the target can be used by other packages
+    """
     pkg_tar(
         name="{}__do_not_reference__targz".format(name),
         deps = targets,

@@ -104,17 +104,20 @@ py_replace_imports = rule(
             mandatory = True,
 		),
         "original_package": attr.string(
-            default = ""
+            default = "",
+            doc = "Package in original sources"
         ),
         "output_package": attr.string(
-            default = ""
+            default = "",
+            doc = "Package of output sources"
         ),
         "_replace_imports_script": attr.label(
             allow_single_file = True,
             default = "//pip:replace_imports.py",
         )
 	},
-	implementation = _py_replace_imports_impl
+	implementation = _py_replace_imports_impl,
+    doc = "Replace imports in Python sources"
 )
 
 deploy_pip = rule(
@@ -191,6 +194,7 @@ deploy_pip = rule(
       "deployment_script": "%{name}.sh",
       "setup_py": "setup.py",
   },
-  implementation = _deploy_pip_impl
+  implementation = _deploy_pip_impl,
+  doc = "Deploy package into PyPI repository"
 )
 
