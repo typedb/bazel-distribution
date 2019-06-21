@@ -31,18 +31,11 @@ import tempfile
 import zipfile
 from posixpath import join as urljoin
 
-
-def parse_deployment_properties(fn):
-    deployment_properties = {}
-    with open(fn) as deployment_properties_file:
-        for line in deployment_properties_file.readlines():
-            if line.startswith('#'):
-                # skip comments
-                pass
-            elif '=' in line:
-                k, v = line.split('=')
-                deployment_properties[k] = v.strip()
-    return deployment_properties
+# usual importing is not possible because
+# this script and module with common functions
+# are at different directory levels in sandbox
+from runpy import run_path
+parse_deployment_properties = run_path('common.py')['parse_deployment_properties']
 
 
 def sha1(fn):
