@@ -60,14 +60,20 @@ deploy_brew = rule(
     attrs = {
         "checksum": attr.label(
             allow_single_file = True,
+            doc = 'Checksum of deployed artifact'
         ),
         "type": attr.string(
             values = ["brew", "cask"],
-            default = "brew"
+            default = "brew",
+            doc = """
+            Type of deployment (Homebrew/Caskroom).
+            Cask is generally used for graphic applications
+            """
         ),
         "deployment_properties": attr.label(
             allow_single_file = True,
-            mandatory = True
+            mandatory = True,
+            doc = 'Properties file containing repo.brew.(snapshot|release) key'
         ),
         "formula": attr.label(
             allow_single_file = True,
@@ -76,7 +82,8 @@ deploy_brew = rule(
         ),
         "version_file": attr.label(
             allow_single_file = True,
-            mandatory = True
+            mandatory = True,
+            doc = "File containing version string"
         ),
         "_deploy_brew_template": attr.label(
             allow_single_file = True,
@@ -87,5 +94,6 @@ deploy_brew = rule(
     outputs = {
         "deployment_script": "%{name}.py"
     },
-    implementation = _deploy_brew_impl
+    implementation = _deploy_brew_impl,
+    doc = "Deploy Homebrew (Caskroom) formula to Homebrew tap"
 )

@@ -33,13 +33,16 @@ tgz2zip = rule(
     attrs = {
         "tgz": attr.label(
             allow_single_file=[".tar.gz"],
-            mandatory = True
+            mandatory = True,
+            doc = "Input .tar.gz archive"
         ),
         "output_filename": attr.string(
             mandatory = True,
+            doc = 'Resulting filename'
         ),
         "prefix": attr.string(
-            default="."
+            default=".",
+            doc = 'Prefix of files in archive'
         ),
         "_tgz2zip_py": attr.label(
             default = "//common:tgz2zip",
@@ -51,5 +54,6 @@ tgz2zip = rule(
     outputs = {
         "zip": "%{output_filename}.zip"
     },
-    output_to_genfiles = True
+    output_to_genfiles = True,
+    doc = 'Converts .tar.gz into .zip'
 )

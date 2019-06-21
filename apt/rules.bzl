@@ -21,17 +21,41 @@ load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 load("//apt/pkg_deb_modified_from_bazel:pkg.bzl", "pkg_deb")
 
 def assemble_apt(name,
-                     package_name,
-                     maintainer,
-                     version_file,
-                     description,
-                     installation_dir = None,
-                     archives = [],
-                     empty_dirs = [],
-                     files = {},
-                     depends = [],
-                     symlinks = {},
-                     permissions = {}):
+                 package_name,
+                 maintainer,
+                 version_file,
+                 description,
+                 installation_dir = None,
+                 archives = [],
+                 empty_dirs = [],
+                 files = {},
+                 depends = [],
+                 symlinks = {},
+                 permissions = {}):
+    """Assemble package for installation with APT
+
+    Args:
+        name: A unique name for this target.
+        package_name: Package name for built .deb package
+            https://www.debian.org/doc/debian-policy/ch-controlfields#package
+        maintainer: The package maintainer's name and email address.
+            The name must come first, then the email address
+            inside angle brackets <> (in RFC822 format)
+        version_file: File containing version number of a package
+            https://www.debian.org/doc/debian-policy/ch-controlfields#version
+        description: description of the built package
+            https://www.debian.org/doc/debian-policy/ch-controlfields#description
+        installation_dir: directory into which .deb package is unpacked at installation
+        archives: Bazel labels of archives that go into .deb package
+        empty_dirs: list of empty directories created at package installation
+        files: mapping between Bazel labels of archives that go into .deb package
+            and their resulting location on .deb package installation
+        depends: list of Debian packages this package depends on
+            https://www.debian.org/doc/debian-policy/ch-relationships.htm
+        symlinks: mapping between source and target of symbolic links
+            created at installation
+        permissions: mapping between paths and UNIX permissions
+    """
     tar_name = "_{}-deb-tar".format(package_name)
     deb_data = None
     if installation_dir:
@@ -83,10 +107,13 @@ def _deploy_apt_impl(ctx):
 
 deploy_apt = rule(
     attrs = {
-        "target": attr.label(),
+        "target": attr.label(
+            doc = 'assemble_apt label to deploy'
+        ),
         "deployment_properties": attr.label(
             allow_single_file = True,
-            mandatory = True
+            mandatory = True,
+            doc = 'Properties file containing repo.apt.(snapshot|release) key'
         ),
         "_deployment_script": attr.label(
             allow_single_file = True,
@@ -98,4 +125,5 @@ deploy_apt = rule(
     },
     implementation = _deploy_apt_impl,
     executable = True,
+    doc = 'Deploy package built with `assemble_apt` to APT repository'
 )

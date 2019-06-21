@@ -148,14 +148,16 @@ java_deps = rule(
             aspects = [
                 _collect_maven_coordinate,
                 _transitive_collect_maven_coordinate
-            ]
+            ],
+            doc = "Java target to pack into archive"
         ),
         "java_deps_root": attr.string(
             doc = "Folder inside archive to put JARs into"
         ),
         "version_file": attr.label(
             allow_single_file = True,
-            mandatory = True
+            mandatory = True,
+            doc = "File containing version string"
         ),
         "maven_name": attr.bool(
             doc = "Name JAR files inside archive based on Maven coordinates",
@@ -171,4 +173,5 @@ java_deps = rule(
     outputs = {
         "distribution": "%{name}.tgz"
     },
+    doc = "Packs Java library alongside with its dependencies into archive"
 )

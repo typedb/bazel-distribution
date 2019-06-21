@@ -32,7 +32,8 @@ def _assemble_versioned_impl(ctx):
 assemble_versioned = rule(
     attrs = {
         "targets": attr.label_list(
-            allow_files = [".zip", ".tar.gz"]
+            allow_files = [".zip", ".tar.gz"],
+            doc = "Archives to version and put into output archive"
         ),
         "version_file": attr.label(
             allow_single_file = True,
@@ -49,5 +50,6 @@ assemble_versioned = rule(
     outputs = {
         "archive": "%{name}.zip"
     },
-    output_to_genfiles = True
+    output_to_genfiles = True,
+    doc = "Version multiple archives for subsequent simultaneous deployment"
 )

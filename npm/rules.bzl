@@ -72,5 +72,6 @@ deploy_npm = rule(
     executable = True,
     outputs = {
           "deployment_script": "%{name}.sh",
-    }
+    },
+    doc = "Deploy `npm_package` target into NPM repo"
 )
