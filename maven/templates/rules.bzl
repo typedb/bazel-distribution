@@ -357,12 +357,14 @@ def _deploy_maven_impl(ctx):
             ctx.attr.target[MavenDeploymentInfo].jar,
             ctx.attr.target[MavenDeploymentInfo].pom,
             ctx.attr.target[MavenDeploymentInfo].srcjar,
-            ctx.file.deployment_properties
+            ctx.file.deployment_properties,
+            ctx.file._common_py
         ], symlinks = {
             lib_jar_link: ctx.attr.target[MavenDeploymentInfo].jar,
             pom_xml_link: ctx.attr.target[MavenDeploymentInfo].pom,
             src_jar_link: ctx.attr.target[MavenDeploymentInfo].jar,
             'deployment.properties': ctx.file.deployment_properties,
+            "common.py": ctx.file._common_py
         })
     )
 
@@ -383,6 +385,10 @@ deploy_maven = rule(
             allow_single_file = True,
             default = "@graknlabs_bazel_distribution//maven/templates:deploy.py",
         ),
+        "_common_py": attr.label(
+            allow_single_file = True,
+            default = "@graknlabs_bazel_distribution//common:common.py",
+        )
     },
     executable = True,
     implementation = _deploy_maven_impl,

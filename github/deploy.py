@@ -29,6 +29,12 @@ import sys
 import tempfile
 import zipfile
 
+# usual importing is not possible because
+# this script and module with common functions
+# are at different directory levels in sandbox
+from runpy import run_path
+parse_deployment_properties = run_path('common.py')['parse_deployment_properties']
+
 
 GHR_BINARIES = {
     "Darwin": os.path.abspath("{ghr_osx_binary}"),
@@ -53,19 +59,6 @@ class ZipFile(zipfile.ZipFile):
         attr = member.external_attr >> 16
         os.chmod(ret_val, attr)
         return ret_val
-
-
-def parse_deployment_properties(fn):
-    deployment_properties = {}
-    with open(fn) as deployment_properties_file:
-        for line in deployment_properties_file.readlines():
-            if line.startswith('#'):
-                # skip comments
-                pass
-            elif '=' in line:
-                k, v = line.split('=')
-                deployment_properties[k] = v.strip()
-    return deployment_properties
 
 
 if not os.getenv('DEPLOY_GITHUB_TOKEN'):

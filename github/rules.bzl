@@ -34,14 +34,16 @@ def _deploy_github_impl(ctx):
     )
     files = [
         ctx.file.deployment_properties,
-        ctx.file.version_file
+        ctx.file.version_file,
+        ctx.file._common_py
     ] + ctx.files._ghr
 
     if ctx.file.archive!=None:
         files.append(ctx.file.archive)
 
     symlinks = {
-        "deployment.properties": ctx.file.deployment_properties
+        "deployment.properties": ctx.file.deployment_properties,
+        "common.py": ctx.file._common_py
     }
 
     if ctx.file.release_description:
@@ -93,6 +95,10 @@ deploy_github = rule(
         "_ghr": attr.label_list(
             allow_files = True,
             default = ["@ghr_osx_zip//:ghr", "@ghr_linux_tar//:ghr"]
+        ),
+        "_common_py": attr.label(
+            allow_single_file = True,
+            default = "//common:common.py",
         )
     },
     implementation = _deploy_github_impl,

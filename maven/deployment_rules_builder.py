@@ -21,19 +21,7 @@
 
 import sys
 import re
-
-
-def parse_deployment_properties(fn):
-    deployment_properties = {}
-    with open(fn) as deployment_properties_file:
-        for line in deployment_properties_file.readlines():
-            if line.startswith('#'):
-                # skip comments
-                pass
-            elif '=' in line:
-                k, v = line.split('=')
-                deployment_properties[k] = v.strip()
-    return deployment_properties
+from common.common import parse_deployment_properties
 
 
 _, rules_template_fn, rules_output, deployment_properties_fn, deployment_properties_lbl = sys.argv

@@ -76,3 +76,16 @@ def tar_repackage_with_version(original_tarfile, version):
             content = original_tar.extractfile(info)
             repackaged_tar.addfile(info, content)
     return repackaged_tarfile
+
+
+def parse_deployment_properties(fn):
+    deployment_properties = {}
+    with open(fn) as deployment_properties_file:
+        for line in deployment_properties_file.readlines():
+            if line.startswith('#'):
+                # skip comments
+                pass
+            elif '=' in line:
+                k, v = line.split('=')
+                deployment_properties[k] = v.strip()
+    return deployment_properties
