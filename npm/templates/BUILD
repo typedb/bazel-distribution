@@ -1,2 +1,2 @@
 
-exports_files(["deploy.sh"])
+exports_files(["deploy.py", "deploy.sh"])
