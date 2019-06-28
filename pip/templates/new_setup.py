@@ -17,25 +17,24 @@
 # under the License.
 #
 
-exports_files(["replace_imports.py", "requirements.txt"])
+from setuptools import setup
+from setuptools import find_packages
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@graknlabs_bazel_distribution_pip//:requirements.bzl", graknlabs_bazel_distribution_requirement = "requirement")
+packages = find_packages()
 
-
-bzl_library(
-    name = "lib",
-    srcs = [
-        "rules.bzl",
-    ],
-    visibility = ["//visibility:public"]
-)
-
-py_binary(
-    name = "assemble",
-    srcs = ["assemble.py"],
-    deps = [
-        graknlabs_bazel_distribution_requirement("setuptools")
-    ],
-    visibility = ["//visibility:public"]
+setup(
+    name = "{name}",
+    version = "{version}",
+    description = "{description}",
+    long_description = open('README.md').read(),
+    long_description_content_type="text/markdown",
+    classifiers = {classifiers},
+    keywords = "{keywords}",
+    url = "{url}",
+    author = "{author}",
+    author_email = "{author_email}",
+    license = "{license}",
+    packages=packages,
+    install_requires={install_requires},
+    zip_safe=False,
 )
