@@ -18,7 +18,7 @@
 #
 
 def _deploy_github_impl(ctx):
-    _deploy_script = ctx.actions.declare_file("_deploy.py")
+    _deploy_script = ctx.actions.declare_file("{}_deploy.py".format(ctx.attr.name))
 
     ctx.actions.expand_template(
         template = ctx.file._deploy_script,
