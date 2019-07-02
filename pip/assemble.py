@@ -22,6 +22,7 @@
 import argparse
 import glob
 import os
+import re
 import shutil
 import tempfile
 from distutils.core import run_setup
@@ -40,20 +41,29 @@ parser.add_argument('--output', help="Output archive")
 parser.add_argument('--setup_py', help="setup.py")
 parser.add_argument('--readme', help="README file")
 parser.add_argument('--files', nargs='+', help='Python files to pack into archive')
-parser.add_argument('--package_root', help='Folder considered to be the root of all source code')
+parser.add_argument('--imports', nargs='+', help='Folders considered to be source code roots')
 
 args = parser.parse_args()
 
 # absolutize the path
 args.output = os.path.abspath(args.output)
+# turn imports into regex patterns
+args.imports = list(map(
+    lambda imp: re.compile('(?:.*){}[/]?(?P<fn>.*)'.format(imp)),
+    args.imports
+))
 
 # new package root
 pkg_dir = tempfile.mkdtemp()
 
 
 for f in args.files:
-    # descend into package root
-    fn = f[f.find(args.package_root):]
+    fn = f
+    for _imp in args.imports:
+        match = _imp.match(fn)
+        if match:
+            fn = match.group('fn')
+            break
     try:
         e = os.path.join(pkg_dir, os.path.dirname(fn))
         os.makedirs(e)

@@ -113,8 +113,14 @@ def _assemble_pip_impl(ctx):
     args = ctx.actions.args()
 
     python_source_files = []
+
+    imports = []
+    for j in ctx.attr.target[PyInfo].imports.to_list():
+        if not j.startswith("pypi"):
+            imports.append(j)
+
     for i in ctx.attr.target[PyInfo].transitive_sources.to_list():
-        if not 'external' in i.path:
+        if 'external/pypi' not in i.path:
             python_source_files.append(i)
 
     args.add_all('--files', python_source_files)
@@ -152,7 +158,7 @@ def _assemble_pip_impl(ctx):
     )
 
     args.add("--setup_py", setup_py.path)
-    args.add("--package_root", ctx.attr.package_root)
+    args.add_all("--imports", imports)
 
     ctx.actions.run(
         inputs = [ctx.file.version_file, setup_py, ctx.file.long_description_file] + python_source_files,
@@ -218,10 +224,6 @@ assemble_pip = rule(
          "target": attr.label(
             mandatory = True,
             doc = "`py_library` label to be included in the package",
-        ),
-        "package_root": attr.string(
-            mandatory = True,
-            doc = "Root folder at which sources are located",
         ),
         "version_file": attr.label(
             allow_single_file = True,
