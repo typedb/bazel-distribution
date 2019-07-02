@@ -171,7 +171,7 @@ def _assemble_pip_impl(ctx):
 
 
 def _new_deploy_pip_impl(ctx):
-    deployment_script = ctx.actions.declare_file("_deploy.py")
+    deployment_script = ctx.actions.declare_file("{}_deploy.py".format(ctx.attr.name))
 
     ctx.actions.expand_template(
         template = ctx.file._deploy_py_template,
