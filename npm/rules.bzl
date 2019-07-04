@@ -30,6 +30,9 @@ def _assemble_npm_impl(ctx):
         outputs = [ctx.outputs.npm_package],
         arguments = [args],
         executable = ctx.executable._assemble_script,
+        execution_requirements = {
+            "local": "1"
+        }
     )
 
 
