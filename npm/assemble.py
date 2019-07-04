@@ -39,7 +39,9 @@ with open(args.version_file) as version_file:
     version = version_file.read().strip()
 
 new_package_root = tempfile.mktemp()
-shutil.copytree(args.package, new_package_root)
+shutil.copytree(args.package, new_package_root,
+                ignore=lambda _, names: list(
+                    filter(lambda x: 'external' in x, names)))
 package_json_fn = os.path.join(new_package_root, 'package.json')
 
 with open(package_json_fn) as f:
@@ -51,6 +53,14 @@ os.chmod(package_json_fn, 0o755)
 
 with open(package_json_fn, 'w') as f:
     json.dump(package_json, f)
+
+
+os.chmod(new_package_root, 0o755)
+for root, dirs, files in os.walk(new_package_root):
+    for d in dirs:
+        os.chmod(os.path.join(root, d), 0o755)
+    for f in files:
+        os.chmod(os.path.join(root, f), 0o755)
 
 subprocess.check_call([
     'npm',
