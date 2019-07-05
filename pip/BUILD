@@ -39,3 +39,9 @@ py_binary(
     ],
     visibility = ["//visibility:public"]
 )
+
+py_binary(
+    name = "repackage",
+    srcs = ["repackage.py"],
+    visibility = ["//visibility:public"]
+)
