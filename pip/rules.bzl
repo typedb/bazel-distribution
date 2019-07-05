@@ -43,6 +43,58 @@ def _py_replace_imports_impl(ctx):
     return DefaultInfo(files = depset(outputs))
 
 
+def _python_repackage_impl(ctx):
+    outputs = []
+    actions = []
+    all_packages = []
+    for file in ctx.files.src:
+        path = file.short_path
+
+        if path.startswith('../'):
+            # when built from a foreign workspace,
+            # filename starts with ../<workspace_name>/
+            path = path.replace(
+                '../{}/'.format(ctx.attr.src.label.workspace_name),
+                ''
+            )
+
+        # trim bazel package and target name
+        path = path.replace(
+            '{}/{}/'.format(ctx.attr.src.label.package, ctx.attr.src.label.name),
+            ''
+        )
+
+        # add original package root
+        all_packages.append(path.split('/')[0])
+
+        # prepend Python package folder
+        path = '{}/{}'.format(ctx.attr.package, path)
+
+        actions.append({
+            'file': file,
+            'output_path': path,
+        })
+
+    for action in actions:
+        args = ctx.actions.args()
+        outputFile = ctx.actions.declare_file(action['output_path'])
+
+        args.add('--src', action['file'].path)
+        args.add('--dest', outputFile.path)
+        args.add('--pkg', ctx.attr.package)
+        args.add_all('--all_pkgs', all_packages)
+
+        ctx.actions.run(
+            inputs = [action['file']],
+            outputs = [outputFile],
+            arguments = [args],
+            executable = ctx.executable._repackage_script
+        )
+        outputs.append(outputFile)
+
+    return DefaultInfo(files = depset(outputs))
+
+
 def _deploy_pip_impl(ctx):
   if ctx.file.long_description_file.basename != "README.md":
       fail("long_description_file should be called README.md")
@@ -216,6 +268,27 @@ py_replace_imports = rule(
 	},
 	implementation = _py_replace_imports_impl,
     doc = "Replace imports in Python sources"
+)
+
+
+python_repackage = rule(
+    attrs = {
+        "src": attr.label(
+            mandatory = True,
+            doc = "Python source files"
+        ),
+        "package": attr.string(
+            mandatory = True,
+            doc = "New package root for files to be put in"
+        ),
+        "_repackage_script": attr.label(
+            default = "//pip:repackage",
+            executable = True,
+            cfg = "host"
+        )
+
+    },
+    implementation = _python_repackage_impl,
 )
 
 
