@@ -78,7 +78,7 @@ _java_lib_deps = aspect(
         "runtime_deps"
     ],
     doc = """
-    Collects the Maven coordinats of a java_library, and its direct dependencies.
+    Collects the Maven coordinates of a java_library, and its direct dependencies.
     """,
     implementation = _java_lib_deps_impl,
     provides = [JavaLibInfo]
