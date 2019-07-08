@@ -60,9 +60,11 @@ stardoc(
         "JavaLibInfo",
         "MavenDeploymentInfo",
         "MavenPomInfo",
+        "assemble_npm",
         "deploy_npm",
         "assemble_packer",
         "deploy_packer",
+        "assemble_pip",
         "deploy_pip",
         "assemble_rpm",
         "deploy_rpm"

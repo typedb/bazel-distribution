@@ -65,7 +65,7 @@ assemble_npm = rule(
 )
 
 
-def _new_deploy_npm(ctx):
+def _deploy_npm(ctx):
     ctx.actions.expand_template(
         template = ctx.file._deployment_script_template,
         output = ctx.outputs.executable,
@@ -91,8 +91,8 @@ def _new_deploy_npm(ctx):
             }))
 
 
-new_deploy_npm = rule(
-    implementation = _new_deploy_npm,
+deploy_npm = rule(
+    implementation = _deploy_npm,
     executable = True,
     attrs = {
         "target": attr.label(
@@ -118,7 +118,4 @@ new_deploy_npm = rule(
             allow_files = True
         ),
     },
-
 )
-
-deploy_npm = new_deploy_npm
