@@ -303,3 +303,5 @@ new_deploy_pip = rule(
     executable = True,
     implementation = _new_deploy_pip_impl
 )
+
+deploy_pip = new_deploy_pip

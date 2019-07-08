@@ -120,3 +120,5 @@ new_deploy_npm = rule(
     },
 
 )
+
+deploy_npm = new_deploy_npm
