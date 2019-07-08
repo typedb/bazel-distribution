@@ -121,6 +121,194 @@ Assemble Java package for subsequent deployment to Maven repo
 </table>
 
 
+<a name="#assemble_npm"></a>
+
+## assemble_npm
+
+<pre>
+assemble_npm(<a href="#assemble_npm-name">name</a>, <a href="#assemble_npm-target">target</a>, <a href="#assemble_npm-version_file">version_file</a>)
+</pre>
+
+Assemble `npm_package` target for further deployment
+
+### Attributes
+
+<table class="params-table">
+  <colgroup>
+    <col class="col-param" />
+    <col class="col-description" />
+  </colgroup>
+  <tbody>
+    <tr id="assemble_npm-name">
+      <td><code>name</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
+        <p>
+          A unique name for this target.
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_npm-target">
+      <td><code>target</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          `npm_library` label to be included in the package
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_npm-version_file">
+      <td><code>version_file</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          File containing version string
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+<a name="#assemble_pip"></a>
+
+## assemble_pip
+
+<pre>
+assemble_pip(<a href="#assemble_pip-name">name</a>, <a href="#assemble_pip-author">author</a>, <a href="#assemble_pip-author_email">author_email</a>, <a href="#assemble_pip-classifiers">classifiers</a>, <a href="#assemble_pip-description">description</a>, <a href="#assemble_pip-install_requires">install_requires</a>, <a href="#assemble_pip-keywords">keywords</a>, <a href="#assemble_pip-license">license</a>, <a href="#assemble_pip-long_description_file">long_description_file</a>, <a href="#assemble_pip-package_name">package_name</a>, <a href="#assemble_pip-target">target</a>, <a href="#assemble_pip-url">url</a>, <a href="#assemble_pip-version_file">version_file</a>)
+</pre>
+
+
+
+### Attributes
+
+<table class="params-table">
+  <colgroup>
+    <col class="col-param" />
+    <col class="col-description" />
+  </colgroup>
+  <tbody>
+    <tr id="assemble_pip-name">
+      <td><code>name</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
+        <p>
+          A unique name for this target.
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_pip-author">
+      <td><code>author</code></td>
+      <td>
+        String; required
+        <p>
+          Details about the author
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_pip-author_email">
+      <td><code>author_email</code></td>
+      <td>
+        String; required
+        <p>
+          The email for the author
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_pip-classifiers">
+      <td><code>classifiers</code></td>
+      <td>
+        List of strings; required
+        <p>
+          A list of strings, containing Python package classifiers
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_pip-description">
+      <td><code>description</code></td>
+      <td>
+        String; required
+        <p>
+          A string with the short description of the package
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_pip-install_requires">
+      <td><code>install_requires</code></td>
+      <td>
+        List of strings; required
+        <p>
+          A list of strings which are names of required packages for this one
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_pip-keywords">
+      <td><code>keywords</code></td>
+      <td>
+        List of strings; required
+        <p>
+          A list of strings, containing keywords
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_pip-license">
+      <td><code>license</code></td>
+      <td>
+        String; required
+        <p>
+          The type of license to use
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_pip-long_description_file">
+      <td><code>long_description_file</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          A label with the long description of the package. Usually a README or README.rst file
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_pip-package_name">
+      <td><code>package_name</code></td>
+      <td>
+        String; required
+        <p>
+          A string with Python pip package name
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_pip-target">
+      <td><code>target</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          `py_library` label to be included in the package
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_pip-url">
+      <td><code>url</code></td>
+      <td>
+        String; required
+        <p>
+          A homepage for the project
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_pip-version_file">
+      <td><code>version_file</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          File containing version string
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
 <a name="#assemble_versioned"></a>
 
 ## assemble_versioned
@@ -475,10 +663,10 @@ Deploy `assemble_maven` target into Maven repo
 ## deploy_npm
 
 <pre>
-deploy_npm(<a href="#deploy_npm-name">name</a>, <a href="#deploy_npm-deployment_properties">deployment_properties</a>, <a href="#deploy_npm-target">target</a>, <a href="#deploy_npm-version_file">version_file</a>)
+deploy_npm(<a href="#deploy_npm-name">name</a>, <a href="#deploy_npm-deployment_properties">deployment_properties</a>, <a href="#deploy_npm-target">target</a>)
 </pre>
 
-Deploy `npm_package` target into NPM repo
+
 
 ### Attributes
 
@@ -511,16 +699,7 @@ Deploy `npm_package` target into NPM repo
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
         <p>
-          `npm_library` label to be included in the package
-        </p>
-      </td>
-    </tr>
-    <tr id="deploy_npm-version_file">
-      <td><code>version_file</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
-        <p>
-          File containing version string
+          `assemble_npm` label to be included in the package
         </p>
       </td>
     </tr>
@@ -573,10 +752,10 @@ Execute Packer to perform deployment
 ## deploy_pip
 
 <pre>
-deploy_pip(<a href="#deploy_pip-name">name</a>, <a href="#deploy_pip-author">author</a>, <a href="#deploy_pip-author_email">author_email</a>, <a href="#deploy_pip-classifiers">classifiers</a>, <a href="#deploy_pip-deployment_properties">deployment_properties</a>, <a href="#deploy_pip-deps">deps</a>, <a href="#deploy_pip-description">description</a>, <a href="#deploy_pip-install_requires">install_requires</a>, <a href="#deploy_pip-keywords">keywords</a>, <a href="#deploy_pip-license">license</a>, <a href="#deploy_pip-long_description_file">long_description_file</a>, <a href="#deploy_pip-package_name">package_name</a>, <a href="#deploy_pip-target">target</a>, <a href="#deploy_pip-url">url</a>, <a href="#deploy_pip-version_file">version_file</a>)
+deploy_pip(<a href="#deploy_pip-name">name</a>, <a href="#deploy_pip-deployment_properties">deployment_properties</a>, <a href="#deploy_pip-target">target</a>)
 </pre>
 
-Deploy package into PyPI repository
+
 
 ### Attributes
 
@@ -595,33 +774,6 @@ Deploy package into PyPI repository
         </p>
       </td>
     </tr>
-    <tr id="deploy_pip-author">
-      <td><code>author</code></td>
-      <td>
-        String; required
-        <p>
-          Details about the author
-        </p>
-      </td>
-    </tr>
-    <tr id="deploy_pip-author_email">
-      <td><code>author_email</code></td>
-      <td>
-        String; required
-        <p>
-          The email for the author
-        </p>
-      </td>
-    </tr>
-    <tr id="deploy_pip-classifiers">
-      <td><code>classifiers</code></td>
-      <td>
-        List of strings; required
-        <p>
-          A list of strings, containing Python package classifiers
-        </p>
-      </td>
-    </tr>
     <tr id="deploy_pip-deployment_properties">
       <td><code>deployment_properties</code></td>
       <td>
@@ -631,90 +783,12 @@ Deploy package into PyPI repository
         </p>
       </td>
     </tr>
-    <tr id="deploy_pip-deps">
-      <td><code>deps</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a>; required
-      </td>
-    </tr>
-    <tr id="deploy_pip-description">
-      <td><code>description</code></td>
-      <td>
-        String; required
-        <p>
-          A string with the short description of the package
-        </p>
-      </td>
-    </tr>
-    <tr id="deploy_pip-install_requires">
-      <td><code>install_requires</code></td>
-      <td>
-        List of strings; required
-        <p>
-          A list of strings which are names of required packages for this one
-        </p>
-      </td>
-    </tr>
-    <tr id="deploy_pip-keywords">
-      <td><code>keywords</code></td>
-      <td>
-        List of strings; required
-        <p>
-          A list of strings, containing keywords
-        </p>
-      </td>
-    </tr>
-    <tr id="deploy_pip-license">
-      <td><code>license</code></td>
-      <td>
-        String; required
-        <p>
-          The type of license to use
-        </p>
-      </td>
-    </tr>
-    <tr id="deploy_pip-long_description_file">
-      <td><code>long_description_file</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
-        <p>
-          A label with the long description of the package. Usually a README or README.rst file
-        </p>
-      </td>
-    </tr>
-    <tr id="deploy_pip-package_name">
-      <td><code>package_name</code></td>
-      <td>
-        String; required
-        <p>
-          A string with Python pip package name
-        </p>
-      </td>
-    </tr>
     <tr id="deploy_pip-target">
       <td><code>target</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
         <p>
-          `py_library` label to be included in the package
-        </p>
-      </td>
-    </tr>
-    <tr id="deploy_pip-url">
-      <td><code>url</code></td>
-      <td>
-        String; required
-        <p>
-          A homepage for the project
-        </p>
-      </td>
-    </tr>
-    <tr id="deploy_pip-version_file">
-      <td><code>version_file</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
-        <p>
-          File containing version string
+          `assemble_pip` label to be included in the package
         </p>
       </td>
     </tr>

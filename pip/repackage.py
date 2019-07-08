@@ -31,8 +31,6 @@ parser.add_argument('--pkg', help='Package to prepend')
 parser.add_argument('--all_pkgs', nargs='+', help='All packages in this source set')
 args = parser.parse_args()
 
-print(args)
-
 with open(args.src) as srcf, open(args.dest, 'w') as destf:
     lines = srcf.readlines()
     for i, line in enumerate(lines):

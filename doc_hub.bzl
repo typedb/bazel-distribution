@@ -79,14 +79,16 @@ MavenDeploymentInfo = MD
 MavenPomInfo = MP
 
 
-load("//npm:rules.bzl", _ = "deploy_npm")
-deploy_npm = _
+load("//npm:rules.bzl", a = "assemble_npm", d = "deploy_npm")
+assemble_npm = a
+deploy_npm = d
 
 load("//packer:rules.bzl", a = "assemble_packer", d = "deploy_packer")
 assemble_packer = a
 deploy_packer = d
 
-load("//pip:rules.bzl", d = "deploy_pip")
+load("//pip:rules.bzl", a = "assemble_pip", d = "deploy_pip")
+assemble_pip = a
 deploy_pip = d
 
 load("//rpm:rules.bzl", a = "assemble_rpm", d = "deploy_rpm")

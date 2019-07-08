@@ -141,7 +141,7 @@ def _assemble_pip_impl(ctx):
     return [PyDeploymentInfo(package=ctx.outputs.pip_package, version_file=ctx.file.version_file)]
 
 
-def _new_deploy_pip_impl(ctx):
+def _deploy_pip_impl(ctx):
     deployment_script = ctx.actions.declare_file("{}_deploy.py".format(ctx.attr.name))
 
     ctx.actions.expand_template(
@@ -258,7 +258,7 @@ assemble_pip = rule(
 )
 
 
-new_deploy_pip = rule(
+deploy_pip = rule(
     attrs = {
         "target": attr.label(
             mandatory = True,
@@ -301,7 +301,5 @@ new_deploy_pip = rule(
         )
     },
     executable = True,
-    implementation = _new_deploy_pip_impl
+    implementation = _deploy_pip_impl
 )
-
-deploy_pip = new_deploy_pip
