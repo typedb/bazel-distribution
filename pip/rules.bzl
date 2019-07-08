@@ -19,29 +19,6 @@
 
 load("@graknlabs_bazel_distribution_pip//:requirements.bzl", graknlabs_bazel_distribution_requirement = "requirement")
 
-def _py_replace_imports_impl(ctx):
-    outputs = []
-    for file in ctx.files.src:
-        relativeFileName = file.short_path
-        if not file.short_path.startswith('../'):
-            relativeFileName = relativeFileName.replace(ctx.attr.src.label.package + '/', '')
-        else:
-            _, workspaceName = ctx.attr.src.label.workspace_root.split('/')
-            relativeFileName = relativeFileName.replace(workspaceName + '/', '')
-        outputFileName = relativeFileName.replace(ctx.attr.src.label.name, ctx.attr.name)
-        outputFile = ctx.actions.declare_file(outputFileName)
-        outputs.append(outputFile)
-        ctx.actions.run_shell(
-            inputs  = [file],
-    	    outputs = [outputFile],
-            tools = [ctx.file._replace_imports_script],
-    		command = "python %s %s %s %s %s" % (
-                ctx.file._replace_imports_script.path, file.path, outputFile.path,
-                ctx.attr.original_package, ctx.attr.output_package)
-        )
-
-    return DefaultInfo(files = depset(outputs))
-
 
 def _python_repackage_impl(ctx):
     outputs = []
@@ -247,28 +224,6 @@ def _new_deploy_pip_impl(ctx):
                                "common.py": ctx.file._common_py
                            },
                            files=[ctx.attr.target[PyDeploymentInfo].package, ctx.attr.target[PyDeploymentInfo].version_file] + all_python_files))
-
-py_replace_imports = rule(
-	attrs = {
-		"src": attr.label(
-            mandatory = True,
-		),
-        "original_package": attr.string(
-            default = "",
-            doc = "Package in original sources"
-        ),
-        "output_package": attr.string(
-            default = "",
-            doc = "Package of output sources"
-        ),
-        "_replace_imports_script": attr.label(
-            allow_single_file = True,
-            default = "//pip:replace_imports.py",
-        )
-	},
-	implementation = _py_replace_imports_impl,
-    doc = "Replace imports in Python sources"
-)
 
 
 python_repackage = rule(
