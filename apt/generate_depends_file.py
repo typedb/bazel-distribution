@@ -47,7 +47,7 @@ if args.workspace_refs:
         workspace_refs = json.load(f)
 
 for ws, commit in workspace_refs['commits'].items():
-    replacements["%{{@{}}}".format(ws)] = commit
+    replacements["%{{@{}}}".format(ws)] = "0.0.0-" + commit
 
 for ws, tag in workspace_refs['tags'].items():
     replacements["%{{@{}}}".format(ws)] = tag
