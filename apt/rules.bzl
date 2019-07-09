@@ -26,6 +26,7 @@ def assemble_apt(name,
                  version_file,
                  description,
                  installation_dir = None,
+                 workspace_refs = None,
                  archives = [],
                  empty_dirs = [],
                  files = {},
@@ -46,6 +47,7 @@ def assemble_apt(name,
         description: description of the built package
             https://www.debian.org/doc/debian-policy/ch-controlfields#description
         installation_dir: directory into which .deb package is unpacked at installation
+        workspace_refs: JSON file with other Bazel workspace references
         archives: Bazel labels of archives that go into .deb package
         empty_dirs: list of empty directories created at package installation
         files: mapping between Bazel labels of archives that go into .deb package
@@ -75,11 +77,36 @@ def assemble_apt(name,
         pkg_tar(name = tar_name + "__do_not_reference__empty")
         deb_data = tar_name + "__do_not_reference__empty"
 
+    args = [
+        "$(location @graknlabs_bazel_distribution//apt:generate_depends_file)",
+        "--output", "$@",
+        "--version_file", "$(location {})".format(version_file),
+        "--deps"
+    ]
+    for dep in depends:
+        args.append('"{}"'.format(dep))
+    srcs = [version_file]
+
+    if workspace_refs:
+        args.append("--workspace_refs")
+        args.append("$(location {})".format(workspace_refs))
+        srcs.append(workspace_refs)
+
+    depends_file_target_name = name + "__depends__do_not_reference"
+
+    native.genrule(
+        name = depends_file_target_name,
+        srcs = srcs,
+        outs = ["{}.depends".format(name)],
+        cmd = " ".join(args),
+        tools = ["@graknlabs_bazel_distribution//apt:generate_depends_file"]
+    )
+
     pkg_deb(
         name = name,
         data = deb_data,
         package = package_name,
-        depends = depends,
+        depends_file = depends_file_target_name,
         maintainer = maintainer,
         version_file = version_file,
         description = description

@@ -29,3 +29,9 @@ bzl_library(
     ],
     visibility = ["//visibility:public"]
 )
+
+py_binary(
+    name = "generate_depends_file",
+    srcs = ["generate_depends_file.py"],
+    visibility = ["//visibility:public"]
+)
