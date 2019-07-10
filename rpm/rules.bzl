@@ -25,6 +25,7 @@ def assemble_rpm(name,
                  package_name,
                  version_file,
                  spec_file,
+                 workspace_refs = None,
                  installation_dir = None,
                  archives = [],
                  empty_dirs = [],
@@ -83,6 +84,23 @@ def assemble_rpm(name,
             ]
         )
 
+    if workspace_refs:
+        modified_spec_target_name = name + "__spec_do_not_reference"
+        modified_spec_filename = name + '.spec'
+        args = [
+            "$(location @graknlabs_bazel_distribution//rpm:generate_spec_file)",
+            "--output", "$(location {})".format(modified_spec_filename),
+            "--spec_file", "$(location {})".format(spec_file),
+            "--workspace_refs", "$(location {})".format(workspace_refs),
+        ]
+        native.genrule(
+            name = modified_spec_target_name,
+            srcs = [spec_file, workspace_refs],
+            outs = [modified_spec_filename],
+            cmd = " ".join(args),
+            tools = ["@graknlabs_bazel_distribution//rpm:generate_spec_file"]
+        )
+        spec_file = modified_spec_target_name
 
     pkg_rpm(
         name = "{}__do_not_reference__rpm".format(name),

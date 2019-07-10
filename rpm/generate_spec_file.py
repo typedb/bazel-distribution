@@ -23,10 +23,9 @@ import argparse
 import json
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--output', required=True, help='Output file')
-parser.add_argument('--version_file', required=True, help='File containing version of package being built')
+parser.add_argument('--output', required=True, help='Output .spec file')
+parser.add_argument('--spec_file', required=True, help='Input .spec file')
 parser.add_argument('--workspace_refs', help='Optional file with workspace references')
-parser.add_argument('--deps', nargs='+', required=True, help='Dependency declarations')
 args = parser.parse_args()
 
 workspace_refs = {
@@ -34,29 +33,21 @@ workspace_refs = {
     'tags': {}
 }
 
-with open(args.version_file) as f:
-    version = f.read().strip()
-
-replacements = {
-    "{version}": version
-}
+replacements = {}
 
 if args.workspace_refs:
     with open(args.workspace_refs) as f:
         workspace_refs = json.load(f)
 
 for ws, commit in workspace_refs['commits'].items():
-    replacements["%{{@{}}}".format(ws)] = "0.0.0-" + commit
+    replacements["%{{@{}}}".format(ws)] = commit
 
 for ws, tag in workspace_refs['tags'].items():
     replacements["%{{@{}}}".format(ws)] = tag
 
-deps = []
-
-for dep in args.deps:
-    for replacement_key, replacement_val in replacements.items():
-        dep = dep.replace(replacement_key, replacement_val)
-    deps.append(dep)
-
-with open(args.output, 'w') as out:
-    out.write(', '.join(deps))
+with open(args.spec_file) as spec, open(args.output, 'w') as output:
+    lines = spec.readlines()
+    for line in lines:
+        for replacement_key, replacement_value in replacements.items():
+            line = line.replace(replacement_key, replacement_value)
+        output.write(line)

@@ -26,3 +26,9 @@ bzl_library(
     ],
     visibility = ["//visibility:public"]
 )
+
+py_binary(
+    name = "generate_spec_file",
+    srcs = ["generate_spec_file.py"],
+    visibility = ["//visibility:public"]
+)
