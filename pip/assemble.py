@@ -50,7 +50,7 @@ args.output = os.path.abspath(args.output)
 # turn imports into regex patterns
 args.imports = list(map(
     lambda imp: re.compile('(?:.*){}[/]?(?P<fn>.*)'.format(imp)),
-    args.imports
+    args.imports or []
 ))
 
 # new package root
