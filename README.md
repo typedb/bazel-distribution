@@ -953,9 +953,11 @@ Packs Java library alongside with its dependencies into archive
     <tr id="java_deps-version_file">
       <td><code>version_file</code></td>
       <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
         <p>
-          File containing version string
+          File containing version string.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version at all defaults to '0.0.0'
         </p>
       </td>
     </tr>

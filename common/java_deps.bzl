@@ -131,10 +131,22 @@ def _java_deps_impl(ctx):
         content = str(names)
     )
 
+    if not ctx.attr.version_file:
+        version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
+        version = ctx.var.get('version', '0.0.0')
+
+        ctx.actions.run_shell(
+            inputs = [],
+            outputs = [version_file],
+            command = "echo {} > {}".format(version, version_file.path)
+        )
+    else:
+        version_file = ctx.file.version_file
+
     ctx.actions.run(
         outputs = [ctx.outputs.distribution],
-        inputs = files + [jars_mapping, ctx.file.version_file],
-        arguments = [jars_mapping.path, ctx.outputs.distribution.path, ctx.file.version_file.path],
+        inputs = files + [jars_mapping, version_file],
+        arguments = [jars_mapping.path, ctx.outputs.distribution.path, version_file.path],
         executable = ctx.executable._java_deps_builder,
         progress_message = "Generating tarball with Java deps: {}".format(
             ctx.outputs.distribution.short_path)
@@ -156,8 +168,11 @@ java_deps = rule(
         ),
         "version_file": attr.label(
             allow_single_file = True,
-            mandatory = True,
-            doc = "File containing version string"
+            doc = """
+            File containing version string.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version at all defaults to '0.0.0'
+            """
         ),
         "maven_name": attr.bool(
             doc = "Name JAR files inside archive based on Maven coordinates",
