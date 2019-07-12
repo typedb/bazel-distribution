@@ -1409,7 +1409,7 @@ TransitiveJarToMavenCoordinatesMapping(<a href="#TransitiveJarToMavenCoordinates
 ## assemble_apt
 
 <pre>
-assemble_apt(<a href="#assemble_apt-name">name</a>, <a href="#assemble_apt-package_name">package_name</a>, <a href="#assemble_apt-maintainer">maintainer</a>, <a href="#assemble_apt-version_file">version_file</a>, <a href="#assemble_apt-description">description</a>, <a href="#assemble_apt-installation_dir">installation_dir</a>, <a href="#assemble_apt-workspace_refs">workspace_refs</a>, <a href="#assemble_apt-archives">archives</a>, <a href="#assemble_apt-empty_dirs">empty_dirs</a>, <a href="#assemble_apt-files">files</a>, <a href="#assemble_apt-depends">depends</a>, <a href="#assemble_apt-symlinks">symlinks</a>, <a href="#assemble_apt-permissions">permissions</a>)
+assemble_apt(<a href="#assemble_apt-name">name</a>, <a href="#assemble_apt-package_name">package_name</a>, <a href="#assemble_apt-maintainer">maintainer</a>, <a href="#assemble_apt-description">description</a>, <a href="#assemble_apt-version_file">version_file</a>, <a href="#assemble_apt-installation_dir">installation_dir</a>, <a href="#assemble_apt-workspace_refs">workspace_refs</a>, <a href="#assemble_apt-archives">archives</a>, <a href="#assemble_apt-empty_dirs">empty_dirs</a>, <a href="#assemble_apt-files">files</a>, <a href="#assemble_apt-depends">depends</a>, <a href="#assemble_apt-symlinks">symlinks</a>, <a href="#assemble_apt-permissions">permissions</a>)
 </pre>
 
 Assemble package for installation with APT
@@ -1452,16 +1452,6 @@ Assemble package for installation with APT
         </p>
       </td>
     </tr>
-    <tr id="assemble_apt-version_file">
-      <td><code>version_file</code></td>
-      <td>
-        required.
-        <p>
-          File containing version number of a package
-    https://www.debian.org/doc/debian-policy/ch-controlfields#version
-        </p>
-      </td>
-    </tr>
     <tr id="assemble_apt-description">
       <td><code>description</code></td>
       <td>
@@ -1469,6 +1459,19 @@ Assemble package for installation with APT
         <p>
           description of the built package
     https://www.debian.org/doc/debian-policy/ch-controlfields#description
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_apt-version_file">
+      <td><code>version_file</code></td>
+      <td>
+        optional. default is <code>None</code>
+        <p>
+          File containing version number of a package.
+    Alternatively, pass --define version=VERSION to Bazel invocation.
+    Specifying commit SHA will result in prepending '0.0.0' to it to comply with Debian rules.
+    Not specifying version at all defaults to '0.0.0'
+    https://www.debian.org/doc/debian-policy/ch-controlfields#version
         </p>
       </td>
     </tr>
