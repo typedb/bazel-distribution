@@ -514,9 +514,11 @@ Deploy Homebrew (Caskroom) formula to Homebrew tap
     <tr id="deploy_brew-version_file">
       <td><code>version_file</code></td>
       <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
         <p>
-          File containing version string
+          File containing version string.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version at all defaults to '0.0.0'
         </p>
       </td>
     </tr>
@@ -966,7 +968,7 @@ Packs Java library alongside with its dependencies into archive
 ## pkg_deb
 
 <pre>
-pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">architecture</a>, <a href="#pkg_deb-built_using">built_using</a>, <a href="#pkg_deb-built_using_file">built_using_file</a>, <a href="#pkg_deb-conffiles">conffiles</a>, <a href="#pkg_deb-conffiles_file">conffiles_file</a>, <a href="#pkg_deb-conflicts">conflicts</a>, <a href="#pkg_deb-data">data</a>, <a href="#pkg_deb-depends">depends</a>, <a href="#pkg_deb-description">description</a>, <a href="#pkg_deb-description_file">description_file</a>, <a href="#pkg_deb-distribution">distribution</a>, <a href="#pkg_deb-enhances">enhances</a>, <a href="#pkg_deb-homepage">homepage</a>, <a href="#pkg_deb-maintainer">maintainer</a>, <a href="#pkg_deb-make_deb">make_deb</a>, <a href="#pkg_deb-package">package</a>, <a href="#pkg_deb-postinst">postinst</a>, <a href="#pkg_deb-postrm">postrm</a>, <a href="#pkg_deb-predepends">predepends</a>, <a href="#pkg_deb-preinst">preinst</a>, <a href="#pkg_deb-prerm">prerm</a>, <a href="#pkg_deb-priority">priority</a>, <a href="#pkg_deb-recommends">recommends</a>, <a href="#pkg_deb-section">section</a>, <a href="#pkg_deb-suggests">suggests</a>, <a href="#pkg_deb-urgency">urgency</a>, <a href="#pkg_deb-version">version</a>, <a href="#pkg_deb-version_file">version_file</a>)
+pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">architecture</a>, <a href="#pkg_deb-built_using">built_using</a>, <a href="#pkg_deb-built_using_file">built_using_file</a>, <a href="#pkg_deb-conffiles">conffiles</a>, <a href="#pkg_deb-conffiles_file">conffiles_file</a>, <a href="#pkg_deb-config">config</a>, <a href="#pkg_deb-conflicts">conflicts</a>, <a href="#pkg_deb-data">data</a>, <a href="#pkg_deb-depends">depends</a>, <a href="#pkg_deb-depends_file">depends_file</a>, <a href="#pkg_deb-description">description</a>, <a href="#pkg_deb-description_file">description_file</a>, <a href="#pkg_deb-distribution">distribution</a>, <a href="#pkg_deb-enhances">enhances</a>, <a href="#pkg_deb-homepage">homepage</a>, <a href="#pkg_deb-maintainer">maintainer</a>, <a href="#pkg_deb-make_deb">make_deb</a>, <a href="#pkg_deb-package">package</a>, <a href="#pkg_deb-postinst">postinst</a>, <a href="#pkg_deb-postrm">postrm</a>, <a href="#pkg_deb-predepends">predepends</a>, <a href="#pkg_deb-preinst">preinst</a>, <a href="#pkg_deb-prerm">prerm</a>, <a href="#pkg_deb-priority">priority</a>, <a href="#pkg_deb-recommends">recommends</a>, <a href="#pkg_deb-section">section</a>, <a href="#pkg_deb-suggests">suggests</a>, <a href="#pkg_deb-templates">templates</a>, <a href="#pkg_deb-urgency">urgency</a>, <a href="#pkg_deb-version">version</a>, <a href="#pkg_deb-version_file">version_file</a>)
 </pre>
 
 
@@ -1018,6 +1020,12 @@ pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">archit
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
       </td>
     </tr>
+    <tr id="pkg_deb-config">
+      <td><code>config</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
+      </td>
+    </tr>
     <tr id="pkg_deb-conflicts">
       <td><code>conflicts</code></td>
       <td>
@@ -1034,6 +1042,12 @@ pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">archit
       <td><code>depends</code></td>
       <td>
         List of strings; optional
+      </td>
+    </tr>
+    <tr id="pkg_deb-depends_file">
+      <td><code>depends_file</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
       </td>
     </tr>
     <tr id="pkg_deb-description">
@@ -1136,6 +1150,12 @@ pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">archit
       <td><code>suggests</code></td>
       <td>
         List of strings; optional
+      </td>
+    </tr>
+    <tr id="pkg_deb-templates">
+      <td><code>templates</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
       </td>
     </tr>
     <tr id="pkg_deb-urgency">
@@ -1389,7 +1409,7 @@ TransitiveJarToMavenCoordinatesMapping(<a href="#TransitiveJarToMavenCoordinates
 ## assemble_apt
 
 <pre>
-assemble_apt(<a href="#assemble_apt-name">name</a>, <a href="#assemble_apt-package_name">package_name</a>, <a href="#assemble_apt-maintainer">maintainer</a>, <a href="#assemble_apt-version_file">version_file</a>, <a href="#assemble_apt-description">description</a>, <a href="#assemble_apt-installation_dir">installation_dir</a>, <a href="#assemble_apt-archives">archives</a>, <a href="#assemble_apt-empty_dirs">empty_dirs</a>, <a href="#assemble_apt-files">files</a>, <a href="#assemble_apt-depends">depends</a>, <a href="#assemble_apt-symlinks">symlinks</a>, <a href="#assemble_apt-permissions">permissions</a>)
+assemble_apt(<a href="#assemble_apt-name">name</a>, <a href="#assemble_apt-package_name">package_name</a>, <a href="#assemble_apt-maintainer">maintainer</a>, <a href="#assemble_apt-version_file">version_file</a>, <a href="#assemble_apt-description">description</a>, <a href="#assemble_apt-installation_dir">installation_dir</a>, <a href="#assemble_apt-workspace_refs">workspace_refs</a>, <a href="#assemble_apt-archives">archives</a>, <a href="#assemble_apt-empty_dirs">empty_dirs</a>, <a href="#assemble_apt-files">files</a>, <a href="#assemble_apt-depends">depends</a>, <a href="#assemble_apt-symlinks">symlinks</a>, <a href="#assemble_apt-permissions">permissions</a>)
 </pre>
 
 Assemble package for installation with APT
@@ -1458,6 +1478,15 @@ Assemble package for installation with APT
         optional. default is <code>None</code>
         <p>
           directory into which .deb package is unpacked at installation
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_apt-workspace_refs">
+      <td><code>workspace_refs</code></td>
+      <td>
+        optional. default is <code>None</code>
+        <p>
+          JSON file with other Bazel workspace references
         </p>
       </td>
     </tr>
@@ -1728,7 +1757,7 @@ Assemble files for HashiCorp Packer deployment
 ## assemble_rpm
 
 <pre>
-assemble_rpm(<a href="#assemble_rpm-name">name</a>, <a href="#assemble_rpm-package_name">package_name</a>, <a href="#assemble_rpm-version_file">version_file</a>, <a href="#assemble_rpm-spec_file">spec_file</a>, <a href="#assemble_rpm-installation_dir">installation_dir</a>, <a href="#assemble_rpm-archives">archives</a>, <a href="#assemble_rpm-empty_dirs">empty_dirs</a>, <a href="#assemble_rpm-files">files</a>, <a href="#assemble_rpm-permissions">permissions</a>, <a href="#assemble_rpm-symlinks">symlinks</a>)
+assemble_rpm(<a href="#assemble_rpm-name">name</a>, <a href="#assemble_rpm-package_name">package_name</a>, <a href="#assemble_rpm-version_file">version_file</a>, <a href="#assemble_rpm-spec_file">spec_file</a>, <a href="#assemble_rpm-workspace_refs">workspace_refs</a>, <a href="#assemble_rpm-installation_dir">installation_dir</a>, <a href="#assemble_rpm-archives">archives</a>, <a href="#assemble_rpm-empty_dirs">empty_dirs</a>, <a href="#assemble_rpm-files">files</a>, <a href="#assemble_rpm-permissions">permissions</a>, <a href="#assemble_rpm-symlinks">symlinks</a>)
 </pre>
 
 Assemble package for installation with RPM
@@ -1775,6 +1804,12 @@ Assemble package for installation with RPM
         <p>
           The RPM spec file to use
         </p>
+      </td>
+    </tr>
+    <tr id="assemble_rpm-workspace_refs">
+      <td><code>workspace_refs</code></td>
+      <td>
+        optional. default is <code>None</code>
       </td>
     </tr>
     <tr id="assemble_rpm-installation_dir">
