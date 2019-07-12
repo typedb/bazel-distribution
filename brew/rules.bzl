@@ -31,17 +31,30 @@ def _deploy_brew_impl(ctx):
         },
         is_executable = True
     )
+
+    if not ctx.attr.version_file:
+        version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
+        version = ctx.var.get('version', '0.0.0')
+
+        ctx.actions.run_shell(
+            inputs = [],
+            outputs = [version_file],
+            command = "echo {} > {}".format(version, version_file.path)
+        )
+    else:
+        version_file = ctx.file.version_file
+
     files = [
         ctx.file.deployment_properties,
         ctx.file.formula,
-        ctx.file.version_file,
+        version_file,
         ctx.file._common_py
     ]
 
     symlinks = {
         'deployment.properties': ctx.file.deployment_properties,
         'formula': ctx.file.formula,
-        'VERSION': ctx.file.version_file,
+        'VERSION': version_file,
         'common.py': ctx.file._common_py,
     }
 
@@ -84,8 +97,11 @@ deploy_brew = rule(
         ),
         "version_file": attr.label(
             allow_single_file = True,
-            mandatory = True,
-            doc = "File containing version string"
+            doc = """
+            File containing version string.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version at all defaults to '0.0.0'
+            """
         ),
         "_deploy_brew_template": attr.label(
             allow_single_file = True,
