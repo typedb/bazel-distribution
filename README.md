@@ -102,9 +102,11 @@ Assemble Java package for subsequent deployment to Maven repo
     <tr id="assemble_maven-version_file">
       <td><code>version_file</code></td>
       <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
         <p>
-          File containing version string
+          File containing version string.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version at all defaults to '0.0.0'
         </p>
       </td>
     </tr>
@@ -160,9 +162,11 @@ Assemble `npm_package` target for further deployment
     <tr id="assemble_npm-version_file">
       <td><code>version_file</code></td>
       <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
         <p>
-          File containing version string
+          File containing version string.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version at all defaults to '0.0.0'
         </p>
       </td>
     </tr>
@@ -601,9 +605,11 @@ Deploy `assemble_versioned` target to GitHub Releases
     <tr id="deploy_github-version_file">
       <td><code>version_file</code></td>
       <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
         <p>
-          File containing version string
+          File containing version string.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version at all defaults to '0.0.0'
         </p>
       </td>
     </tr>

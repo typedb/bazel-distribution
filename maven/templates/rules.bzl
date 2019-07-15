@@ -290,7 +290,11 @@ assemble_maven = rule(
         ),
         "version_file": attr.label(
             allow_single_file = True,
-            doc = "File containing version string"
+            doc = """
+            File containing version string.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version at all defaults to '0.0.0'
+            """
         ),
         "workspace_refs": attr.label(
             mandatory = True,

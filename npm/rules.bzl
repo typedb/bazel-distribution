@@ -20,13 +20,26 @@
 def _assemble_npm_impl(ctx):
     if len(ctx.files.target) != 1:
         fail("target contains more files than expected")
+
+    if not ctx.attr.version_file:
+        version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
+        version = ctx.var.get('version', '0.0.0')
+
+        ctx.actions.run_shell(
+            inputs = [],
+            outputs = [version_file],
+            command = "echo {} > {}".format(version, version_file.path)
+        )
+    else:
+        version_file = ctx.file.version_file
+
     args = ctx.actions.args()
     args.add('--package', ctx.files.target[0].path)
     args.add('--output', ctx.outputs.npm_package.path)
-    args.add('--version_file', ctx.file.version_file.path)
+    args.add('--version_file', version_file.path)
 
     ctx.actions.run(
-        inputs = ctx.files.target + ctx.files._node_runfiles + [ctx.file.version_file],
+        inputs = ctx.files.target + ctx.files._node_runfiles + [version_file],
         outputs = [ctx.outputs.npm_package],
         arguments = [args],
         executable = ctx.executable._assemble_script,
@@ -45,8 +58,11 @@ assemble_npm = rule(
         ),
         "version_file": attr.label(
             allow_single_file = True,
-            mandatory = True,
-            doc = "File containing version string"
+            doc = """
+            File containing version string.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version at all defaults to '0.0.0'
+            """
         ),
         "_assemble_script": attr.label(
             default = "//npm:assemble",
