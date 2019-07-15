@@ -36,7 +36,8 @@ def assemble_targz(name,
                    additional_files = {},
                    empty_directories = [],
                    permissions = {},
-                   visibility = ["//visibility:private"]):
+                   visibility = ["//visibility:private"],
+                   tags = []):
     """Assemble distribution archive (.tar.gz)
 
     Args:
@@ -56,13 +57,15 @@ def assemble_targz(name,
         files = additional_files,
         empty_dirs = empty_directories,
         modes = permissions,
+        tags = tags,
     )
 
     pkg_tar(
         name = "{}__do_not_reference__targz_1".format(name),
         deps = [":{}__do_not_reference__targz_0".format(name)],
         package_dir = output_filename,
-        extension = "tar.gz"
+        extension = "tar.gz",
+        tags = tags,
     )
 
     output_filename = output_filename or name
