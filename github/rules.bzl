@@ -20,6 +20,18 @@
 def _deploy_github_impl(ctx):
     _deploy_script = ctx.actions.declare_file("{}_deploy.py".format(ctx.attr.name))
 
+    if not ctx.attr.version_file:
+        version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
+        version = ctx.var.get('version', '0.0.0')
+
+        ctx.actions.run_shell(
+            inputs = [],
+            outputs = [version_file],
+            command = "echo {} > {}".format(version, version_file.path)
+        )
+    else:
+        version_file = ctx.file.version_file
+
     ctx.actions.expand_template(
         template = ctx.file._deploy_script,
         output = _deploy_script,
@@ -34,7 +46,7 @@ def _deploy_github_impl(ctx):
     )
     files = [
         ctx.file.deployment_properties,
-        ctx.file.version_file,
+        version_file,
         ctx.file._common_py
     ] + ctx.files._ghr
 
@@ -43,7 +55,8 @@ def _deploy_github_impl(ctx):
 
     symlinks = {
         "deployment.properties": ctx.file.deployment_properties,
-        "common.py": ctx.file._common_py
+        "common.py": ctx.file._common_py,
+        'VERSION': version_file
     }
 
     if ctx.file.release_description:
@@ -85,8 +98,11 @@ deploy_github = rule(
         ),
         "version_file": attr.label(
             allow_single_file = True,
-            mandatory = True,
-            doc = "File containing version string"
+            doc = """
+            File containing version string.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version at all defaults to '0.0.0'
+            """
         ),
         "_deploy_script": attr.label(
             allow_single_file = True,
