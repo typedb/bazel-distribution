@@ -21,10 +21,27 @@ load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 load("@bazel_tools//tools/build_defs/pkg:rpm.bzl", "pkg_rpm")
 
 
+def _assemble_rpm_version_file_impl(ctx):
+    version = ctx.var.get('version', '0.0.0')
+
+    ctx.actions.run_shell(
+        inputs = [],
+        outputs = [ctx.outputs.version_file],
+        command = "echo {} > {}".format(version, ctx.outputs.version_file.path)
+    )
+
+
+_assemble_rpm_version_file = rule(
+    outputs = {
+        "version_file": "%{name}.version"
+    },
+    implementation = _assemble_rpm_version_file_impl
+)
+
 def assemble_rpm(name,
                  package_name,
-                 version_file,
                  spec_file,
+                 version_file = None,
                  workspace_refs = None,
                  installation_dir = None,
                  archives = [],
@@ -37,8 +54,10 @@ def assemble_rpm(name,
     Args:
         name: A unique name for this target.
         package_name: Package name for built .deb package
-        version_file: File containing version number of a package
         spec_file: The RPM spec file to use
+        version_file: File containing version number of a package.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version defaults to '0.0.0'
         installation_dir: directory into which .rpm package is unpacked at installation
         archives: Bazel labels of archives that go into .rpm package
         empty_dirs: list of empty directories created at package installation
@@ -101,6 +120,12 @@ def assemble_rpm(name,
             tools = ["@graknlabs_bazel_distribution//rpm:generate_spec_file"]
         )
         spec_file = modified_spec_target_name
+
+    if not version_file:
+        version_file = name + "__version__do_not_reference"
+        _assemble_rpm_version_file(
+            name = version_file
+        )
 
     pkg_rpm(
         name = "{}__do_not_reference__rpm".format(name),
