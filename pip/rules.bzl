@@ -120,25 +120,37 @@ def _assemble_pip_impl(ctx):
       },
     )
 
+    if not ctx.attr.version_file:
+        version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
+        version = ctx.var.get('version', '0.0.0')
+
+        ctx.actions.run_shell(
+            inputs = [],
+            outputs = [version_file],
+            command = "echo {} > {}".format(version, version_file.path)
+        )
+    else:
+        version_file = ctx.file.version_file
+
     # Step 2: fill in {pip_version} from version_file
     ctx.actions.run_shell(
-      inputs = [preprocessed_setup_py, ctx.file.version_file],
+      inputs = [preprocessed_setup_py, version_file],
       outputs = [setup_py],
       command = "VERSION=`cat %s` && sed -e s/{version}/$VERSION/g %s > %s" % (
-          ctx.file.version_file.path, preprocessed_setup_py.path, setup_py.path)
+          version_file.path, preprocessed_setup_py.path, setup_py.path)
     )
 
     args.add("--setup_py", setup_py.path)
     args.add_all("--imports", imports)
 
     ctx.actions.run(
-        inputs = [ctx.file.version_file, setup_py, ctx.file.long_description_file] + python_source_files,
+        inputs = [version_file, setup_py, ctx.file.long_description_file] + python_source_files,
         outputs = [ctx.outputs.pip_package],
         arguments = [args],
         executable = ctx.executable._assemble_script,
     )
 
-    return [PyDeploymentInfo(package=ctx.outputs.pip_package, version_file=ctx.file.version_file)]
+    return [PyDeploymentInfo(package=ctx.outputs.pip_package, version_file=version_file)]
 
 
 def _deploy_pip_impl(ctx):
@@ -197,8 +209,11 @@ assemble_pip = rule(
         ),
         "version_file": attr.label(
             allow_single_file = True,
-            mandatory = True,
-            doc = "File containing version string"
+            doc = """
+            File containing version string.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version at all defaults to '0.0.0'
+            """
         ),
         "package_name": attr.string(
             mandatory = True,
