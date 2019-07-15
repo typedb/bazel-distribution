@@ -1770,7 +1770,7 @@ Assemble files for HashiCorp Packer deployment
 ## assemble_rpm
 
 <pre>
-assemble_rpm(<a href="#assemble_rpm-name">name</a>, <a href="#assemble_rpm-package_name">package_name</a>, <a href="#assemble_rpm-version_file">version_file</a>, <a href="#assemble_rpm-spec_file">spec_file</a>, <a href="#assemble_rpm-workspace_refs">workspace_refs</a>, <a href="#assemble_rpm-installation_dir">installation_dir</a>, <a href="#assemble_rpm-archives">archives</a>, <a href="#assemble_rpm-empty_dirs">empty_dirs</a>, <a href="#assemble_rpm-files">files</a>, <a href="#assemble_rpm-permissions">permissions</a>, <a href="#assemble_rpm-symlinks">symlinks</a>)
+assemble_rpm(<a href="#assemble_rpm-name">name</a>, <a href="#assemble_rpm-package_name">package_name</a>, <a href="#assemble_rpm-spec_file">spec_file</a>, <a href="#assemble_rpm-version_file">version_file</a>, <a href="#assemble_rpm-workspace_refs">workspace_refs</a>, <a href="#assemble_rpm-installation_dir">installation_dir</a>, <a href="#assemble_rpm-archives">archives</a>, <a href="#assemble_rpm-empty_dirs">empty_dirs</a>, <a href="#assemble_rpm-files">files</a>, <a href="#assemble_rpm-permissions">permissions</a>, <a href="#assemble_rpm-symlinks">symlinks</a>)
 </pre>
 
 Assemble package for installation with RPM
@@ -1801,21 +1801,23 @@ Assemble package for installation with RPM
         </p>
       </td>
     </tr>
-    <tr id="assemble_rpm-version_file">
-      <td><code>version_file</code></td>
-      <td>
-        required.
-        <p>
-          File containing version number of a package
-        </p>
-      </td>
-    </tr>
     <tr id="assemble_rpm-spec_file">
       <td><code>spec_file</code></td>
       <td>
         required.
         <p>
           The RPM spec file to use
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_rpm-version_file">
+      <td><code>version_file</code></td>
+      <td>
+        optional. default is <code>None</code>
+        <p>
+          File containing version number of a package.
+    Alternatively, pass --define version=VERSION to Bazel invocation.
+    Not specifying version defaults to '0.0.0'
         </p>
       </td>
     </tr>
