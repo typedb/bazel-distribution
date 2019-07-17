@@ -75,7 +75,8 @@ def assemble_targz(name,
         srcs = [":{}__do_not_reference__targz_1".format(name)],
         cmd = "cp $$(echo $(SRCS) | awk '{print $$1}') $@",
         outs = [output_filename + ".tar.gz"],
-        visibility = visibility
+        visibility = visibility,
+        tags = tags,
     )
 
 
