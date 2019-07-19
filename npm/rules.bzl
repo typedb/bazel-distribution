@@ -39,7 +39,7 @@ def _assemble_npm_impl(ctx):
     args.add('--version_file', version_file.path)
 
     ctx.actions.run(
-        inputs = ctx.files.target + ctx.files._node_runfiles + [version_file],
+        inputs = ctx.files.target + ctx.files._npm + [version_file],
         outputs = [ctx.outputs.npm_package],
         arguments = [args],
         executable = ctx.executable._assemble_script,
@@ -69,8 +69,8 @@ assemble_npm = rule(
             executable = True,
             cfg = "host"
         ),
-        "_node_runfiles": attr.label(
-            default = Label("@nodejs//:node_runfiles"),
+        "_npm": attr.label(
+            default = Label("@nodejs//:npm"),
             allow_files = True
         )
     },
@@ -94,7 +94,7 @@ def _deploy_npm(ctx):
         ctx.file.deployment_properties,
         ctx.file._common_py
     ]
-    files.extend(ctx.files._node_runfiles)
+    files.extend(ctx.files._npm)
 
     return DefaultInfo(
         executable = ctx.outputs.executable,
@@ -129,8 +129,8 @@ deploy_npm = rule(
             allow_single_file = True,
             default = "//common:common.py"
         ),
-        "_node_runfiles": attr.label(
-            default = Label("@nodejs//:node_runfiles"),
+        "_npm": attr.label(
+            default = Label("@nodejs//:npm"),
             allow_files = True
         ),
     },

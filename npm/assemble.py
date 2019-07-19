@@ -66,7 +66,14 @@ subprocess.check_call([
     'npm',
     'pack'
 ], env={
-    'PATH': os.path.realpath('external/nodejs/bin/nodejs/bin/')
+    'PATH': ':'.join([
+        '/usr/bin/',
+        '/bin/',
+        os.path.realpath('external/nodejs/bin/nodejs/bin/'),
+        os.path.realpath('external/nodejs_darwin_amd64/bin/'),
+        os.path.realpath('external/nodejs_linux_amd64/bin/'),
+        os.path.realpath('external/nodejs_windows_amd64/bin/'),
+    ])
 }, cwd=new_package_root)
 
 archives = glob.glob(os.path.join(new_package_root, '*.tgz'))
