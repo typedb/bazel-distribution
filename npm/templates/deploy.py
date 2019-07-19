@@ -132,7 +132,14 @@ subprocess.check_call([
     '--registry={}'.format(npm_registry),
     'deploy_npm_updated.tgz'
 ], env={
-    'PATH': os.path.realpath('external/nodejs/bin/nodejs/bin/')
+    'PATH': ':'.join([
+        '/usr/bin/',
+        '/bin/',
+        os.path.realpath('external/nodejs/bin/nodejs/bin/'),
+        os.path.realpath('external/nodejs_darwin_amd64/bin/'),
+        os.path.realpath('external/nodejs_linux_amd64/bin/'),
+        os.path.realpath('external/nodejs_windows_amd64/bin/'),
+    ])
 })
 
 os.remove('deploy_npm_updated.tgz')
