@@ -12,7 +12,8 @@
       "zone": "{zone}",
       "ssh_username": "ubuntu",
       "image_name": "{image_name}",
-      "image_licenses": ["{image_licenses}"]
+      "image_licenses": ["{image_licenses}"],
+      "disk_size": 20
     }
   ],
 
