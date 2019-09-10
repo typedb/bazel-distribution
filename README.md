@@ -1892,7 +1892,7 @@ Assemble package for installation with RPM
 ## assemble_targz
 
 <pre>
-assemble_targz(<a href="#assemble_targz-name">name</a>, <a href="#assemble_targz-output_filename">output_filename</a>, <a href="#assemble_targz-targets">targets</a>, <a href="#assemble_targz-additional_files">additional_files</a>, <a href="#assemble_targz-empty_directories">empty_directories</a>, <a href="#assemble_targz-permissions">permissions</a>, <a href="#assemble_targz-visibility">visibility</a>)
+assemble_targz(<a href="#assemble_targz-name">name</a>, <a href="#assemble_targz-output_filename">output_filename</a>, <a href="#assemble_targz-targets">targets</a>, <a href="#assemble_targz-additional_files">additional_files</a>, <a href="#assemble_targz-empty_directories">empty_directories</a>, <a href="#assemble_targz-permissions">permissions</a>, <a href="#assemble_targz-visibility">visibility</a>, <a href="#assemble_targz-tags">tags</a>)
 </pre>
 
 Assemble distribution archive (.tar.gz)
@@ -1967,6 +1967,12 @@ Assemble distribution archive (.tar.gz)
         <p>
           controls whether the target can be used by other packages
         </p>
+      </td>
+    </tr>
+    <tr id="assemble_targz-tags">
+      <td><code>tags</code></td>
+      <td>
+        optional. default is <code>[]</code>
       </td>
     </tr>
   </tbody>

@@ -25,6 +25,7 @@ import io
 import json
 import os
 import subprocess
+import shutil
 
 # usual importing is not possible because
 # this script and module with common functions
@@ -42,6 +43,9 @@ def git_commit():
         'HEAD'
     ], cwd=os.getenv('BUILD_WORKSPACE_DIRECTORY')).decode().strip()
 
+
+ORIGINAL_FILENAME = 'deploy_npm.tgz'
+MODIFIED_FILENAME = 'deploy_npm_updated.tgz'
 
 parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')
@@ -118,7 +122,7 @@ with open(expect_input_file.name) as expect_input:
 
 if args.repo_type == 'snapshot':
     print('Appending git commit to version')
-    with tarfile.open('deploy_npm.tgz') as tf, tarfile.open('deploy_npm_updated.tgz', 'w:gz') as tfu:
+    with tarfile.open(ORIGINAL_FILENAME) as tf, tarfile.open(MODIFIED_FILENAME, 'w:gz') as tfu:
         pkg_json_file = tf.extractfile('package/package.json')
         pkg_json = json.loads(pkg_json_file.read().decode())
         pkg_json['version'] += "-{}".format(git_commit())
@@ -132,12 +136,14 @@ if args.repo_type == 'snapshot':
                 info.size = content.tell()
                 content.seek(0)
             tfu.addfile(info, content)
+else:
+    shutil.copyfile(ORIGINAL_FILENAME, MODIFIED_FILENAME)
 
 subprocess.check_call([
     'npm',
     'publish',
     '--registry={}'.format(npm_registry),
-    'deploy_npm_updated.tgz'
+    MODIFIED_FILENAME
 ], env={
     'PATH': ':'.join([
         '/usr/bin/',
@@ -149,4 +155,4 @@ subprocess.check_call([
     ])
 })
 
-os.remove('deploy_npm_updated.tgz')
+os.remove(MODIFIED_FILENAME)
