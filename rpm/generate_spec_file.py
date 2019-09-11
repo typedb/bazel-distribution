@@ -21,6 +21,9 @@
 
 import argparse
 import json
+import re
+
+WORKSPACE_REF_PATTERN = re.compile(r'.*%{@(?P<workspace_ref>.*)}.*')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--output', required=True, help='Output .spec file')
@@ -39,15 +42,26 @@ if args.workspace_refs:
     with open(args.workspace_refs) as f:
         workspace_refs = json.load(f)
 
+all_workspaces = set()
+
 for ws, commit in workspace_refs['commits'].items():
     replacements["%{{@{}}}".format(ws)] = commit
+    all_workspaces.add(ws)
 
 for ws, tag in workspace_refs['tags'].items():
     replacements["%{{@{}}}".format(ws)] = tag
+    all_workspaces.add(ws)
 
 with open(args.spec_file) as spec, open(args.output, 'w') as output:
     lines = spec.readlines()
     for line in lines:
+        match = WORKSPACE_REF_PATTERN.match(line)
+        if match:
+            workspace_ref = match.group('workspace_ref')
+            if workspace_ref not in all_workspaces:
+                raise Exception('invalid workspace was referenced: `{}`; valid workspaces to reference are: {}'.format(
+                    workspace_ref, list(all_workspaces)
+                ))
         for replacement_key, replacement_value in replacements.items():
             line = line.replace(replacement_key, replacement_value)
         output.write(line)
