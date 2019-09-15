@@ -45,7 +45,7 @@ if args.workspace_refs:
 all_workspaces = set()
 
 for ws, commit in workspace_refs['commits'].items():
-    replacements["%{{@{}}}".format(ws)] = commit
+    replacements["%{{@{}}}".format(ws)] = '0.0.0_' + commit
     all_workspaces.add(ws)
 
 for ws, tag in workspace_refs['tags'].items():
