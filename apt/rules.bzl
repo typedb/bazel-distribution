@@ -17,8 +17,7 @@
 # under the License.
 #
 
-load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
-load("//apt/pkg_deb_modified_from_bazel:pkg.bzl", "pkg_deb")
+load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_deb")
 
 def _assemble_apt_version_file_impl(ctx):
     version = ctx.var.get('version', '0.0.0')

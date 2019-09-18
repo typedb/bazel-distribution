@@ -61,7 +61,7 @@ def _transitive_collect_maven_coordinate_impl(_target, ctx):
 
 
 def _collect_maven_coordinate_impl(_target, ctx):
-    for file in _target.files:
+    for file in _target.files.to_list():
         if file.extension == 'jar':
             jar_file = file.path
 

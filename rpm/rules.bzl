@@ -17,8 +17,8 @@
 # under the License.
 #
 
-load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
-load("@bazel_tools//tools/build_defs/pkg:rpm.bzl", "pkg_rpm")
+load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_deb")
+load("@rules_pkg//:rpm.bzl", "pkg_rpm")
 
 
 def _assemble_rpm_version_file_impl(ctx):
@@ -132,6 +132,7 @@ def assemble_rpm(name,
         architecture = "x86_64",
         spec_file = spec_file,
         version_file = version_file,
+        release = "1",
         data = rpm_data,
         rpmbuild_path = select({
             ":linux_build": "/usr/bin/rpmbuild",

@@ -24,7 +24,6 @@ stardoc(
     input = "doc_hub.bzl",
     out = "README.md",
     deps = [
-        "//apt/pkg_deb_modified_from_bazel:lib",
         "//apt:lib",
         "//aws:lib",
         "//brew:lib",

@@ -19,10 +19,10 @@
 
 workspace(name="graknlabs_bazel_distribution")
 
-load("//github:dependencies.bzl", "github_dependencies_for_deployment")
-github_dependencies_for_deployment()
-
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+load("//github:dependencies.bzl", "tcnksm_ghr")
+tcnksm_ghr()
 
 git_repository(
     name = "io_bazel_skydoc",
@@ -57,3 +57,9 @@ pip_import(
 )
 load("@graknlabs_bazel_distribution_pip//:requirements.bzl", graknlabs_bazel_distribution_pip_install = "pip_install")
 graknlabs_bazel_distribution_pip_install()
+
+load("//common:dependencies.bzl", "bazelbuild_rules_pkg")
+bazelbuild_rules_pkg()
+
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+rules_pkg_dependencies()
