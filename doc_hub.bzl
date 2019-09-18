@@ -20,9 +20,6 @@
 # File which loads *all* rules to make them visible for doc generation
 # Rules *do* need to be reexported because otherwise they are not visible
 
-load("//apt/pkg_deb_modified_from_bazel:pkg.bzl", _ = "pkg_deb")
-pkg_deb = _
-
 load("//apt:rules.bzl", a = "assemble_apt", d = "deploy_apt")
 assemble_apt = a
 deploy_apt = d

@@ -24,9 +24,6 @@ bzl_library(
     srcs = [
         "rules.bzl"
     ],
-    deps = [
-        "//apt/pkg_deb_modified_from_bazel:lib"
-    ],
     visibility = ["//visibility:public"]
 )
 
