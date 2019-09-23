@@ -67,6 +67,7 @@ def assemble_rpm(name,
         symlinks: mapping between source and target of symbolic links
                     created at installation
     """
+    tag = "rpm_package_name={}".format(spec_file.split(':')[-1].replace('.spec', ''))
     tar_name = "_{}-rpm-tar".format(package_name)
 
     rpm_data = []
@@ -140,7 +141,6 @@ def assemble_rpm(name,
             "//conditions:default": ""
         })
     )
-    tag = "rpm_package_name={}".format(spec_file.split(':')[-1].replace('.spec', ''))
 
     native.genrule(
         name = name,
