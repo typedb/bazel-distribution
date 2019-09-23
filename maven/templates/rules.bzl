@@ -234,11 +234,22 @@ def _generate_pom_xml(ctx, maven_coordinates):
     else:
         version_file = ctx.file.version_file
 
+    inputs = [preprocessed_template, version_file]
+
+    args = ctx.actions.args()
+    args.add('--template_file', preprocessed_template.path)
+    args.add('--version_file', version_file.path)
+    args.add('--pom_file', pom_file.path)
+
+    if ctx.attr.workspace_refs:
+        inputs.append(ctx.file.workspace_refs)
+        args.add('--workspace_refs', ctx.file.workspace_refs.path)
+
     # Step 2: fill in {pom_version} from version_file
     ctx.actions.run(
-        inputs = [preprocessed_template, ctx.file.workspace_refs, version_file],
+        inputs = inputs,
         executable = ctx.file._pom_replace_version,
-        arguments = [preprocessed_template.path, ctx.file.workspace_refs.path, version_file.path, pom_file.path],
+        arguments = [args],
         outputs = [pom_file],
     )
 
@@ -297,7 +308,6 @@ assemble_maven = rule(
             """
         ),
         "workspace_refs": attr.label(
-            mandatory = True,
             allow_single_file = True,
             doc = 'JSON file describing dependencies to other Bazel workspaces'
         ),
