@@ -17,7 +17,7 @@
 # under the License.
 #
 
-load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar", "pkg_deb")
+load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_deb")
 load("@graknlabs_bazel_distribution//common:java_deps.bzl", _java_deps = "java_deps")
 load("@graknlabs_bazel_distribution//common:tgz2zip.bzl", _tgz2zip = "tgz2zip")
 load("@graknlabs_bazel_distribution//common:checksum.bzl", _checksum = "checksum")
@@ -29,6 +29,30 @@ tgz2zip = _tgz2zip
 checksum = _checksum
 assemble_versioned = _assemble_versioned
 
+
+def _assemble_targz_package_dir_file_impl(ctx):
+    version = ctx.var.get('version', '')
+
+    package_dir = ctx.attr.package_dir
+    if package_dir and version:
+        package_dir = '{}-{}'.format(package_dir, version)
+
+    ctx.actions.run_shell(
+        inputs = [],
+        outputs = [ctx.outputs.package_dir_file],
+        command = "echo {} > {}".format(package_dir, ctx.outputs.package_dir_file.path)
+    )
+
+
+_assemble_targz_package_dir_file = rule(
+    attrs = {
+        "package_dir": attr.string()
+    },
+    outputs = {
+        "package_dir_file": "%{name}.package_dir"
+    },
+    implementation = _assemble_targz_package_dir_file_impl
+)
 
 def assemble_targz(name,
                    output_filename = None,
@@ -60,10 +84,15 @@ def assemble_targz(name,
         tags = tags,
     )
 
+    _assemble_targz_package_dir_file(
+        name = "{}__do_not_reference__pkgdir".format(name),
+        package_dir = output_filename
+    )
+
     pkg_tar(
         name = "{}__do_not_reference__targz_1".format(name),
         deps = [":{}__do_not_reference__targz_0".format(name)],
-        package_dir = output_filename,
+        package_dir_file = "{}__do_not_reference__pkgdir".format(name),
         extension = "tar.gz",
         tags = tags,
     )
@@ -79,6 +108,30 @@ def assemble_targz(name,
         tags = tags,
     )
 
+
+def _assemble_archive_prefix_file_impl(ctx):
+    version = ctx.var.get('version', '')
+
+    prefix = ctx.attr.prefix
+    if prefix and version:
+        prefix = '{}-{}'.format(prefix, version)
+
+    ctx.actions.run_shell(
+        inputs = [],
+        outputs = [ctx.outputs.prefix_file],
+        command = "echo {} > {}".format(prefix, ctx.outputs.prefix_file.path)
+    )
+
+
+_assemble_zip_prefix_file = rule(
+    attrs = {
+        "prefix": attr.string()
+    },
+    outputs = {
+        "prefix_file": "%{name}.prefix"
+    },
+    implementation = _assemble_archive_prefix_file_impl
+)
 
 def assemble_zip(name,
                  output_filename,
@@ -108,11 +161,16 @@ def assemble_zip(name,
         modes = permissions,
     )
 
+    _assemble_zip_prefix_file(
+        name = "{}__do_not_reference__prefix_file".format(name),
+        prefix = "./" + output_filename
+    )
+
     tgz2zip(
         name = name,
         tgz = ":{}__do_not_reference__targz".format(name),
         output_filename = output_filename,
-        prefix = "./" + output_filename,
+        prefix_file = "{}__do_not_reference__prefix_file".format(name),
         visibility = visibility
     )
 
