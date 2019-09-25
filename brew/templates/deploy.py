@@ -35,7 +35,7 @@ parse_deployment_properties = run_path('common.py')['parse_deployment_properties
 
 
 def get_distribution_url_from_formula(content):
-    url_line = list(filter(lambda l: l.lstrip().startswith('url'), content.split('\n')))[0]
+    url_line = next(filter(lambda l: l.lstrip().startswith('url'), content.split('\n')))
     url = url_line.strip().split(' ')[1].replace('"', '')
     return url
 
