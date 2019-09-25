@@ -19,17 +19,18 @@
 
 version: 2.1
 commands:
-  install-bazel-linux:
+  install-bazel-linux-rbe:
     steps:
       - run: curl -OL https://raw.githubusercontent.com/graknlabs/build-tools/master/ci/install-bazel-linux.sh
       - run: bash ./install-bazel-linux.sh && rm ./install-bazel-linux.sh
-
+      - run: curl -OL https://raw.githubusercontent.com/graknlabs/build-tools/master/ci/install-bazel-rbe.sh
+      - run: bash ./install-bazel-rbe.sh && rm ./install-bazel-rbe.sh
 jobs:
   build:
     machine: true
     working_directory: ~/bazel-distribution
     steps:
-      - install-bazel-linux
+      - install-bazel-linux-rbe
       - checkout
       - run: bazel build //...
 
@@ -37,7 +38,7 @@ jobs:
     machine: true
     working_directory: ~/build-tools
     steps:
-      - install-bazel-linux
+      - install-bazel-linux-rbe
       - run: git clone git@github.com:graknlabs/build-tools.git .
       - run: |
           export SYNC_DEPENDENCIES_TOKEN=$REPO_GITHUB_TOKEN_GRABL
