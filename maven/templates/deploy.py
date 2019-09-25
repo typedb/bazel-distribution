@@ -77,7 +77,7 @@ def upload(url, username, password, local_fn, remote_fn):
         '-u', '{}:{}'.format(username, password),
         '--upload-file', local_fn,
         urljoin(url, remote_fn)
-    ]).strip()
+    ]).decode().strip()
 
     if upload_status_code != '201':
         raise Exception('upload of {} failed, got HTTP status code {}'.format(
