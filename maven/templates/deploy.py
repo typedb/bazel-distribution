@@ -158,7 +158,7 @@ filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format
 pom_updated = None
 jar_updated = None
 
-with open(pom_file_path, 'r') as pom_original, tempfile.NamedTemporaryFile(delete=False) as pom_updated:
+with open(pom_file_path, 'r') as pom_original, tempfile.NamedTemporaryFile(mode='wt', delete=False) as pom_updated:
     pom_updated_content = pom_original.read().replace(version_placeholder.text, version)
     pom_updated.write(pom_updated_content)
     pom_updated.flush()
@@ -179,34 +179,34 @@ with open(pom_file_path, 'r') as pom_original, tempfile.NamedTemporaryFile(delet
     if should_sign:
         upload(maven_url, username, password, sign(srcjar_path), filename_base + '-javadoc.jar.asc')
 
-with tempfile.NamedTemporaryFile(delete=True) as pom_md5:
+with tempfile.NamedTemporaryFile(mode='wt', delete=True) as pom_md5:
     pom_md5.write(md5(pom_updated.name))
     pom_md5.flush()
     upload(maven_url, username, password, pom_md5.name, filename_base + '.pom.md5')
 
-with tempfile.NamedTemporaryFile(delete=True) as pom_sha1:
+with tempfile.NamedTemporaryFile(mode='wt', delete=True) as pom_sha1:
     pom_sha1.write(sha1(pom_updated.name))
     pom_sha1.flush()
     upload(maven_url, username, password, pom_sha1.name, filename_base + '.pom.sha1')
 
-with tempfile.NamedTemporaryFile(delete=True) as jar_md5:
+with tempfile.NamedTemporaryFile(mode='wt', delete=True) as jar_md5:
     jar_md5.write(md5(jar_updated))
     jar_md5.flush()
     upload(maven_url, username, password, jar_md5.name, filename_base + '.jar.md5')
 
-with tempfile.NamedTemporaryFile(delete=True) as jar_sha1:
+with tempfile.NamedTemporaryFile(mode='wt', delete=True) as jar_sha1:
     jar_sha1.write(sha1(jar_updated))
     jar_sha1.flush()
     upload(maven_url, username, password, jar_sha1.name, filename_base + '.jar.sha1')
 
-with tempfile.NamedTemporaryFile(delete=True) as srcjar_md5:
+with tempfile.NamedTemporaryFile(mode='wt', delete=True) as srcjar_md5:
     srcjar_md5.write(md5(srcjar_path))
     srcjar_md5.flush()
     upload(maven_url, username, password, srcjar_md5.name, filename_base + '-sources.jar.md5')
     # TODO(vmax): use checksum of real Javadoc instead of srcjar
     upload(maven_url, username, password, srcjar_md5.name, filename_base + '-javadoc.jar.md5')
 
-with tempfile.NamedTemporaryFile(delete=True) as srcjar_sha1:
+with tempfile.NamedTemporaryFile(mode='wt', delete=True) as srcjar_sha1:
     srcjar_sha1.write(sha1(srcjar_path))
     srcjar_sha1.flush()
     upload(maven_url, username, password, srcjar_sha1.name, filename_base + '-sources.jar.sha1')
