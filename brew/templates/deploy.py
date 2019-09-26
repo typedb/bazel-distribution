@@ -20,12 +20,12 @@
 #
 
 from __future__ import print_function
+import hashlib
 import os
 import shutil
 import subprocess as sp
 import sys
 import tempfile
-import urllib
 
 # usual importing is not possible because
 # this script and module with common functions
@@ -91,8 +91,14 @@ try:
     formula_content = formula_template.replace('{version}', version).replace('{sha256}', checksum_of_distribution_local)
     distribution_url = get_distribution_url_from_formula(formula_content)
     print('Attempting to match the checksums of local distribution and Github distribution from "{}"...'.format(distribution_url))
-    urllib.urlretrieve(distribution_url, 'distribution-github.zip')
-    checksum_of_distribution_github = sp.check_output(['shasum', '-a', '256', 'distribution-github.zip']).split(' ')[0]
+    sp.check_call([
+        'curl',
+        distribution_url,
+        '--location',
+        '--output',
+        'distribution-github.zip'
+    ])
+    checksum_of_distribution_github = hashlib.sha256(open('distribution-github.zip').read()).hexdigest()
     if checksum_of_distribution_local != checksum_of_distribution_github:
         print('Error - unable to proceed with deploying to brew! The checksums do not match:')
         print('- The checksum of local distribution: {}'.format(checksum_of_distribution_local))
