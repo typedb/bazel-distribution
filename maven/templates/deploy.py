@@ -39,11 +39,11 @@ parse_deployment_properties = run_path('common.py')['parse_deployment_properties
 
 
 def sha1(fn):
-    return hashlib.sha1(open(fn).read()).hexdigest()
+    return hashlib.sha1(open(fn, 'rb').read()).hexdigest()
 
 
 def md5(fn):
-    return hashlib.md5(open(fn).read()).hexdigest()
+    return hashlib.md5(open(fn, 'rb').read()).hexdigest()
 
 
 def update_pom_within_jar(jar_path, new_pom_content):
