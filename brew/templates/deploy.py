@@ -98,7 +98,7 @@ try:
         '--output',
         'distribution-github.zip'
     ])
-    checksum_of_distribution_github = hashlib.sha256(open('distribution-github.zip').read()).hexdigest()
+    checksum_of_distribution_github = hashlib.sha256(open('distribution-github.zip', 'rb').read()).hexdigest()
     if checksum_of_distribution_local != checksum_of_distribution_github:
         print('Error - unable to proceed with deploying to brew! The checksums do not match:')
         print('- The checksum of local distribution: {}'.format(checksum_of_distribution_local))
