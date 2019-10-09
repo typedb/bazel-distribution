@@ -32,13 +32,13 @@ target_paths = sys.argv[3:]
 
 version = open(version_path, 'r').read().strip()
 
-with common.ZipFile(output_path, 'w', compression=zipfile.ZIP_DEFLATED) as output:
+with common.ZipFile(output_path, 'w', compression=zipfile.ZIP_STORED) as output:
     for target in sorted(target_paths):
-        if target.endswith('zip'):
-            zip = common.zip_repackage_with_version(target, version)
-            output.write(zip, os.path.basename(zip))
-        elif target.endswith('tar.gz'):
-            tar = common.tar_repackage_with_version(target, version)
-            output.write(tar, os.path.basename(tar))
+        if target.endswith('zip') or target.endswith('tar.gz'):
+            path_components = os.path.basename(target).split('.')
+            original_zip_basedir = path_components[0]
+            extension = '.'.join(path_components[1:])
+            repackaged_archive_fn = '{}-{}.{}'.format(original_zip_basedir, version, extension)
+            output.write(target, repackaged_archive_fn)
         else:
             raise ValueError('This file is neither a zip nor a tar.gz: {}'.format(target))

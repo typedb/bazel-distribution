@@ -18,11 +18,21 @@
 #
 
 def _tgz2zip_impl(ctx):
+    files = [ctx.file.tgz]
+
+    if ctx.attr.prefix_file:
+        if ctx.attr.prefix:
+            fail("Both prefix and prefix_file attributes were specified")
+        prefix_arg = "@" + ctx.file.prefix_file.path
+        files.append(ctx.file.prefix_file)
+    else:
+        prefix_arg = ctx.attr.prefix or "."
+
     ctx.actions.run(
-        inputs = [ctx.file.tgz],
+        inputs = files,
         outputs = [ctx.outputs.zip],
         executable = ctx.executable._tgz2zip_py,
-        arguments = [ctx.file.tgz.path, ctx.outputs.zip.path, ctx.attr.prefix],
+        arguments = [ctx.file.tgz.path, ctx.outputs.zip.path, prefix_arg],
         progress_message = "Converting {} to {}".format(ctx.file.tgz.short_path, ctx.outputs.zip.short_path)
     )
 
@@ -41,8 +51,11 @@ tgz2zip = rule(
             doc = 'Resulting filename'
         ),
         "prefix": attr.string(
-            default=".",
             doc = 'Prefix of files in archive'
+        ),
+        "prefix_file": attr.label(
+            doc = 'Prefix of files in archive (as a file)',
+            allow_single_file = True
         ),
         "_tgz2zip_py": attr.label(
             default = "//common:tgz2zip",
