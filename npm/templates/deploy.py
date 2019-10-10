@@ -35,18 +35,6 @@ import tempfile
 from runpy import run_path
 parse_deployment_properties = run_path('common.py')['parse_deployment_properties']
 
-
-def git_commit():
-    return subprocess.check_output([
-        'git',
-        'rev-parse',
-        'HEAD'
-    ], cwd=os.getenv('BUILD_WORKSPACE_DIRECTORY')).decode().strip()
-
-
-ORIGINAL_FILENAME = 'deploy_npm.tgz'
-MODIFIED_FILENAME = 'deploy_npm_updated.tgz'
-
 parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')
 args = parser.parse_args()
@@ -105,54 +93,27 @@ with tempfile.NamedTemporaryFile('wt', delete=False) as expect_input_file:
         email=npm_email,
     ))
 
+node_path = ':'.join([
+    '/usr/bin/',
+    '/bin/',
+    os.path.realpath('external/nodejs/bin/nodejs/bin/'),
+    os.path.realpath('external/nodejs_darwin_amd64/bin/'),
+    os.path.realpath('external/nodejs_linux_amd64/bin/'),
+    os.path.realpath('external/nodejs_windows_amd64/bin/'),
+])
+
 with open(expect_input_file.name) as expect_input:
     subprocess.check_call([
         '/usr/bin/expect',
     ], stdin=expect_input, env={
-        'PATH': ':'.join([
-            '/usr/bin/',
-            '/bin/',
-            os.path.realpath('external/nodejs/bin/nodejs/bin/'),
-            os.path.realpath('external/nodejs_darwin_amd64/bin/'),
-            os.path.realpath('external/nodejs_linux_amd64/bin/'),
-            os.path.realpath('external/nodejs_windows_amd64/bin/'),
-        ])
+        'PATH': node_path
     })
-
-
-if args.repo_type == 'snapshot':
-    print('Appending git commit to version')
-    with tarfile.open(ORIGINAL_FILENAME) as tf, tarfile.open(MODIFIED_FILENAME, 'w:gz') as tfu:
-        pkg_json_file = tf.extractfile('package/package.json')
-        pkg_json = json.loads(pkg_json_file.read().decode())
-        pkg_json['version'] += "-{}".format(git_commit())
-        pkg_json_file.close()
-
-        for info in sorted(tf.getmembers(), key=lambda x: x.path):
-            content = tf.extractfile(info)
-            if info.path == 'package/package.json':
-                content = io.BytesIO()
-                content.write(json.dumps(pkg_json).encode())
-                info.size = content.tell()
-                content.seek(0)
-            tfu.addfile(info, content)
-else:
-    shutil.copyfile(ORIGINAL_FILENAME, MODIFIED_FILENAME)
 
 subprocess.check_call([
     'npm',
     'publish',
     '--registry={}'.format(npm_registry),
-    MODIFIED_FILENAME
+    'deploy_npm.tgz'
 ], env={
-    'PATH': ':'.join([
-        '/usr/bin/',
-        '/bin/',
-        os.path.realpath('external/nodejs/bin/nodejs/bin/'),
-        os.path.realpath('external/nodejs_darwin_amd64/bin/'),
-        os.path.realpath('external/nodejs_linux_amd64/bin/'),
-        os.path.realpath('external/nodejs_windows_amd64/bin/'),
-    ])
+    'PATH': node_path
 })
-
-os.remove(MODIFIED_FILENAME)
