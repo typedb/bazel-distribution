@@ -113,7 +113,7 @@ Assemble Java package for subsequent deployment to Maven repo
     <tr id="assemble_maven-workspace_refs">
       <td><code>workspace_refs</code></td>
       <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
         <p>
           JSON file describing dependencies to other Bazel workspaces
         </p>
@@ -978,7 +978,7 @@ Packs Java library alongside with its dependencies into archive
 ## tgz2zip
 
 <pre>
-tgz2zip(<a href="#tgz2zip-name">name</a>, <a href="#tgz2zip-output_filename">output_filename</a>, <a href="#tgz2zip-prefix">prefix</a>, <a href="#tgz2zip-tgz">tgz</a>)
+tgz2zip(<a href="#tgz2zip-name">name</a>, <a href="#tgz2zip-output_filename">output_filename</a>, <a href="#tgz2zip-prefix">prefix</a>, <a href="#tgz2zip-prefix_file">prefix_file</a>, <a href="#tgz2zip-tgz">tgz</a>)
 </pre>
 
 Converts .tar.gz into .zip
@@ -1015,6 +1015,15 @@ Converts .tar.gz into .zip
         String; optional
         <p>
           Prefix of files in archive
+        </p>
+      </td>
+    </tr>
+    <tr id="tgz2zip-prefix_file">
+      <td><code>prefix_file</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
+        <p>
+          Prefix of files in archive (as a file)
         </p>
       </td>
     </tr>
