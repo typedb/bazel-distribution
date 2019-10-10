@@ -151,12 +151,13 @@ def _deploy_apt_impl(ctx):
 
     symlinks = {
         'package.deb': ctx.files.target[0],
-        'deployment.properties': ctx.file.deployment_properties
+        'deployment.properties': ctx.file.deployment_properties,
+        "common.py": ctx.file._common_py
     }
 
     return DefaultInfo(executable = ctx.outputs.deployment_script,
                        runfiles = ctx.runfiles(
-                           files=[ctx.files.target[0], ctx.file.deployment_properties],
+                           files=[ctx.files.target[0], ctx.file.deployment_properties, ctx.file._common_py],
                            symlinks = symlinks))
 
 
@@ -172,8 +173,12 @@ deploy_apt = rule(
         ),
         "_deployment_script": attr.label(
             allow_single_file = True,
-            default = "//apt/templates:deploy.sh"
-        )
+            default = "//apt/templates:deploy.py"
+        ),
+        "_common_py": attr.label(
+            allow_single_file = True,
+            default = "//common:common.py"
+        ),
     },
     outputs = {
         "deployment_script": "%{name}.sh",
