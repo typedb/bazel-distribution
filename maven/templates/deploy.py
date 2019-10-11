@@ -134,9 +134,9 @@ if repo_type == 'release' and len(re.findall(version_release_regex, version)) ==
 filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format(
     coordinates=group_id.text.replace('.', '/'), version=version, artifact=artifact_id.text)
 
-upload(maven_url, username, password, pom_file_path.name, filename_base + '.pom')
+upload(maven_url, username, password, pom_file_path, filename_base + '.pom')
 if should_sign:
-    upload(maven_url, username, password, sign(pom_file_path.name), filename_base + '.pom.asc')
+    upload(maven_url, username, password, sign(pom_file_path), filename_base + '.pom.asc')
 upload(maven_url, username, password, jar_path, filename_base + '.jar')
 if should_sign:
     upload(maven_url, username, password, sign(jar_path), filename_base + '.jar.asc')
@@ -149,12 +149,12 @@ if should_sign:
     upload(maven_url, username, password, sign(srcjar_path), filename_base + '-javadoc.jar.asc')
 
 with tempfile.NamedTemporaryFile(mode='wt', delete=True) as pom_md5:
-    pom_md5.write(md5(pom_file_path.name))
+    pom_md5.write(md5(pom_file_path))
     pom_md5.flush()
     upload(maven_url, username, password, pom_md5.name, filename_base + '.pom.md5')
 
 with tempfile.NamedTemporaryFile(mode='wt', delete=True) as pom_sha1:
-    pom_sha1.write(sha1(pom_file_path.name))
+    pom_sha1.write(sha1(pom_file_path))
     pom_sha1.flush()
     upload(maven_url, username, password, pom_sha1.name, filename_base + '.pom.sha1')
 
