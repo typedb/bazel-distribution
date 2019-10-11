@@ -17,4 +17,4 @@
 # under the License.
 #
 
-exports_files(["new_setup.py", "setup.py", "deploy.py", "deploy.sh"])
+exports_files(["new_setup.py", "deploy.py"])
