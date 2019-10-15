@@ -18,13 +18,25 @@
 #
 
 def _assemble_versioned_impl(ctx):
+    if not ctx.attr.version_file:
+        version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
+        version = ctx.var.get('version', '0.0.0')
+
+        ctx.actions.run_shell(
+            inputs = [],
+            outputs = [version_file],
+            command = "echo {} > {}".format(version, version_file.path)
+        )
+    else:
+        version_file = ctx.file.version_file
+
     # assemble-version.py $output $version $targets
     ctx.actions.run(
-        inputs = ctx.files.targets + [ctx.file.version_file],
+        inputs = ctx.files.targets + [version_file],
         outputs = [ctx.outputs.archive],
         executable = ctx.executable._assemble_versioned_py,
-        arguments = [ctx.outputs.archive.path, ctx.file.version_file.path] + [target.path for target in ctx.files.targets],
-        progress_message = "Versioning assembled distributions to {}".format(ctx.attr.version_file.label)
+        arguments = [ctx.outputs.archive.path, version_file.path] + [target.path for target in ctx.files.targets],
+        progress_message = "Versioning assembled distributions to {}".format(version_file.short_path)
     )
 
     return DefaultInfo(data_runfiles = ctx.runfiles(files=[ctx.outputs.archive]))
@@ -37,7 +49,6 @@ assemble_versioned = rule(
         ),
         "version_file": attr.label(
             allow_single_file = True,
-            mandatory = True,
             doc = "File containing version string"
         ),
         "_assemble_versioned_py": attr.label(
