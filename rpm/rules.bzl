@@ -24,6 +24,10 @@ load("@rules_pkg//:rpm.bzl", "pkg_rpm")
 def _assemble_rpm_version_file_impl(ctx):
     version = ctx.var.get('version', '0.0.0')
 
+    if len(version) == 40:
+        # this is a commit SHA, most likely
+        version = "0.0.0_{}".format(version)
+
     ctx.actions.run_shell(
         inputs = [],
         outputs = [ctx.outputs.version_file],
@@ -179,7 +183,8 @@ def _deploy_rpm_impl(ctx):
 
     symlinks = {
         'package.rpm': ctx.files.target[0],
-        'deployment.properties': ctx.file.deployment_properties
+        'deployment.properties': ctx.file.deployment_properties,
+        "common.py": ctx.file._common_py,
     }
 
     return DefaultInfo(executable = ctx.outputs.deployment_script,
@@ -201,11 +206,15 @@ deploy_rpm = rule(
         ),
         "_deployment_script": attr.label(
             allow_single_file = True,
-            default = "//rpm/templates:deploy.sh"
+            default = "//rpm/templates:deploy.py"
+        ),
+        "_common_py": attr.label(
+            allow_single_file = True,
+            default = "@graknlabs_bazel_distribution//common:common.py",
         )
     },
     outputs = {
-        "deployment_script": "%{name}.sh",
+        "deployment_script": "%{name}.py",
     },
     implementation = _deploy_rpm_impl,
     executable = True,
