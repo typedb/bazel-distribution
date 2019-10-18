@@ -114,15 +114,16 @@ def _java_deps_impl(ctx):
     mapping = ctx.attr.target[TransitiveJarToMavenCoordinatesMapping].mapping
 
     for file in ctx.attr.target.data_runfiles.files.to_list():
-        if file.basename in filenames:
-            continue # do not pack JARs with same name
         if file.extension == 'jar' and not file.path.startswith(LOCAL_JDK_PREFIX):
             if ctx.attr.maven_name and file.path not in mapping:
                 fail("{} does not have associated Maven coordinate".format(file.owner))
             filename = mapping.get(file.path, file.basename).replace('.', '-').replace(':', '-')
+            if filename in filenames:
+                print("Excluded duplicate: {}".format(filename))
+                continue # do not pack JARs with same name
             names[file.path] = ctx.attr.java_deps_root + filename + ".jar"
             files.append(file)
-            filenames.append(file.basename)
+            filenames.append(filename)
 
     jars_mapping = ctx.actions.declare_file("{}_jars.mapping".format(ctx.attr.target.label.name))
 
