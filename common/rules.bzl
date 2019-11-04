@@ -34,7 +34,7 @@ def _assemble_targz_package_dir_file_impl(ctx):
     version = ctx.var.get('version', '')
 
     package_dir = ctx.attr.package_dir
-    if package_dir and version:
+    if package_dir and version and ctx.attr.append_version:
         package_dir = '{}-{}'.format(package_dir, version)
 
     ctx.actions.run_shell(
@@ -46,6 +46,7 @@ def _assemble_targz_package_dir_file_impl(ctx):
 
 _assemble_targz_package_dir_file = rule(
     attrs = {
+        "append_version": attr.bool(default=True),
         "package_dir": attr.string()
     },
     outputs = {
@@ -60,6 +61,7 @@ def assemble_targz(name,
                    additional_files = {},
                    empty_directories = [],
                    permissions = {},
+                   append_version = True,
                    visibility = ["//visibility:private"],
                    tags = []):
     """Assemble distribution archive (.tar.gz)
@@ -72,6 +74,7 @@ def assemble_targz(name,
             and their resulting location in archive
         empty_directories: list of empty directories created at archive installation
         permissions: mapping between paths and UNIX permissions
+        append_version: append version to root folder inside the archive
         visibility: controls whether the target can be used by other packages
     """
     pkg_tar(
@@ -86,7 +89,8 @@ def assemble_targz(name,
 
     _assemble_targz_package_dir_file(
         name = "{}__do_not_reference__pkgdir".format(name),
-        package_dir = output_filename
+        package_dir = output_filename,
+        append_version = append_version
     )
 
     pkg_tar(
@@ -113,7 +117,7 @@ def _assemble_archive_prefix_file_impl(ctx):
     version = ctx.var.get('version', '')
 
     prefix = ctx.attr.prefix
-    if prefix and version:
+    if prefix and version and ctx.attr.append_version:
         prefix = '{}-{}'.format(prefix, version)
 
     ctx.actions.run_shell(
@@ -125,6 +129,7 @@ def _assemble_archive_prefix_file_impl(ctx):
 
 _assemble_zip_prefix_file = rule(
     attrs = {
+        "append_version": attr.bool(default=True),
         "prefix": attr.string()
     },
     outputs = {
@@ -139,6 +144,7 @@ def assemble_zip(name,
                  additional_files = {},
                  empty_directories = [],
                  permissions = {},
+                 append_version = True,
                  visibility = ["//visibility:private"]):
     """Assemble distribution archive (.zip)
 
@@ -150,6 +156,7 @@ def assemble_zip(name,
             and their resulting location in archive
         empty_directories: list of empty directories created at archive installation
         permissions: mapping between paths and UNIX permissions
+        append_version: append version to root folder inside the archive
         visibility: controls whether the target can be used by other packages
     """
     pkg_tar(
@@ -163,7 +170,8 @@ def assemble_zip(name,
 
     _assemble_zip_prefix_file(
         name = "{}__do_not_reference__prefix_file".format(name),
-        prefix = "./" + output_filename
+        prefix = "./" + output_filename,
+        append_version = append_version
     )
 
     tgz2zip(
