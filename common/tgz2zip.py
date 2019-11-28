@@ -40,7 +40,7 @@ with tarfile.open(tgz_fn, mode='r:gz') as tgz:
         for tarinfo in sorted(tgz.getmembers(), key=lambda x: x.name):
             f = ''
             is_dir = tarinfo.isdir()
-            name = './' + os.path.normpath(os.path.join(prefix, tarinfo.name))
+            name = os.path.normpath(os.path.join(prefix, tarinfo.name))
             if not is_dir:
                 f = tgz.extractfile(tarinfo).read()
             else:
