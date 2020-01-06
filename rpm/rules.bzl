@@ -17,7 +17,7 @@
 # under the License.
 #
 
-load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_deb")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_pkg//:rpm.bzl", "pkg_rpm")
 
 
@@ -52,16 +52,18 @@ def assemble_rpm(name,
                  empty_dirs = [],
                  files = {},
                  permissions = {},
-                 symlinks = {}):
+                 symlinks = {},
+                 tags = []):
     """Assemble package for installation with RPM
 
     Args:
         name: A unique name for this target.
-        package_name: Package name for built .deb package
+        package_name: Package name for built .rpm package
         spec_file: The RPM spec file to use
         version_file: File containing version number of a package.
             Alternatively, pass --define version=VERSION to Bazel invocation.
             Not specifying version defaults to '0.0.0'
+        workspace_refs: JSON file with other Bazel workspace references
         installation_dir: directory into which .rpm package is unpacked at installation
         archives: Bazel labels of archives that go into .rpm package
         empty_dirs: list of empty directories created at package installation
@@ -70,6 +72,7 @@ def assemble_rpm(name,
         permissions: mapping between paths and UNIX permissions
         symlinks: mapping between source and target of symbolic links
                     created at installation
+        tags: additional tags passed to all wrapped rules
     """
     tag = "rpm_package_name={}".format(spec_file.split(':')[-1].replace('.spec', ''))
     tar_name = "_{}-rpm-tar".format(package_name)
@@ -87,6 +90,7 @@ def assemble_rpm(name,
             mode = "0755",
             symlinks = symlinks,
             modes = permissions,
+            tags = tags,
         )
         rpm_data.append(tar_name)
 
@@ -105,7 +109,8 @@ def assemble_rpm(name,
             constraint_values = [
                 "@bazel_tools//platforms:linux",
                 "@bazel_tools//platforms:x86_64",
-            ]
+            ],
+            tags = tags,
         )
 
     if workspace_refs:
@@ -122,7 +127,8 @@ def assemble_rpm(name,
             srcs = [spec_file, workspace_refs],
             outs = [modified_spec_filename],
             cmd = " ".join(args),
-            tools = ["@graknlabs_bazel_distribution//rpm:generate_spec_file"]
+            tools = ["@graknlabs_bazel_distribution//rpm:generate_spec_file"],
+            tags = tags,
         )
         spec_file = modified_spec_target_name
 
@@ -143,7 +149,8 @@ def assemble_rpm(name,
             ":linux_build": "/usr/bin/rpmbuild",
             ":osx_build": "/usr/local/bin/rpmbuild",
             "//conditions:default": ""
-        })
+        }),
+        tags = tags,
     )
 
     native.genrule(
@@ -151,7 +158,7 @@ def assemble_rpm(name,
         srcs = ["{}__do_not_reference__rpm".format(name)],
         cmd = "cp $$(echo $(SRCS) | awk '{print $$1}') $@",
         outs = [package_name + ".rpm"],
-        tags = [tag]
+        tags = [tag] + tags,
     )
 
 
