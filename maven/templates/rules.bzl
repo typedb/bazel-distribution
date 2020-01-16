@@ -265,8 +265,8 @@ def _assemble_maven_impl(ctx):
 
     # there is also .source_jar which produces '.srcjar'
     if hasattr(target, "java"):
-        jar = target.java.outputs.jars[0].class_jar
-        srcjar = target.java.outputs.jars[0].source_jar
+        jar = target[JavaInfo].outputs.jars[0].class_jar
+        srcjar = target[JavaInfo].outputs.jars[0].source_jar
     elif hasattr(target, "files"):
         jar = target.files.to_list()[0]
     else:
