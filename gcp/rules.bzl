@@ -26,8 +26,9 @@ def assemble_gcp(name,
                  install,
                  zone,
                  image_name,
-                 image_licenses,
-                 files):
+                 files,
+                 image_licenses=None,
+                 source_image_family="ubuntu-1604-lts"):
     """Assemble files for GCP deployment
 
     Args:
@@ -36,8 +37,9 @@ def assemble_gcp(name,
         install: Bazel label for install file
         zone: GCP zone to deploy image to
         image_name: name of deployed image
-        image_licenses: licenses to attach to deployed image
         files: Files to include into GCP deployment
+        image_licenses: licenses to attach to deployed image
+        source_image_family: Family of GCP base image
     """
     install_fn = Label(install).name
     generated_config_target_name = name + "__do_not_reference_config"
@@ -48,8 +50,9 @@ def assemble_gcp(name,
             "{project_id}": project_id,
             "{zone}": zone,
             "{image_name}": image_name,
-            "{image_licenses}": image_licenses,
-            "{install}": install_fn
+            "{image_licenses}": "[\"{}\"]".format(image_licenses) if image_licenses else "[]",
+            "{install}": install_fn,
+            "{source_image_family}": source_image_family,
         }
     )
     files[install] = install_fn
