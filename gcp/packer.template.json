@@ -8,11 +8,12 @@
       "type": "googlecompute",
       "account_file": "{{user `gcp_account_file`}}",
       "project_id": "{project_id}",
-      "source_image_family": "ubuntu-1604-lts",
+      "source_image_family": "{source_image_family}",
       "zone": "{zone}",
       "ssh_username": "ubuntu",
       "image_name": "{image_name}",
-      "image_licenses": ["{image_licenses}"],
+      "image_family": "{image_family}",
+      "image_licenses": {image_licenses},
       "disk_size": 20
     }
   ],
