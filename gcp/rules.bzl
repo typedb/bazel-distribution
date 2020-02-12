@@ -26,7 +26,7 @@ def assemble_gcp(name,
                  install,
                  zone,
                  image_name,
-                 files,
+                 files=None,
                  image_licenses=None,
                  source_image_family="ubuntu-1604-lts"):
     """Assemble files for GCP deployment
@@ -41,6 +41,8 @@ def assemble_gcp(name,
         image_licenses: licenses to attach to deployed image
         source_image_family: Family of GCP base image
     """
+    if not files:
+        files = {}
     install_fn = Label(install).name
     generated_config_target_name = name + "__do_not_reference_config"
     generate_json_config(
