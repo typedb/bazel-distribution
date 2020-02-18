@@ -162,9 +162,9 @@ def _parse_maven_coordinates(coordinate_string):
 
 def _generate_pom_xml(ctx, maven_coordinates):
     # Final 'pom.xml' is generated in 2 steps
-    preprocessed_template = ctx.actions.declare_file("_pom.xml")
+    preprocessed_template = ctx.actions.declare_file("_{}_pom.xml".format(ctx.attr.name))
 
-    pom_file = ctx.actions.declare_file("pom.xml")
+    pom_file = ctx.actions.declare_file("{}_pom.xml".format(ctx.attr.name))
 
     maven_pom_deps = ctx.attr.target[MavenPomInfo].maven_pom_deps
     deps_coordinates = depset(maven_pom_deps).to_list()
@@ -264,11 +264,16 @@ def _assemble_maven_impl(ctx):
     pom_file = _generate_pom_xml(ctx, maven_coordinates)
 
     # there is also .source_jar which produces '.srcjar'
-    if hasattr(target, "java"):
-        jar = target[JavaInfo].outputs.jars[0].class_jar
-        srcjar = target[JavaInfo].outputs.jars[0].source_jar
-    elif hasattr(target, "files"):
-        jar = target.files.to_list()[0]
+    srcjar = None
+
+    if hasattr(target, "files") and target.files.to_list() and target.files.to_list()[0].extension == 'jar':
+        all_jars = target[JavaInfo].outputs.jars
+        jar = all_jars[0].class_jar
+
+        for output in all_jars:
+            if output.source_jar.basename.endswith('-src.jar'):
+                srcjar = output.source_jar
+                break
     else:
         fail("Could not find JAR file to deploy in {}".format(target))
 
@@ -281,10 +286,16 @@ def _assemble_maven_impl(ctx):
         executable = ctx.executable._assemble_script,
     )
 
-    return [
-        DefaultInfo(files = depset([output_jar, pom_file, srcjar])),
-        MavenDeploymentInfo(jar = output_jar, pom = pom_file, srcjar = srcjar)
-    ]
+    if srcjar == None:
+        return [
+            DefaultInfo(files = depset([output_jar, pom_file])),
+            MavenDeploymentInfo(jar = output_jar, pom = pom_file)
+        ]
+    else:
+        return [
+            DefaultInfo(files = depset([output_jar, pom_file, srcjar])),
+            MavenDeploymentInfo(jar = output_jar, pom = pom_file, srcjar = srcjar)
+        ]
 
 assemble_maven = rule(
     attrs = {
@@ -364,7 +375,7 @@ def _deploy_maven_impl(ctx):
 
     lib_jar_link = "lib.jar"
     src_jar_link = "lib.srcjar"
-    pom_xml_link = "pom.xml"
+    pom_xml_link = ctx.attr.target[MavenDeploymentInfo].pom.basename
 
     ctx.actions.expand_template(
         template = ctx.file._deployment_script,
@@ -397,6 +408,7 @@ _default_deployment_properties = None if 'deployment_properties_placeholder' in 
 deploy_maven = rule(
     attrs = {
         "target": attr.label(
+            mandatory = True,
             providers = [MavenDeploymentInfo],
             doc = "assemble_maven target to deploy"
         ),
