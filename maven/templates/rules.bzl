@@ -110,6 +110,8 @@ def _maven_pom_deps_impl(_target, ctx):
         getattr(ctx.rule.attr, "runtime_deps", [])
 
     for dep in deps:
+        if dep.label.name.endswith('.jar'):
+            continue
         if dep.label.package.startswith(ctx.attr.package):
             deps_coordinates += dep[MavenPomInfo].maven_pom_deps
 
