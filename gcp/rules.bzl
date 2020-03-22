@@ -29,6 +29,7 @@ def assemble_gcp(name,
                  image_family="",
                  files=None,
                  image_licenses=None,
+                 disable_default_service_account=False,
                  source_image_family="ubuntu-1604-lts"):
     """Assemble files for GCP deployment
 
@@ -41,6 +42,7 @@ def assemble_gcp(name,
         image_family: family of deployed image
         files: Files to include into GCP deployment
         image_licenses: licenses to attach to deployed image
+        disable_default_service_account: disable default service account
         source_image_family: Family of GCP base image
     """
     if not files:
@@ -58,6 +60,7 @@ def assemble_gcp(name,
             "{image_licenses}": "[\"{}\"]".format(image_licenses) if image_licenses else "[]",
             "{install}": install_fn,
             "{source_image_family}": source_image_family,
+            "{disable_default_service_account}": str(disable_default_service_account).lower()
         }
     )
     files[install] = install_fn
