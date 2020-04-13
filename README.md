@@ -354,7 +354,7 @@ Version multiple archives for subsequent simultaneous deployment
     <tr id="assemble_versioned-version_file">
       <td><code>version_file</code></td>
       <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
         <p>
           File containing version string
         </p>
@@ -658,7 +658,7 @@ Deploy `assemble_maven` target into Maven repo
     <tr id="deploy_maven-target">
       <td><code>target</code></td>
       <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
         <p>
           assemble_maven target to deploy
         </p>
@@ -1428,7 +1428,7 @@ Assemble files for AWS deployment
 ## assemble_gcp
 
 <pre>
-assemble_gcp(<a href="#assemble_gcp-name">name</a>, <a href="#assemble_gcp-project_id">project_id</a>, <a href="#assemble_gcp-install">install</a>, <a href="#assemble_gcp-zone">zone</a>, <a href="#assemble_gcp-image_name">image_name</a>, <a href="#assemble_gcp-image_licenses">image_licenses</a>, <a href="#assemble_gcp-files">files</a>)
+assemble_gcp(<a href="#assemble_gcp-name">name</a>, <a href="#assemble_gcp-project_id">project_id</a>, <a href="#assemble_gcp-install">install</a>, <a href="#assemble_gcp-zone">zone</a>, <a href="#assemble_gcp-image_name">image_name</a>, <a href="#assemble_gcp-image_family">image_family</a>, <a href="#assemble_gcp-files">files</a>, <a href="#assemble_gcp-image_licenses">image_licenses</a>, <a href="#assemble_gcp-disable_default_service_account">disable_default_service_account</a>, <a href="#assemble_gcp-source_image_family">source_image_family</a>)
 </pre>
 
 Assemble files for GCP deployment
@@ -1486,21 +1486,48 @@ Assemble files for GCP deployment
         </p>
       </td>
     </tr>
-    <tr id="assemble_gcp-image_licenses">
-      <td><code>image_licenses</code></td>
+    <tr id="assemble_gcp-image_family">
+      <td><code>image_family</code></td>
       <td>
-        required.
+        optional. default is <code>""</code>
         <p>
-          licenses to attach to deployed image
+          family of deployed image
         </p>
       </td>
     </tr>
     <tr id="assemble_gcp-files">
       <td><code>files</code></td>
       <td>
-        required.
+        optional. default is <code>None</code>
         <p>
           Files to include into GCP deployment
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_gcp-image_licenses">
+      <td><code>image_licenses</code></td>
+      <td>
+        optional. default is <code>None</code>
+        <p>
+          licenses to attach to deployed image
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_gcp-disable_default_service_account">
+      <td><code>disable_default_service_account</code></td>
+      <td>
+        optional. default is <code>False</code>
+        <p>
+          disable default service account
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_gcp-source_image_family">
+      <td><code>source_image_family</code></td>
+      <td>
+        optional. default is <code>"ubuntu-1604-lts"</code>
+        <p>
+          Family of GCP base image
         </p>
       </td>
     </tr>
@@ -1562,7 +1589,7 @@ Assemble files for HashiCorp Packer deployment
 ## assemble_rpm
 
 <pre>
-assemble_rpm(<a href="#assemble_rpm-name">name</a>, <a href="#assemble_rpm-package_name">package_name</a>, <a href="#assemble_rpm-spec_file">spec_file</a>, <a href="#assemble_rpm-version_file">version_file</a>, <a href="#assemble_rpm-workspace_refs">workspace_refs</a>, <a href="#assemble_rpm-installation_dir">installation_dir</a>, <a href="#assemble_rpm-archives">archives</a>, <a href="#assemble_rpm-empty_dirs">empty_dirs</a>, <a href="#assemble_rpm-files">files</a>, <a href="#assemble_rpm-permissions">permissions</a>, <a href="#assemble_rpm-symlinks">symlinks</a>)
+assemble_rpm(<a href="#assemble_rpm-name">name</a>, <a href="#assemble_rpm-package_name">package_name</a>, <a href="#assemble_rpm-spec_file">spec_file</a>, <a href="#assemble_rpm-version_file">version_file</a>, <a href="#assemble_rpm-workspace_refs">workspace_refs</a>, <a href="#assemble_rpm-installation_dir">installation_dir</a>, <a href="#assemble_rpm-archives">archives</a>, <a href="#assemble_rpm-empty_dirs">empty_dirs</a>, <a href="#assemble_rpm-files">files</a>, <a href="#assemble_rpm-permissions">permissions</a>, <a href="#assemble_rpm-symlinks">symlinks</a>, <a href="#assemble_rpm-tags">tags</a>)
 </pre>
 
 Assemble package for installation with RPM
@@ -1589,7 +1616,7 @@ Assemble package for installation with RPM
       <td>
         required.
         <p>
-          Package name for built .deb package
+          Package name for built .rpm package
         </p>
       </td>
     </tr>
@@ -1617,6 +1644,9 @@ Assemble package for installation with RPM
       <td><code>workspace_refs</code></td>
       <td>
         optional. default is <code>None</code>
+        <p>
+          JSON file with other Bazel workspace references
+        </p>
       </td>
     </tr>
     <tr id="assemble_rpm-installation_dir">
@@ -1675,6 +1705,15 @@ Assemble package for installation with RPM
         </p>
       </td>
     </tr>
+    <tr id="assemble_rpm-tags">
+      <td><code>tags</code></td>
+      <td>
+        optional. default is <code>[]</code>
+        <p>
+          additional tags passed to all wrapped rules
+        </p>
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -1684,7 +1723,7 @@ Assemble package for installation with RPM
 ## assemble_targz
 
 <pre>
-assemble_targz(<a href="#assemble_targz-name">name</a>, <a href="#assemble_targz-output_filename">output_filename</a>, <a href="#assemble_targz-targets">targets</a>, <a href="#assemble_targz-additional_files">additional_files</a>, <a href="#assemble_targz-empty_directories">empty_directories</a>, <a href="#assemble_targz-permissions">permissions</a>, <a href="#assemble_targz-visibility">visibility</a>, <a href="#assemble_targz-tags">tags</a>)
+assemble_targz(<a href="#assemble_targz-name">name</a>, <a href="#assemble_targz-output_filename">output_filename</a>, <a href="#assemble_targz-targets">targets</a>, <a href="#assemble_targz-additional_files">additional_files</a>, <a href="#assemble_targz-empty_directories">empty_directories</a>, <a href="#assemble_targz-permissions">permissions</a>, <a href="#assemble_targz-append_version">append_version</a>, <a href="#assemble_targz-visibility">visibility</a>, <a href="#assemble_targz-tags">tags</a>)
 </pre>
 
 Assemble distribution archive (.tar.gz)
@@ -1752,6 +1791,15 @@ Assemble distribution archive (.tar.gz)
         </p>
       </td>
     </tr>
+    <tr id="assemble_targz-append_version">
+      <td><code>append_version</code></td>
+      <td>
+        optional. default is <code>True</code>
+        <p>
+          append version to root folder inside the archive
+        </p>
+      </td>
+    </tr>
     <tr id="assemble_targz-visibility">
       <td><code>visibility</code></td>
       <td>
@@ -1776,7 +1824,7 @@ Assemble distribution archive (.tar.gz)
 ## assemble_zip
 
 <pre>
-assemble_zip(<a href="#assemble_zip-name">name</a>, <a href="#assemble_zip-output_filename">output_filename</a>, <a href="#assemble_zip-targets">targets</a>, <a href="#assemble_zip-additional_files">additional_files</a>, <a href="#assemble_zip-empty_directories">empty_directories</a>, <a href="#assemble_zip-permissions">permissions</a>, <a href="#assemble_zip-visibility">visibility</a>)
+assemble_zip(<a href="#assemble_zip-name">name</a>, <a href="#assemble_zip-output_filename">output_filename</a>, <a href="#assemble_zip-targets">targets</a>, <a href="#assemble_zip-additional_files">additional_files</a>, <a href="#assemble_zip-empty_directories">empty_directories</a>, <a href="#assemble_zip-permissions">permissions</a>, <a href="#assemble_zip-append_version">append_version</a>, <a href="#assemble_zip-visibility">visibility</a>)
 </pre>
 
 Assemble distribution archive (.zip)
@@ -1841,6 +1889,15 @@ Assemble distribution archive (.zip)
         optional. default is <code>{}</code>
         <p>
           mapping between paths and UNIX permissions
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_zip-append_version">
+      <td><code>append_version</code></td>
+      <td>
+        optional. default is <code>True</code>
+        <p>
+          append version to root folder inside the archive
         </p>
       </td>
     </tr>
