@@ -153,6 +153,55 @@ MavenDeploymentInfo = provider(
 ####    MAVEN ASSEMBLY   ####
 #############################
 
+apache_license_text = """
+<!--
+  ~
+  ~ Licensed to the Apache Software Foundation (ASF) under one
+  ~ or more contributor license agreements.  See the NOTICE file
+  ~ distributed with this work for additional information
+  ~ regarding copyright ownership.  The ASF licenses this file
+  ~ to you under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  ~
+-->
+"""
+
+mit_license_text = """
+<!--
+ ~
+ ~ Released under MIT License
+ ~
+ ~ Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ ~ this software and associated documentation files (the "Software"), to deal in 
+ ~ the Software without restriction, including without limitation the rights to 
+ ~ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
+ ~ of the Software, and to permit persons to whom the Software is furnished to 
+ ~ do so, subject to the following conditions:
+ ~
+ ~ The above copyright notice and this permission notice shall be included in all 
+ ~ copies or substantial portions of the Software.
+ ~
+ ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ ~ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ ~ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
+ ~ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ ~ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+ ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ ~ THE SOFTWARE.
+ ~
+-->
+"""
+
 def _parse_maven_coordinates(coordinate_string):
     group_id, artifact_id, version = coordinate_string.split(':')
     if version != '{pom_version}':
@@ -188,9 +237,11 @@ def _generate_pom_xml(ctx, maven_coordinates):
     if ctx.attr.license == 'apache':
         license_name = "Apache License, Version 2.0"
         license_url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
-    if ctx.attr.license == 'MIT':
+        license_text = apache_license_text
+    if ctx.attr.license == 'mit':
         license_name = "MIT License"
         license_url = "https://opensource.org/licenses/MIT"
+        license_text= mit_license_text
 
     scm_connection = ctx.attr.scm_url
     scm_developer_connection = ctx.attr.scm_url
@@ -216,6 +267,7 @@ def _generate_pom_xml(ctx, maven_coordinates):
             "{project_url}": ctx.attr.project_url,
             "{license_name}": license_name,
             "{license_url}": license_url,
+            "{license_text}": license_text,
             "{scm_connection}": scm_connection,
             "{scm_developer_connection}": scm_developer_connection,
             "{scm_tag}": scm_tag,
@@ -340,7 +392,7 @@ assemble_maven = rule(
             doc = 'Project URL to fill into pom.xml'
         ),
         "license": attr.string(
-            values=["apache", "MIT"],
+            values=["apache", "mit"],
             default = "apache",
             doc = 'Project license to fill into pom.xml'
         ),
