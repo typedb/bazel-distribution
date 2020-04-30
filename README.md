@@ -1423,6 +1423,73 @@ Assemble files for AWS deployment
 </table>
 
 
+<a name="#assemble_azure"></a>
+
+## assemble_azure
+
+<pre>
+assemble_azure(<a href="#assemble_azure-name">name</a>, <a href="#assemble_azure-image_name">image_name</a>, <a href="#assemble_azure-resource_group_name">resource_group_name</a>, <a href="#assemble_azure-install">install</a>, <a href="#assemble_azure-files">files</a>)
+</pre>
+
+Assemble files for GCP deployment
+
+### Parameters
+
+<table class="params-table">
+  <colgroup>
+    <col class="col-param" />
+    <col class="col-description" />
+  </colgroup>
+  <tbody>
+    <tr id="assemble_azure-name">
+      <td><code>name</code></td>
+      <td>
+        required.
+        <p>
+          A unique name for this target.
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_azure-image_name">
+      <td><code>image_name</code></td>
+      <td>
+        required.
+        <p>
+          name of deployed image
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_azure-resource_group_name">
+      <td><code>resource_group_name</code></td>
+      <td>
+        required.
+        <p>
+          name of the resource group to place image in
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_azure-install">
+      <td><code>install</code></td>
+      <td>
+        required.
+        <p>
+          Bazel label for install file
+        </p>
+      </td>
+    </tr>
+    <tr id="assemble_azure-files">
+      <td><code>files</code></td>
+      <td>
+        optional. default is <code>None</code>
+        <p>
+          Files to include into Azure deployment
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
 <a name="#assemble_gcp"></a>
 
 ## assemble_gcp

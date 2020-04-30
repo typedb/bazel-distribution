@@ -1,0 +1,40 @@
+{
+  "variables": {
+    "subscription_id": "{{env `DEPLOY_PACKER_AZURE_SUBSCRIPTION_ID`}}",
+    "client_id": "{{env `DEPLOY_PACKER_AZURE_CLIENT_ID`}}",
+    "client_secret": "{{env `DEPLOY_PACKER_AZURE_CLIENT_SECRET`}}",
+    "version": "{{env `DEPLOY_PACKER_VERSION`}}"
+  },
+  "builders": [
+    {
+      "type": "azure-arm",
+      "subscription_id": "{{user `subscription_id`}}",
+      "client_id": "{{user `client_id`}}",
+      "client_secret": "{{user `client_secret`}}",
+      "managed_image_name": "{image_name}",
+      "managed_image_resource_group_name": "{resource_group_name}",
+      "os_type": "Linux",
+      "image_publisher": "Canonical",
+      "image_offer": "UbuntuServer",
+      "image_sku": "18.04-LTS",
+      "build_resource_group_name": "{resource_group_name}",
+      "vm_size": "Standard_B2s"
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [ "mkdir /tmp/deployment" ]
+    },
+    {
+      "type": "file",
+      "source": "files/",
+      "destination": "/tmp/deployment/"
+    },
+    {
+      "type": "shell",
+      "inline": [ "sudo /tmp/deployment/{install}" ]
+    }
+  ]
+}
