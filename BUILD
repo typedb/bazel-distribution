@@ -25,6 +25,7 @@ stardoc(
     out = "README.md",
     deps = [
         "//apt:lib",
+        "//azure:lib",
         "//aws:lib",
         "//brew:lib",
         "//common:lib",
@@ -37,6 +38,7 @@ stardoc(
         "//rpm:lib",
     ],
     symbol_names = [
+        "assemble_azure",
         "pkg_deb",
         "assemble_apt",
         "deploy_apt",

@@ -27,6 +27,9 @@ deploy_apt = d
 load("//aws:rules.bzl", _ = "assemble_aws")
 assemble_aws = _
 
+load("//azure:rules.bzl", _ = "assemble_azure")
+assemble_azure = _
+
 load("//brew:rules.bzl", _ = "deploy_brew")
 deploy_brew = _
 
