@@ -57,6 +57,7 @@ stardoc(
         "assemble_gcp",
         "deploy_github",
         "assemble_maven",
+        "javadoc",
         "deploy_maven",
         "JavaLibInfo",
         "MavenDeploymentInfo",

@@ -1079,7 +1079,7 @@ JarToMavenCoordinatesMapping(<a href="#JarToMavenCoordinatesMapping-filename">fi
 ## JavaLibInfo
 
 <pre>
-JavaLibInfo(<a href="#JavaLibInfo-target_coordinates">target_coordinates</a>, <a href="#JavaLibInfo-target_deps_coordinates">target_deps_coordinates</a>)
+JavaLibInfo(<a href="#JavaLibInfo-target_coordinates">target_coordinates</a>, <a href="#JavaLibInfo-target_deps_coordinates">target_deps_coordinates</a>, <a href="#JavaLibInfo-srcs">srcs</a>)
 </pre>
 
 
@@ -1104,6 +1104,12 @@ JavaLibInfo(<a href="#JavaLibInfo-target_coordinates">target_coordinates</a>, <a
       <td>
         <p>The Maven coordinates of the direct dependencies, and the transitively exported targets, of
         this target.</p>
+      </td>
+    </tr>
+    <tr id="JavaLibInfo-srcs">
+      <td><code>srcs</code></td>
+      <td>
+        <p>The source files of the specified target.</p>
       </td>
     </tr>
   </tbody>

@@ -31,6 +31,9 @@ JavaLibInfo = provider(
         The Maven coordinates of the direct dependencies, and the transitively exported targets, of
         this target.
         """,
+        "srcs": """
+        The source files of the specified target.
+        """,
     },
 )
 
@@ -50,6 +53,7 @@ def _java_lib_deps_impl(_target, ctx):
     runtime_deps = getattr(ctx.rule.attr, "runtime_deps", [])
     exports = getattr(ctx.rule.attr, "exports", [])
     deps_all = deps + exports + runtime_deps
+    srcs = getattr(ctx.rule.attr, "srcs", [])
 
     maven_coordinates = []
     for tag in tags:
@@ -66,8 +70,11 @@ def _java_lib_deps_impl(_target, ctx):
         if len(maven_coordinates) > 1:
             fail("You should not set more than one maven_coordinates tag per java_library")
 
-    java_lib_info = JavaLibInfo(target_coordinates = depset(maven_coordinates, transitive=_target_coordinates(exports)),
-                                target_deps_coordinates = depset([], transitive = _target_coordinates(deps_all)))
+    java_lib_info = JavaLibInfo(
+        target_coordinates = depset(maven_coordinates, transitive=_target_coordinates(exports)),
+        target_deps_coordinates = depset([], transitive = _target_coordinates(deps_all)),
+        srcs = depset(srcs),
+    )
     return [java_lib_info]
 
 _java_lib_deps = aspect(
@@ -75,7 +82,8 @@ _java_lib_deps = aspect(
         "jars",
         "deps",
         "exports",
-        "runtime_deps"
+        "runtime_deps",
+        "srcs",
     ],
     doc = """
     Collects the Maven coordinates of a java_library, and its direct dependencies.
@@ -144,6 +152,7 @@ MavenDeploymentInfo = provider(
     fields = {
         'jar': 'JAR file to deploy',
         'srcjar': 'JAR file with sources',
+        'docjar': 'JAR file with javadocs',
         'pom': 'Accompanying pom.xml file'
     }
 )
@@ -314,8 +323,8 @@ def _generate_pom_xml(ctx, maven_coordinates):
 
 def _assemble_maven_impl(ctx):
     target = ctx.attr.target
-    target_string = target[JavaLibInfo].target_coordinates.to_list()[-1]
 
+    target_string = target[JavaLibInfo].target_coordinates.to_list()[-1]
     maven_coordinates = _parse_maven_coordinates(target_string)
 
     pom_file = _generate_pom_xml(ctx, maven_coordinates)
@@ -343,16 +352,24 @@ def _assemble_maven_impl(ctx):
         executable = ctx.executable._assemble_script,
     )
 
-    if srcjar == None:
-        return [
-            DefaultInfo(files = depset([output_jar, pom_file])),
-            MavenDeploymentInfo(jar = output_jar, pom = pom_file)
-        ]
-    else:
-        return [
-            DefaultInfo(files = depset([output_jar, pom_file, srcjar])),
-            MavenDeploymentInfo(jar = output_jar, pom = pom_file, srcjar = srcjar)
-        ]
+    results = [output_jar, pom_file]
+    if srcjar:
+        results.append(srcjar)
+
+
+    # generate a javadoc JAR
+    javadoc_res = _javadoc(ctx)
+    if javadoc_res:
+        docjars = javadoc_res[0].files.to_list()
+        if docjars:
+            # append the javadoc jar to the results
+            docjar = docjars[0]
+            results.append(docjar)
+
+    return [
+        DefaultInfo(files = depset(results)),
+        MavenDeploymentInfo(jar = output_jar, pom = pom_file, srcjar = srcjar, docjar = docjar)
+    ]
 
 assemble_maven = rule(
     attrs = {
@@ -424,6 +441,60 @@ assemble_maven = rule(
 
 
 ###############################
+####        JAVADOC        ####
+###############################
+
+def _javadoc(ctx):
+    target = ctx.attr.target
+
+    target_string = target[JavaLibInfo].target_coordinates.to_list()[-1]
+    maven_coordinates = _parse_maven_coordinates(target_string)
+
+    output_jar = ctx.actions.declare_file("{}:{}-javadoc.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
+
+    # extract all files
+    src_files = []
+    for src in target[JavaLibInfo].srcs.to_list():
+        src_files += src.files.to_list()
+
+    # extract paths to use in the javadoc command
+    src_list = []
+    for src in src_files:
+        src_list += [src.path]
+
+    # https://docs.oracle.com/en/java/javase/11/javadoc/javadoc-command.html#GUID-B0079316-8AA3-475B-8276-6A4095B5186A
+    cmd = [
+        "mkdir -p %s" % maven_coordinates.artifact_id,
+        "javadoc -d %s %s" % (maven_coordinates.artifact_id, " ".join(src_list)),
+        "jar cvf %s %s/*" % (output_jar.path, maven_coordinates.artifact_id),
+    ]
+
+    ctx.actions.run_shell(
+        inputs = src_files,
+        outputs = [output_jar],
+        command = "\n".join(cmd),
+        use_default_shell_env = True,
+    )
+
+    return [
+        DefaultInfo(files = depset([output_jar])),
+    ]
+
+javadoc = rule(
+    implementation = _javadoc,
+    attrs = {
+        "target": attr.label(
+            mandatory = True,
+            aspects = [
+                _java_lib_deps,
+            ],
+            doc = "Java target for building documentation"
+        ),
+    },
+)
+
+
+###############################
 ####    MAVEN DEPLOYMENT   ####
 ###############################
 
@@ -432,6 +503,7 @@ def _deploy_maven_impl(ctx):
 
     lib_jar_link = "lib.jar"
     src_jar_link = "lib.srcjar"
+    doc_jar_link = "lib.docjar"
     pom_xml_link = ctx.attr.target[MavenDeploymentInfo].pom.basename
 
     ctx.actions.expand_template(
@@ -440,6 +512,7 @@ def _deploy_maven_impl(ctx):
         substitutions = {
             "$JAR_PATH": lib_jar_link,
             "$SRCJAR_PATH": src_jar_link,
+            "$DOCJAR_PATH": doc_jar_link,
             "$POM_PATH": pom_xml_link,
         }
     )
@@ -456,6 +529,7 @@ def _deploy_maven_impl(ctx):
             lib_jar_link: ctx.attr.target[MavenDeploymentInfo].jar,
             pom_xml_link: ctx.attr.target[MavenDeploymentInfo].pom,
             src_jar_link: ctx.attr.target[MavenDeploymentInfo].srcjar,
+            doc_jar_link: ctx.attr.target[MavenDeploymentInfo].docjar,
             'deployment.properties': ctx.file.deployment_properties,
             "common.py": ctx.file._common_py
         })

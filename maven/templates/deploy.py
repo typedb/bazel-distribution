@@ -99,6 +99,7 @@ maven_url = deployment_properties['repo.maven.' + repo_type]
 jar_path = "$JAR_PATH"
 pom_file_path = "$POM_PATH"
 srcjar_path = "$SRCJAR_PATH"
+docjar_path = "$DOCJAR_PATH"
 
 namespace = { 'namespace': 'http://maven.apache.org/POM/4.0.0' }
 root = ElementTree.parse(pom_file_path).getroot()
@@ -143,10 +144,9 @@ if should_sign:
 upload(maven_url, username, password, srcjar_path, filename_base + '-sources.jar')
 if should_sign:
     upload(maven_url, username, password, sign(srcjar_path), filename_base + '-sources.jar.asc')
-# TODO(vmax): use real Javadoc instead of srcjar
-upload(maven_url, username, password, srcjar_path, filename_base + '-javadoc.jar')
+upload(maven_url, username, password, docjar_path, filename_base + '-javadoc.jar')
 if should_sign:
-    upload(maven_url, username, password, sign(srcjar_path), filename_base + '-javadoc.jar.asc')
+    upload(maven_url, username, password, sign(docjar_path), filename_base + '-javadoc.jar.asc')
 
 with tempfile.NamedTemporaryFile(mode='wt', delete=True) as pom_md5:
     pom_md5.write(md5(pom_file_path))
@@ -172,12 +172,18 @@ with tempfile.NamedTemporaryFile(mode='wt', delete=True) as srcjar_md5:
     srcjar_md5.write(md5(srcjar_path))
     srcjar_md5.flush()
     upload(maven_url, username, password, srcjar_md5.name, filename_base + '-sources.jar.md5')
-    # TODO(vmax): use checksum of real Javadoc instead of srcjar
-    upload(maven_url, username, password, srcjar_md5.name, filename_base + '-javadoc.jar.md5')
+
+with tempfile.NamedTemporaryFile(mode='wt', delete=True) as docjar_md5:
+    docjar_md5.write(md5(docjar_path))
+    docjar_md5.flush()
+    upload(maven_url, username, password, docjar_md5.name, filename_base + '-javadoc.jar.md5')
 
 with tempfile.NamedTemporaryFile(mode='wt', delete=True) as srcjar_sha1:
     srcjar_sha1.write(sha1(srcjar_path))
     srcjar_sha1.flush()
     upload(maven_url, username, password, srcjar_sha1.name, filename_base + '-sources.jar.sha1')
-    # TODO(vmax): use checksum of real Javadoc instead of srcjar
-    upload(maven_url, username, password, srcjar_sha1.name, filename_base + '-javadoc.jar.sha1')
+
+with tempfile.NamedTemporaryFile(mode='wt', delete=True) as docjar_sha1:
+    docjar_sha1.write(sha1(docjar_path))
+    docjar_sha1.flush()
+    upload(maven_url, username, password, docjar_sha1.name, filename_base + '-javadoc.jar.sha1')
