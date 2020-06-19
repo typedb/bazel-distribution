@@ -61,10 +61,6 @@ if not username:
 if not password:
     raise ValueError('Error: password should be passed via $DEPLOY_DISTRIBUTION_PASSWORD env variable')
 
-deployment_properties = parse_deployment_properties('deployment.properties')
-distribution_url = deployment_properties['repo.distribution.' + repo_type]
-
-
 version = open("{version_file}", "r").read().strip()
 
 repo_type_snapshot = 'snapshot'
@@ -88,5 +84,8 @@ split_artifact = os.path.basename('{artifact_path}').split('.', 1)
 
 filename = '{artifact_group}/{artifact_name}/{version}/{artifact_name}-{version}.{artifact_extension}'.format(
     version=version, artifact_name=split_artifact[0], artifact_extension=split_artifact[1])
+
+deployment_properties = parse_deployment_properties('deployment.properties')
+distribution_url = deployment_properties['repo.distribution.' + repo_type]
 
 upload(distribution_url, username, password, '{artifact_path}', filename)
