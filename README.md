@@ -532,6 +532,75 @@ Deploy Homebrew (Caskroom) formula to Homebrew tap
 </table>
 
 
+<a name="#deploy_distribution"></a>
+
+## deploy_distribution
+
+<pre>
+deploy_distribution(<a href="#deploy_distribution-name">name</a>, <a href="#deploy_distribution-artifact_group">artifact_group</a>, <a href="#deploy_distribution-deployment_properties">deployment_properties</a>, <a href="#deploy_distribution-target">target</a>, <a href="#deploy_distribution-version_file">version_file</a>)
+</pre>
+
+Deploy archive target into a raw repo
+
+### Attributes
+
+<table class="params-table">
+  <colgroup>
+    <col class="col-param" />
+    <col class="col-description" />
+  </colgroup>
+  <tbody>
+    <tr id="deploy_distribution-name">
+      <td><code>name</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
+        <p>
+          A unique name for this target.
+        </p>
+      </td>
+    </tr>
+    <tr id="deploy_distribution-artifact_group">
+      <td><code>artifact_group</code></td>
+      <td>
+        String; required
+        <p>
+          The group of the artifact.
+        </p>
+      </td>
+    </tr>
+    <tr id="deploy_distribution-deployment_properties">
+      <td><code>deployment_properties</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          File containing repository url by `repo.distribution` key
+        </p>
+      </td>
+    </tr>
+    <tr id="deploy_distribution-target">
+      <td><code>target</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          File to deploy to repo
+        </p>
+      </td>
+    </tr>
+    <tr id="deploy_distribution-version_file">
+      <td><code>version_file</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
+        <p>
+          File containing version string.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version at all defaults to '0.0.0'
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
 <a name="#deploy_github"></a>
 
 ## deploy_github
