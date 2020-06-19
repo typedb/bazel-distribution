@@ -94,3 +94,6 @@ deploy_pip = d
 load("//rpm:rules.bzl", a = "assemble_rpm", d = "deploy_rpm")
 assemble_rpm = a
 deploy_rpm = d
+
+load("//distribution:rules.bzl", d = "deploy_distribution")
+deploy_distribution = d
