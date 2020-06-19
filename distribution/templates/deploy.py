@@ -20,15 +20,11 @@
 #
 
 from __future__ import print_function
-from xml.etree import ElementTree
 
-import hashlib
 import os
 import re
 import subprocess as sp
 import sys
-import tempfile
-import zipfile
 from posixpath import join as urljoin
 
 # usual importing is not possible because
