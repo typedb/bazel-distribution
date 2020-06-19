@@ -48,14 +48,10 @@ def upload(url, username, password, local_fn, remote_fn):
             local_fn, upload_status_code))
 
 
-def unpack_args(_, a):
-    return a
+if len(sys.argv) != 2:
+    raise ValueError('Should pass only <snapshot|release> as arguments')
 
-
-if len(sys.argv) < 2:
-    raise ValueError('Should pass <snapshot|release> as arguments')
-
-repo_type = unpack_args(*sys.argv)
+_, repo_type = sys.argv
 
 username, password = os.getenv('DEPLOY_DISTRIBUTION_USERNAME'), os.getenv('DEPLOY_DISTRIBUTION_PASSWORD')
 
