@@ -82,7 +82,7 @@ if repo_type == 'release' and len(re.findall(version_release_regex, version)) ==
 
 split_artifact = os.path.basename('{artifact_path}').split('.', 1)
 
-filename = '{artifact_group}/{artifact_name}/{version}/{artifact_name}-{version}.{artifact_extension}'.format(
+filename = '{artifact_group}/{artifact_name}/{version}/{artifact_name}.{artifact_extension}'.format(
     version=version, artifact_name=split_artifact[0], artifact_extension=split_artifact[1])
 
 deployment_properties = parse_deployment_properties('deployment.properties')
