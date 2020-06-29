@@ -27,7 +27,8 @@ commands:
       - run: bash ./rbe.sh && rm ./rbe.sh          
 jobs:
   build:
-    machine: true
+    machine:
+      image: ubuntu-1604:201903-01
     working_directory: ~/bazel-distribution
     steps:
       - install-bazel
@@ -35,14 +36,15 @@ jobs:
       - run: bazel build //...
 
   sync-dependencies:
-    machine: true
+    machine:
+      image: ubuntu-1604:201903-01
     working_directory: ~/bazel-distribution
     steps:
       - install-bazel
       - run: git clone git@github.com:graknlabs/dependencies.git .
       - run: |
           export SYNC_DEPENDENCIES_TOKEN=$REPO_GITHUB_TOKEN_GRABL
-          bazel run //ci:sync-dependencies -- --source bazel-distribution@$CIRCLE_SHA1 --targets dependencies:master
+          bazel run //tool/sync:dependencies -- --source bazel-distribution@$CIRCLE_SHA1 --targets dependencies:master
 
 workflows:
   bazel-distribution:
