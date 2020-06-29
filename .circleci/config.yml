@@ -19,30 +19,30 @@
 
 version: 2.1
 commands:
-  install-bazel-linux-rbe:
+  install-bazel:
     steps:
-      - run: curl -OL https://raw.githubusercontent.com/graknlabs/build-tools/master/ci/install-bazel-linux.sh
-      - run: bash ./install-bazel-linux.sh && rm ./install-bazel-linux.sh
-      - run: curl -OL https://raw.githubusercontent.com/graknlabs/build-tools/master/ci/install-bazel-rbe.sh
-      - run: bash ./install-bazel-rbe.sh && rm ./install-bazel-rbe.sh
+      - run: curl -OL https://raw.githubusercontent.com/graknlabs/dependencies/master/tool/bazelinstall/linux.sh
+      - run: bash ./linux.sh && rm ./linux.sh
+      - run: curl -OL https://raw.githubusercontent.com/graknlabs/dependencies/master/tool/bazelinstall/rbe.sh
+      - run: bash ./rbe.sh && rm ./rbe.sh          
 jobs:
   build:
     machine: true
     working_directory: ~/bazel-distribution
     steps:
-      - install-bazel-linux-rbe
+      - install-bazel
       - checkout
       - run: bazel build //...
 
   sync-dependencies:
     machine: true
-    working_directory: ~/build-tools
+    working_directory: ~/bazel-distribution
     steps:
-      - install-bazel-linux-rbe
-      - run: git clone git@github.com:graknlabs/build-tools.git .
+      - install-bazel
+      - run: git clone git@github.com:graknlabs/dependencies.git .
       - run: |
           export SYNC_DEPENDENCIES_TOKEN=$REPO_GITHUB_TOKEN_GRABL
-          bazel run //ci:sync-dependencies -- --source bazel-distribution@$CIRCLE_SHA1 --targets build-tools:master
+          bazel run //ci:sync-dependencies -- --source bazel-distribution@$CIRCLE_SHA1 --targets dependencies:master
 
 workflows:
   bazel-distribution:
