@@ -17,6 +17,8 @@
 # under the License.
 #
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+
 def _deploy_distribution_impl(ctx):
     _deploy_script = ctx.actions.declare_file("{}_deploy.py".format(ctx.attr.name))
 
@@ -97,3 +99,27 @@ deploy_distribution = rule(
     implementation = _deploy_distribution_impl,
     doc = "Deploy archive target into a raw repo",
 )
+
+def distribution_file(name,
+                      repository_url,
+                      group_name,
+                      artifact_name,
+                      extension,
+                      commit = None,
+                      tag = None,
+                      output_filename = None,
+                      sha = None,
+                      tags = []):
+
+    repo_name = "distribution" if tag != None else "distribution-snapshot"
+    filename = "{}.{}".format(artifact_name, extension)
+    version = tag if tag != None else commit
+    versiontype = "tag" if tag != None else "commit"
+
+    http_file(
+        name = name,
+        urls = ["{}/{}/{}/{}/{}/{}".format(repository_url, repo_name, group_name, artifact_name, version, filename)],
+        downloaded_file_path = filename,
+        sha = sha,
+        tags = tags + ["{}={}".format(versiontype, version)]
+    )
