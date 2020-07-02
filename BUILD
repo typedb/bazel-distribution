@@ -71,5 +71,6 @@ stardoc(
         "assemble_rpm",
         "deploy_rpm",
         "deploy_distribution",
+        "distribution_file",
     ],
 )

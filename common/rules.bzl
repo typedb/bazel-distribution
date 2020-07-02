@@ -202,8 +202,28 @@ _workspace_refs = repository_rule(
 
 
 def workspace_refs(name):
+
+    workspace_commit_dict = {}
+    workspace_tag_dict = {}
+
+    for k, v in native.existing_rules().items():
+        if 'tags' in v:
+            for t in v['tags']:
+                key, eq, value = t.partition("=")
+                if eq == "=":
+                    if key == "tag":
+                        workspace_tag_dict[k] = value
+                    elif key == "commit":
+                        workspace_commit_dict[k] = value
+
+        if 'tag' in v and len(v['tag'])>0:
+            workspace_tag_dict[k] = v['tag']
+        elif 'commit' in v and len(v['commit'])>0:
+            workspace_commit_dict[k] = v['commit']
+
+
     _workspace_refs(
         name = name,
-        workspace_commit_dict = {k: v['commit'] for k, v in native.existing_rules().items() if 'commit' in v and len(v['commit'])>0},
-        workspace_tag_dict = {k: v['tag'] for k, v in native.existing_rules().items() if 'tag' in v and len(v['tag'])>0}
+        workspace_commit_dict = workspace_commit_dict,
+        workspace_tag_dict = workspace_tag_dict
     )

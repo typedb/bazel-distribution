@@ -2050,3 +2050,85 @@ Assemble distribution archive (.zip)
 </table>
 
 
+<a name="#distribution_file"></a>
+
+## distribution_file
+
+<pre>
+distribution_file(<a href="#distribution_file-name">name</a>, <a href="#distribution_file-repository_url">repository_url</a>, <a href="#distribution_file-group_name">group_name</a>, <a href="#distribution_file-artifact_name">artifact_name</a>, <a href="#distribution_file-extension">extension</a>, <a href="#distribution_file-commit">commit</a>, <a href="#distribution_file-tag">tag</a>, <a href="#distribution_file-output_filename">output_filename</a>, <a href="#distribution_file-sha">sha</a>, <a href="#distribution_file-tags">tags</a>)
+</pre>
+
+
+
+### Parameters
+
+<table class="params-table">
+  <colgroup>
+    <col class="col-param" />
+    <col class="col-description" />
+  </colgroup>
+  <tbody>
+    <tr id="distribution_file-name">
+      <td><code>name</code></td>
+      <td>
+        required.
+      </td>
+    </tr>
+    <tr id="distribution_file-repository_url">
+      <td><code>repository_url</code></td>
+      <td>
+        required.
+      </td>
+    </tr>
+    <tr id="distribution_file-group_name">
+      <td><code>group_name</code></td>
+      <td>
+        required.
+      </td>
+    </tr>
+    <tr id="distribution_file-artifact_name">
+      <td><code>artifact_name</code></td>
+      <td>
+        required.
+      </td>
+    </tr>
+    <tr id="distribution_file-extension">
+      <td><code>extension</code></td>
+      <td>
+        required.
+      </td>
+    </tr>
+    <tr id="distribution_file-commit">
+      <td><code>commit</code></td>
+      <td>
+        optional. default is <code>None</code>
+      </td>
+    </tr>
+    <tr id="distribution_file-tag">
+      <td><code>tag</code></td>
+      <td>
+        optional. default is <code>None</code>
+      </td>
+    </tr>
+    <tr id="distribution_file-output_filename">
+      <td><code>output_filename</code></td>
+      <td>
+        optional. default is <code>None</code>
+      </td>
+    </tr>
+    <tr id="distribution_file-sha">
+      <td><code>sha</code></td>
+      <td>
+        optional. default is <code>None</code>
+      </td>
+    </tr>
+    <tr id="distribution_file-tags">
+      <td><code>tags</code></td>
+      <td>
+        optional. default is <code>[]</code>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
