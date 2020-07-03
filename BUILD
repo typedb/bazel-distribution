@@ -36,7 +36,6 @@ stardoc(
         "//packer:lib",
         "//pip:lib",
         "//rpm:lib",
-        "//distribution:lib",
     ],
     symbol_names = [
         "assemble_azure",
@@ -70,7 +69,5 @@ stardoc(
         "deploy_pip",
         "assemble_rpm",
         "deploy_rpm",
-        "deploy_distribution",
-        "distribution_file",
     ],
 )
