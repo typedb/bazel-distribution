@@ -433,7 +433,12 @@ assemble_maven = rule(
         "_pom_replace_version": attr.label(
             allow_single_file = True,
             default = "@graknlabs_bazel_distribution//maven:_pom_replace_version.py"
-        )
+        ),
+        "_jdk": attr.label(
+            default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
+            allow_files = True,
+            providers = [java_common.JavaRuntimeInfo],
+        ),
     },
     implementation = _assemble_maven_impl,
     doc = "Assemble Java package for subsequent deployment to Maven repo"
@@ -465,12 +470,12 @@ def _javadoc(ctx):
     # https://docs.oracle.com/en/java/javase/11/javadoc/javadoc-command.html#GUID-B0079316-8AA3-475B-8276-6A4095B5186A
     cmd = [
         "mkdir -p %s" % maven_coordinates.artifact_id,
-        "javadoc -d %s %s" % (maven_coordinates.artifact_id, " ".join(src_list)),
+        "%s/bin/javadoc -d %s %s" % (ctx.attr._jdk[java_common.JavaRuntimeInfo].java_home, maven_coordinates.artifact_id, " ".join(src_list)),
         "jar cvf %s %s/*" % (output_jar.path, maven_coordinates.artifact_id),
     ]
 
     ctx.actions.run_shell(
-        inputs = src_files,
+        inputs = src_files + ctx.files._jdk,
         outputs = [output_jar],
         command = "\n".join(cmd),
         use_default_shell_env = True,
@@ -489,6 +494,11 @@ javadoc = rule(
                 _java_lib_deps,
             ],
             doc = "Java target for building documentation"
+        ),
+        "_jdk": attr.label(
+            default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
+            allow_files = True,
+            providers = [java_common.JavaRuntimeInfo],
         ),
     },
 )
