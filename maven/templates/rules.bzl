@@ -468,10 +468,22 @@ def _javadoc(ctx):
         src_list += [src.path]
 
     # https://docs.oracle.com/en/java/javase/11/javadoc/javadoc-command.html#GUID-B0079316-8AA3-475B-8276-6A4095B5186A
+    java_home = ctx.attr._jdk[java_common.JavaRuntimeInfo].java_home
     cmd = [
-        "mkdir -p %s" % maven_coordinates.artifact_id,
-        "%s/bin/javadoc -d %s %s" % (ctx.attr._jdk[java_common.JavaRuntimeInfo].java_home, maven_coordinates.artifact_id, " ".join(src_list)),
-        "jar cvf %s %s/*" % (output_jar.path, maven_coordinates.artifact_id),
+        "mkdir -p {}".format(maven_coordinates.artifact_id),
+        " ".join([
+            "{}/bin/javadoc".format(java_home),
+            "-Xdoclint:-missing",
+            "-encoding UTF-8",
+            "-charset UTF-8",
+            "-notimestamp",
+            "-quiet",
+            "-windowtitle 'Java documentation for {}'".format(ctx.attr.name),
+            "-doctitle 'Java documentation for {}'".format(ctx.attr.name),
+            "-d {}".format(maven_coordinates.artifact_id),
+            " ".join(src_list),
+        ]),
+        "{}/bin/jar cvf {} {}/*".format(java_home, output_jar.path, maven_coordinates.artifact_id),
     ]
 
     ctx.actions.run_shell(
