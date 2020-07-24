@@ -483,7 +483,8 @@ def _javadoc(ctx):
             "-d {}".format(maven_coordinates.artifact_id),
             " ".join(src_list),
         ]),
-        "{}/bin/jar cvf {} {}/*".format(java_home, output_jar.path, maven_coordinates.artifact_id),
+        "cd {}".format(maven_coordinates.artifact_id),
+        "../{}/bin/jar -cvf ../{} *".format(java_home, output_jar.path),
     ]
 
     ctx.actions.run_shell(
