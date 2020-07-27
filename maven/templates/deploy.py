@@ -55,7 +55,7 @@ def upload(url, username, password, local_fn, remote_fn):
         urljoin(url, remote_fn)
     ]).decode().strip()
 
-    if upload_status_code != '200' or upload_status_code != '201':
+    if not (upload_status_code == '200' or upload_status_code == '201'):
         raise Exception('upload of {} failed, got HTTP status code {}'.format(
             local_fn, upload_status_code))
 
