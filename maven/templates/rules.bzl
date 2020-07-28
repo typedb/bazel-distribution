@@ -325,12 +325,21 @@ def _assemble_maven_impl(ctx):
 
     if hasattr(target, "files") and target.files.to_list() and target.files.to_list()[0].extension == 'jar':
         all_jars = target[JavaInfo].outputs.jars
-        jar = all_jars[0].class_jar
+        if len(all_jars) > 1:
+            jar = all_jars[0].class_jar
+            for output in all_jars:
+                if output.source_jar.basename.endswith('-src.jar'):
+                    srcjar = output.source_jar
+                    break
+        else if target.label.find('proto') > 0: # support java_proto_library
+            for file in target.files.to_list():
+                if file.basename.endswith('-speed-src.jar'):
+                    srcjar = file
+            
+            for file in target.files.to_list():
+                if file.basename.endswith(srcjar.basename.replace('-src', '')):
+                    jar = file
 
-        for output in all_jars:
-            if output.source_jar.basename.endswith('-src.jar'):
-                srcjar = output.source_jar
-                break
     else:
         fail("Could not find JAR file to deploy in {}".format(target))
 
