@@ -325,7 +325,7 @@ def _assemble_maven_impl(ctx):
 
     if hasattr(target, "files") and target.files.to_list() and target.files.to_list()[0].extension == 'jar':
         all_jars = target[JavaInfo].outputs.jars
-        if len(all_jars) > 1:
+        if len(all_jars) > 0:
             jar = all_jars[0].class_jar
             for output in all_jars:
                 if output.source_jar.basename.endswith('-src.jar'):
@@ -339,7 +339,6 @@ def _assemble_maven_impl(ctx):
             for file in target.files.to_list():
                 if file.basename.endswith(srcjar.basename.replace('-src', '')):
                     jar = file
-
     else:
         fail("Could not find JAR file to deploy in {}".format(target))
 
