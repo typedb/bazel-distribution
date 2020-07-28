@@ -331,7 +331,7 @@ def _assemble_maven_impl(ctx):
                 if output.source_jar.basename.endswith('-src.jar'):
                     srcjar = output.source_jar
                     break
-        else if target.label.find('proto') > 0: # support java_proto_library
+        elif target.label.find('proto') > 0: # support java_proto_library
             for file in target.files.to_list():
                 if file.basename.endswith('-speed-src.jar'):
                     srcjar = file
