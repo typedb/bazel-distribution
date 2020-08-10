@@ -87,11 +87,11 @@ def _assemble_pip_impl(ctx):
 
     imports = []
     for j in ctx.attr.target[PyInfo].imports.to_list():
-        if not j.startswith("pypi"):
+        if 'pypi' not in j:
             imports.append(j)
 
     for i in ctx.attr.target[PyInfo].transitive_sources.to_list():
-        if 'external/pypi' not in i.path:
+        if 'pypi' not in i.path and 'external' not in i.path:
             python_source_files.append(i)
 
     args.add_all('--files', python_source_files)
