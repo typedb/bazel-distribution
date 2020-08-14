@@ -31,7 +31,6 @@ stardoc(
         "//common:lib",
         "//gcp:lib",
         "//github:lib",
-        "//maven/templates:lib",
         "//npm:lib",
         "//packer:lib",
         "//pip:lib",
