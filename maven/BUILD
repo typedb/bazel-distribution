@@ -17,21 +17,10 @@
 # under the License.
 #
 
-exports_files(["deployment_rules_builder.py", "_pom_replace_version.py"])
+exports_files(["_pom_replace_version.py", "rules.bzl"])
 
 py_binary(
     name = "assemble",
     srcs = ["assemble.py"],
-    visibility = ["//visibility:public"]
-)
-
-py_binary(
-    name = "deployment_rules_builder",
-    srcs = [
-        "deployment_rules_builder.py"
-    ],
-    deps = [
-        "//common:common"
-    ],
     visibility = ["//visibility:public"]
 )

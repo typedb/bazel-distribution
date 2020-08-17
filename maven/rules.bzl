@@ -84,41 +84,45 @@ _java_lib_deps = aspect(
     provides = [JavaLibInfo]
 )
 
-
 #############################
 ####    MAVEN POM INFO   ####
 #############################
 
 MavenPomInfo = provider(
     fields = {
-        'maven_pom_deps': 'Maven coordinates for dependencies, transitively collected'
+        'direct_pom_deps': 'Maven coordinates declared directly by a target',
+        'transitive_pom_deps': 'Maven coordinates for dependencies, transitively collected',
     }
 )
 
 def _maven_pom_deps_impl(_target, ctx):
-    deps_coordinates = []
-    # This seems to be all the direct dependencies of this given _target
-    for x in _target[JavaLibInfo].target_deps_coordinates.to_list():
-        deps_coordinates.append(x)
+    dep_coordinates = []
 
-    # Now we traverse all the dependencies of our direct-dependencies,
-    # if our direct-depenencies is a sub-package of ourselves (_target)
+    # Collect the JavaLibInfo recursed dependencies
+    for direct_dep_coordinate in _target[JavaLibInfo].target_deps_coordinates.to_list():
+        dep_coordinates.append(direct_dep_coordinate)
+
+    # Now we traverse all the dependencies of our direct-dependencies
+    # The aspect execution will have already collected their dependencies recursively
     deps = \
         getattr(ctx.rule.attr, "jars", []) + \
         getattr(ctx.rule.attr, "deps", []) + \
         getattr(ctx.rule.attr, "exports", []) + \
         getattr(ctx.rule.attr, "runtime_deps", [])
 
+    dep_coordinates_with_transitive = dep_coordinates + []
     for dep in deps:
         if dep.label.name.endswith('.jar'):
             continue
-        if dep.label.package.startswith(ctx.attr.package):
-            deps_coordinates += dep[MavenPomInfo].maven_pom_deps
+        for recursive_dep_coordinate in dep[MavenPomInfo].transitive_pom_deps:
+            if recursive_dep_coordinate not in dep_coordinates_with_transitive:
+                dep_coordinates_with_transitive.append(recursive_dep_coordinate)
 
-    return [MavenPomInfo(maven_pom_deps = deps_coordinates)]
+    # collect all transitive pom dependencies of all versions into one list
+    return [MavenPomInfo(direct_pom_deps = dep_coordinates, transitive_pom_deps = dep_coordinates_with_transitive)]
+
 
 # Filled in by deployment_rules_builder
-_maven_packages = "{maven_packages}".split(",")
 _maven_pom_deps = aspect(
     attr_aspects = [
         "jars",
@@ -129,9 +133,6 @@ _maven_pom_deps = aspect(
     ],
     required_aspect_providers = [JavaLibInfo],
     implementation = _maven_pom_deps_impl,
-    attrs = {
-        "package": attr.string(values = _maven_packages)
-    },
     provides = [MavenPomInfo]
 )
 
@@ -202,6 +203,11 @@ mit_license_text = """
 -->
 """
 
+def _parse_maven_artifact(coordinate_string):
+    """ Return the artifact (group + artifact) and version """
+    group_id, artifact_id, version = coordinate_string.split(':')
+    return group_id + ":" + artifact_id, version
+
 def _parse_maven_coordinates(coordinate_string):
     group_id, artifact_id, version = coordinate_string.split(':')
     if version != '{pom_version}':
@@ -217,7 +223,29 @@ def _generate_pom_xml(ctx, maven_coordinates):
 
     pom_file = ctx.actions.declare_file("{}_pom.xml".format(ctx.attr.name))
 
-    maven_pom_deps = ctx.attr.target[MavenPomInfo].maven_pom_deps
+    transitive_pom_deps = ctx.attr.target[MavenPomInfo].transitive_pom_deps
+    direct_pom_deps = ctx.attr.target[MavenPomInfo].direct_pom_deps
+
+    # keep all direct_pom_deps but override if necessary
+    deps = {}
+    for direct_dep in direct_pom_deps:
+        artifact, found_version = _parse_maven_artifact(direct_dep)
+        version = ctx.attr.version_overrides.get(artifact, found_version) # default to collected version if not overriden
+        deps[artifact] = version
+
+
+    # only keep overriden transitive deps
+    for transitive_dep in transitive_pom_deps:
+        artifact, version = _parse_maven_artifact(transitive_dep)
+        overriden_version = ctx.attr.version_overrides.get(artifact)
+        if artifact not in deps and overriden_version != None:
+            deps[artifact] = overriden_version
+
+    # reconstruct full coordinates
+    maven_pom_deps = [artifact + ":" + version for artifact, version in deps.items()]
+
+    maven_pom_deps = direct_pom_deps + transitive_pom_deps
+
     deps_coordinates = depset(maven_pom_deps).to_list()
 
     # Indentation of the DEP_BLOCK string is such, so that it renders nicely in the output pom.xml
@@ -379,6 +407,10 @@ assemble_maven = rule(
             allow_single_file = True,
             doc = 'JSON file describing dependencies to other Bazel workspaces'
         ),
+        "version_overrides": attr.string_dict(
+            default = {},
+            doc = 'Dictionary of maven artifact : version to pin artifact versions to'
+        ),
         "project_name": attr.string(
             default = "PROJECT_NAME",
             doc = 'Project name to fill into pom.xml'
@@ -461,7 +493,6 @@ def _deploy_maven_impl(ctx):
         })
     )
 
-_default_deployment_properties = None if 'deployment_properties_placeholder' in "{deployment_properties_placeholder}" else "{deployment_properties_placeholder}"
 deploy_maven = rule(
     attrs = {
         "target": attr.label(
@@ -471,8 +502,7 @@ deploy_maven = rule(
         ),
         "deployment_properties": attr.label(
             allow_single_file = True,
-            mandatory = not bool(_default_deployment_properties),
-            default = _default_deployment_properties,
+            mandatory = True,
             doc = 'Properties file containing repo.maven.(snapshot|release) key'
         ),
         "_deployment_script": attr.label(

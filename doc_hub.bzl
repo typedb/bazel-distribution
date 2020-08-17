@@ -65,19 +65,6 @@ assemble_gcp = _
 load('//github:rules.bzl', _ = "deploy_github")
 deploy_github = _
 
-load("//maven/templates:rules.bzl",
-    a = "assemble_maven",
-    d = "deploy_maven",
-    J = "JavaLibInfo",
-    MD = "MavenDeploymentInfo",
-    MP = "MavenPomInfo"
-)
-assemble_maven = a
-deploy_maven = d
-JavaLibInfo = J
-MavenDeploymentInfo = MD
-MavenPomInfo = MP
-
 
 load("//npm:rules.bzl", a = "assemble_npm", d = "deploy_npm")
 assemble_npm = a
