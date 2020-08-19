@@ -42,8 +42,8 @@ def _deploy_github_impl(ctx):
             "{ghr_linux_binary}": ctx.files._ghr[1].path,
             "{release_title}": ctx.attr.title or "",
             "{title_append_version}": str(int(bool(ctx.attr.title_append_version))),
-            "{repo_github_organisation}" : ctx.attr.repo_github_organisation,
-            "{repo_github_repository}" : ctx.attr.repo_github_repository,
+            "{organisation}" : ctx.attr.organisation,
+            "{repository}" : ctx.attr.repository,
         }
     )
     files = [
@@ -89,13 +89,13 @@ deploy_github = rule(
             allow_single_file = True,
             doc = "Description of GitHub release"
         ),
-        "repo_github_organisation" : attr.string(
+        "organisation" : attr.string(
             mandatory = True,
             doc = "Github organisation to deploy to",
         ),
-        "repo_github_repository" : attr.string(
+        "repository" : attr.string(
             mandatory = True,
-            doc = "Github repository to deploy to within repo_github_organisation",
+            doc = "Github repository to deploy to within organisation",
         ),
         "version_file": attr.label(
             allow_single_file = True,

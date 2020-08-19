@@ -75,8 +75,8 @@ title_append_version = bool(int("{title_append_version}"))
 has_release_description = bool(int("{has_release_description}"))
 github_token = os.getenv('DEPLOY_GITHUB_TOKEN')
 target_commit_id = args.commit_id
-github_organisation =  "{repo_github_organisation}"
-github_repository = "{repo_github_repository}"
+github_organisation =  "{organisation}"
+github_repository = "{repository}"
 ghr = GHR_BINARIES[system]
 
 with open('VERSION') as version_file:
