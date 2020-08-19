@@ -57,14 +57,14 @@ if not password:
 
 version = open("{version_file}", "r").read().strip()
 
-repo_type_snapshot = 'snapshot'
+snapshot_repository = 'snapshot'
 version_snapshot_regex = '^[0-9|a-f|A-F]{40}$'
-repo_type_release = 'release'
+release_repository = 'release'
 version_release_regex = '^[0-9]+.[0-9]+.[0-9]+$'
 
-if repo_type not in [repo_type_snapshot, repo_type_release]:
+if repo_type not in [snapshot_repository, release_repository]:
     raise ValueError("Invalid repository type: {}. It should be one of these: {}"
-                     .format(repo_type, [repo_type_snapshot, repo_type_release]))
+                     .format(repo_type, [snapshot_repository, release_repository]))
 if repo_type == 'snapshot' and len(re.findall(version_snapshot_regex, version)) == 0:
     raise ValueError('Invalid version: {}. An artifact uploaded to a {} repository '
                      'must have a version which complies to this regex: {}'
@@ -82,9 +82,9 @@ filename = filename.format(version = version)
 
 base_url = None
 if repo_type == 'release':
-    base_url = '{repo_artifact_release}'
+    base_url = '{release_repository}'
 else:
-    base_url = '{repo_artifact_snapshot}'
+    base_url = '{snapshot_repository}'
 
 dir_url = '{base_url}/{artifact_group}/{version}'.format(version=version, base_url=base_url)
 

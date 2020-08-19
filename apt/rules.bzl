@@ -146,8 +146,8 @@ def _deploy_apt_impl(ctx):
         template = ctx.file._deployment_script,
         output = ctx.outputs.deployment_script,
         substitutions = {
-            '{repo_apt_snapshot}' : ctx.attr.repo_apt_snapshot,
-            '{repo_apt_release}' : ctx.attr.repo_apt_release
+            '{snapshot_repository}' : ctx.attr.snapshot_repository,
+            '{release_repository}' : ctx.attr.release_repository
         },
         is_executable = True
     )
@@ -167,11 +167,11 @@ deploy_apt = rule(
         "target": attr.label(
             doc = 'assemble_apt label to deploy'
         ),
-        "repo_apt_snapshot": attr.string(
+        "snapshot_repository": attr.string(
             mandatory = True,
             doc = 'Snapshot repository to deploy apt artifact to'
         ),
-        "repo_apt_release": attr.string(
+        "release_repository": attr.string(
             mandatory = True,
             doc = 'Release repository to deploy apt artifact to'
         ),

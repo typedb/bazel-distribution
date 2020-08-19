@@ -184,8 +184,8 @@ def _deploy_rpm_impl(ctx):
         output = ctx.outputs.deployment_script,
         substitutions = {
             "{RPM_PKG}": ctx.attr.target[RpmInfo].package_name,
-            "{repo_rpm_snapshot}": ctx.attr.repo_rpm_snapshot,
-            "{repo_rpm_release}": ctx.attr.repo_rpm_release,
+            "{snapshot_repository}": ctx.attr.snapshot_repository,
+            "{release_repository}": ctx.attr.release_repository,
         },
         is_executable = True
     )
@@ -206,11 +206,11 @@ deploy_rpm = rule(
             aspects = [collect_rpm_package_name],
             doc = "`assemble_rpm` target to deploy"
         ),
-        "repo_rpm_snapshot": attr.string(
+        "snapshot_repository": attr.string(
             mandatory = True,
             doc = "Remote repository to deploy rpm snapshot to"
         ),
-        "repo_rpm_release": attr.string(
+        "release_repository": attr.string(
             mandatory = True,
             doc = "Remote repository to deploy rpm release to"
         ),

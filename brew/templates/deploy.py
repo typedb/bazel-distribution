@@ -72,8 +72,8 @@ with open('VERSION') as version_file:
 tap_type = sys.argv[1]
 
 tap_repositories = {
-    "snapshot": "{repo_brew_snapshot}",
-    "release": "{repo_brew_release}"
+    "snapshot": "{snapshot_repository}",
+    "release": "{release_repository}"
 }
 tap_url = tap_repositories[tap_type]
 

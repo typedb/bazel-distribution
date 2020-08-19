@@ -88,8 +88,8 @@ if not password:
     raise ValueError('Error: password should be passed via $DEPLOY_MAVEN_PASSWORD env variable')
 
 maven_repositories = {
-    "snapshot": "{repo_maven_snapshot}",
-    "release": "{repo_maven_release}"
+    "snapshot": "{snapshot_repository}",
+    "release": "{release_repository}"
 }
 maven_url = maven_repositories[repo_type]
 jar_path = "$JAR_PATH"
@@ -110,14 +110,14 @@ if version is None or len(version.text) == 0:
 
 version = version.text
 
-repo_type_snapshot = 'snapshot'
+snapshot_repository = 'snapshot'
 version_snapshot_regex = '^[0-9|a-f|A-F]{40}$'
-repo_type_release = 'release'
+release_repository = 'release'
 version_release_regex = '^[0-9]+.[0-9]+.[0-9]+$'
 
-if repo_type not in [repo_type_snapshot, repo_type_release]:
+if repo_type not in [snapshot_repository, release_repository]:
     raise ValueError("Invalid repository type: {}. It should be one of these: {}"
-                     .format(repo_type, [repo_type_snapshot, repo_type_release]))
+                     .format(repo_type, [snapshot_repository, release_repository]))
 if repo_type == 'snapshot' and len(re.findall(version_snapshot_regex, version)) == 0:
     raise ValueError('Invalid version: {}. An artifact uploaded to a {} repository '
                      'must have a version which complies to this regex: {}'

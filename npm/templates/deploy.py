@@ -35,8 +35,8 @@ args = parser.parse_args()
 
 repo_type = args.repo_type
 npm_repositories = {
-    "snapshot": "{repo_npm_snapshot}",
-    "release": "{repo_npm_release}",
+    "snapshot": "{snapshot_repository}",
+    "release": "{release_repository}",
 }
 npm_registry = npm_repositories[repo_type]
 

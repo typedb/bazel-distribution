@@ -38,8 +38,8 @@ args = parser.parse_args()
 repo_type_key = args.repo_type
 
 apt_deployments = {
-    'snapshot' : "{repo_apt_snapshot}",
-    'release' : "{repo_apt_release}"
+    'snapshot' : "{snapshot_repository}",
+    'release' : "{release_repository}"
 }
 
 apt_registry = apt_deployments[repo_type_key]
