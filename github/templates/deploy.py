@@ -29,10 +29,6 @@ import sys
 import tempfile
 import zipfile
 
-# usual importing is not possible because
-# this script and module with common functions
-# are at different directory levels in sandbox
-from runpy import run_path
 
 GHR_BINARIES = {
     "Darwin": os.path.abspath("{ghr_osx_binary}"),

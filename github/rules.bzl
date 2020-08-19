@@ -47,17 +47,13 @@ def _deploy_github_impl(ctx):
         }
     )
     files = [
-        ctx.file.deployment_properties,
         version_file,
-        ctx.file._common_py
     ] + ctx.files._ghr
 
     if ctx.file.archive!=None:
         files.append(ctx.file.archive)
 
     symlinks = {
-        "deployment.properties": ctx.file.deployment_properties,
-        "common.py": ctx.file._common_py,
         'VERSION': version_file
     }
 
@@ -93,10 +89,13 @@ deploy_github = rule(
             allow_single_file = True,
             doc = "Description of GitHub release"
         ),
-        "deployment_properties": attr.label(
-            allow_single_file = True,
+        "repo_github_organisation" : attr.string(
             mandatory = True,
-            doc = "File containing `repo.github.organisation` and `repo.github.repository` keys"
+            doc = "Github organisation to deploy to",
+        ),
+        "repo_github_repository" : attr.string(
+            mandatory = True,
+            doc = "Github repository to deploy to within repo_github_organisation",
         ),
         "version_file": attr.label(
             allow_single_file = True,
@@ -114,10 +113,6 @@ deploy_github = rule(
             allow_files = True,
             default = ["@ghr_osx_zip//:ghr", "@ghr_linux_tar//:ghr"]
         ),
-        "_common_py": attr.label(
-            allow_single_file = True,
-            default = "//common:common.py",
-        )
     },
     implementation = _deploy_github_impl,
     executable = True,

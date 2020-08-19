@@ -27,8 +27,8 @@ def _deploy_brew_impl(ctx):
         template = ctx.file._deploy_brew_template,
         output = ctx.outputs.deployment_script,
          substitutions = {
-            'BREW_DEPLOYMENT_SNAPSHOT' : ctx.attr.brew_deployment_snapshot,
-            'BREW_DEPLOYMENT_RELEASE' : ctx.attr.brew_deployment_release
+            '{brew_deployment_snapshot}' : ctx.attr.brew_deployment_snapshot,
+            '{brew_deployment_release}' : ctx.attr.brew_deployment_release
         },
         is_executable = True
     )
