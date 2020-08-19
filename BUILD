@@ -18,6 +18,18 @@
 #
 
 load("@io_bazel_skydoc//stardoc:stardoc.bzl", "stardoc")
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+bzl_library(
+    name = "bzl_srcs",
+    srcs = [
+        "@rules_pkg//:pkg.bzl",
+        "@rules_pkg//:path.bzl",
+        "@rules_pkg//:rpm.bzl",
+        "@bazel_tools//tools:bzl_srcs",
+        # "@graknlabs_bazel_distribution_pip//:requirements.bzl",
+    ],
+)
 
 stardoc(
     name = "docs",
@@ -35,6 +47,7 @@ stardoc(
         "//packer:lib",
         "//pip:lib",
         "//rpm:lib",
+        ":bzl_srcs",
     ],
     symbol_names = [
         "assemble_azure",

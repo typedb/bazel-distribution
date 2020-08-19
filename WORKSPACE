@@ -20,6 +20,16 @@
 workspace(name="graknlabs_bazel_distribution")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# Load NodeJS
+http_archive(
+    name = "build_bazel_rules_nodejs",
+    sha256 = "10fffa29f687aa4d8eb6dfe8731ab5beb63811ab00981fc84a93899641fd4af1",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/2.0.3/rules_nodejs-2.0.3.tar.gz"],
+)
+load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories")
+node_repositories()
 
 # Load Apt and RPM
 load("//common:dependencies.bzl", "bazelbuild_rules_pkg")
@@ -28,25 +38,21 @@ load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
 
 # Load Docker
-git_repository(
-    name = "io_bazel_skydoc",
-    remote = "https://github.com/graknlabs/skydoc.git",
-    branch = "experimental-skydoc-allow-dep-on-bazel-tools",
-)
-load("@io_bazel_skydoc//:setup.bzl", "skydoc_repositories")
-skydoc_repositories()
-load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
-rules_sass_dependencies()
-load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
-sass_repositories()
+# git_repository(
+#     name = "io_bazel_skydoc",
+#     remote = "https://github.com/graknlabs/skydoc.git",
+#     branch = "experimental-skydoc-allow-dep-on-bazel-tools",
+# )
+# load("@io_bazel_skydoc//:setup.bzl", "skydoc_repositories")
+# skydoc_repositories()
+# load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
+# rules_sass_dependencies()
+# load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
+# sass_repositories()
 
 # Load Github
 load("//github:dependencies.bzl", "tcnksm_ghr")
 tcnksm_ghr()
-
-# Load NodeJS
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories")
-node_repositories()
 
 # Load Python
 git_repository(
@@ -62,3 +68,11 @@ pip_import(
 )
 load("@graknlabs_bazel_distribution_pip//:requirements.bzl", graknlabs_bazel_distribution_pip_install = "pip_install")
 graknlabs_bazel_distribution_pip_install()
+
+git_repository(
+    name = "io_bazel_skydoc",
+    remote = "https://github.com/bazelbuild/stardoc",
+    commit = "87dc99cfe1baa9255c607ac0229bfd33a65367f5",
+)
+load("@io_bazel_skydoc//:setup.bzl", "stardoc_repositories")
+stardoc_repositories()
