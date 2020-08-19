@@ -473,8 +473,8 @@ def _deploy_maven_impl(ctx):
             "$JAR_PATH": lib_jar_link,
             "$SRCJAR_PATH": src_jar_link,
             "$POM_PATH": pom_xml_link,
-            "{maven_repo_snapshot}": ctx.attr.maven_repo_snapshot,
-            "{maven_repo_release}": ctx.attr.maven_repo_artifact
+            "{snapshot}": ctx.attr.snapshot,
+            "{release}": ctx.attr.release
         }
     )
 
