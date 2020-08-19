@@ -166,9 +166,9 @@ def _deploy_pip_impl(ctx):
         is_executable = True,
         substitutions = {
             "{package_file}": ctx.attr.target[PyDeploymentInfo].package.short_path,
-            "{version_file}": ctx.attr.target[PyDeploymentInfo].version_file.short_path
-            "{pip_deployment_snapshot}": ctx.attr.pip_deployment_snapshot,
-            "{pip_deployment_release}": ctx.attr.pip_deployment_release,
+            "{version_file}": ctx.attr.target[PyDeploymentInfo].version_file.short_path,
+            "{repo_pip_snapshot}": ctx.attr.repo_pip_snapshot,
+            "{repo_pip_release}": ctx.attr.repo_pip_release,
         }
     )
 
@@ -180,7 +180,6 @@ def _deploy_pip_impl(ctx):
     return DefaultInfo(
         executable = deployment_script,
         runfiles = ctx.runfiles(
-                symlinks = { "common.py": ctx.file._common_py },
                 files=[ctx.attr.target[PyDeploymentInfo].package, ctx.attr.target[PyDeploymentInfo].version_file] + all_python_files
             )
         )
@@ -287,21 +286,17 @@ deploy_pip = rule(
             providers = [PyDeploymentInfo],
             doc = "`assemble_pip` label to be included in the package",
         ),
-        "pip_deployment_snapshot": attr.string(
+        "repo_pip_snapshot": attr.string(
             mandatory = True,
             doc = "Remote repository to deploy pip snapshot to"
         ),
-        "pip_deployment_release": attr.string(
+        "repo_pip_release": attr.string(
             mandatory = True,
             doc = "Remote repository to deploy pip release to"
         ),
         "_deploy_py_template": attr.label(
             allow_single_file = True,
             default = "//pip/templates:deploy.py",
-        ),
-        "_common_py": attr.label(
-            allow_single_file = True,
-            default = "//common:common.py",
         ),
         "_deps": attr.label_list(
             default = [

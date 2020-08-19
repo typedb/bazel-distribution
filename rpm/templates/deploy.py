@@ -22,14 +22,7 @@
 import argparse
 import os
 import subprocess
-import shutil
 
-# usual importing is not possible because
-# this script and module with common functions
-# are at different directory levels in sandbox
-import tarfile
-import tempfile
-from runpy import run_path
 
 rpm_pkg="{RPM_PKG}"
 
@@ -39,12 +32,12 @@ args = parser.parse_args()
 
 repo_type_key = args.repo_type
 
-rpm_deployments = {
-    'snapshot' : "{rpm_deployment_snapshot}",
-    'release' : "{rpm_deployment_release}"
+rpm_repositories = {
+    'snapshot' : "{repo_rpm_snapshot}",
+    'release' : "{repo_rpm_release}"
 }
 
-rpm_registry = rpm_deployments[repo_type_key]
+rpm_registry = rpm_repositories[repo_type_key]
 
 rpm_username, rpm_password = (
     os.getenv('DEPLOY_RPM_USERNAME'),

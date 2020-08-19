@@ -27,8 +27,9 @@ def _deploy_brew_impl(ctx):
         template = ctx.file._deploy_brew_template,
         output = ctx.outputs.deployment_script,
          substitutions = {
-            '{brew_deployment_snapshot}' : ctx.attr.brew_deployment_snapshot,
-            '{brew_deployment_release}' : ctx.attr.brew_deployment_release
+            '{brew_folder}': brew_formula_folder,
+            '{repo_brew_snapshot}' : ctx.attr.repo_brew_snapshot,
+            '{repo_brew_release}' : ctx.attr.repo_brew_release
         },
         is_executable = True
     )
@@ -48,13 +49,11 @@ def _deploy_brew_impl(ctx):
     files = [
         ctx.file.formula,
         version_file,
-        ctx.file._common_py
     ]
 
     symlinks = {
         'formula': ctx.file.formula,
         'VERSION': version_file,
-        'common.py': ctx.file._common_py,
     }
 
     if ctx.file.checksum:

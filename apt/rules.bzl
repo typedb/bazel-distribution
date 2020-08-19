@@ -146,20 +146,19 @@ def _deploy_apt_impl(ctx):
         template = ctx.file._deployment_script,
         output = ctx.outputs.deployment_script,
         substitutions = {
-            '{apt_deployment_snapshot}' : ctx.attr.apt_deployment_snapshot,
-            '{apt_deployment_release}' : ctx.attr.apt_deployment_release
+            '{repo_apt_snapshot}' : ctx.attr.repo_apt_snapshot,
+            '{repo_apt_release}' : ctx.attr.repo_apt_release
         },
         is_executable = True
     )
 
     symlinks = {
         'package.deb': ctx.files.target[0],
-        "common.py": ctx.file._common_py
     }
 
     return DefaultInfo(executable = ctx.outputs.deployment_script,
                        runfiles = ctx.runfiles(
-                           files=[ctx.files.target[0], ctx.file._common_py],
+                           files=[ctx.files.target[0]],
                            symlinks = symlinks))
 
 
@@ -168,11 +167,11 @@ deploy_apt = rule(
         "target": attr.label(
             doc = 'assemble_apt label to deploy'
         ),
-        "apt_deployment_snapshot": attr.string(
+        "repo_apt_snapshot": attr.string(
             mandatory = True,
             doc = 'Snapshot repository to deploy apt artifact to'
         ),
-        "apt_deployment_release": attr.string(
+        "repo_apt_release": attr.string(
             mandatory = True,
             doc = 'Release repository to deploy apt artifact to'
         ),

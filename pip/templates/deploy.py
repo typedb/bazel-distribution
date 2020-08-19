@@ -29,24 +29,18 @@ sys.path.extend(map(os.path.abspath, glob.glob('external/*/')))
 # noinspection PyUnresolvedReferences
 import twine.commands.upload
 
-# usual importing is not possible because
-# this script and module with common functions
-# are at different directory levels in sandbox
-from runpy import run_path
-parse_deployment_properties = run_path('common.py')['parse_deployment_properties']
-
 parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')
 args = parser.parse_args()
 
 repo_type_key = args.repo_type
 
-pip_deployments = {
-    'snapshot' : "{pip_deployment_snapshot}",
-    'release' : "{pip_deployment_release}"
+pip_repositories = {
+    'snapshot' : "{repo_pip_snapshot}",
+    'release' : "{repo_pip_release}"
 }
 
-pip_registry = properties[repo_type_key]
+pip_registry = pip_repositories[repo_type_key]
 
 pip_username, pip_password = (
     os.getenv('DEPLOY_PIP_USERNAME'),

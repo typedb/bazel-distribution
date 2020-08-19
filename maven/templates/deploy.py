@@ -88,8 +88,8 @@ if not password:
     raise ValueError('Error: password should be passed via $DEPLOY_MAVEN_PASSWORD env variable')
 
 maven_repositories = {
-    "snapshot": "{maven_repo_snapshot}",
-    "release": "{maven_repo_release}"
+    "snapshot": "{repo_maven_snapshot}",
+    "release": "{repo_maven_release}"
 }
 maven_url = maven_repositories[repo_type]
 jar_path = "$JAR_PATH"

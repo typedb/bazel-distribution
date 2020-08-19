@@ -82,9 +82,9 @@ filename = filename.format(version = version)
 
 base_url = None
 if repo_type == 'release':
-    base_url = '{release_repository_url}'
+    base_url = '{repo_artifact_release}'
 else:
-    base_url = '{snapshot_repository_url}'
+    base_url = '{repo_artifact_snapshot}'
 
 dir_url = '{base_url}/{artifact_group}/{version}'.format(version=version, base_url=base_url)
 

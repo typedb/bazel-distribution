@@ -184,15 +184,14 @@ def _deploy_rpm_impl(ctx):
         output = ctx.outputs.deployment_script,
         substitutions = {
             "{RPM_PKG}": ctx.attr.target[RpmInfo].package_name,
-            "{rpm_deployment_snapshot}": ctx.attr.rpm_deployment_snapshot,
-            "{rpm_deployment_release}": ctx.attr.rpm_deployment_release,
+            "{repo_rpm_snapshot}": ctx.attr.repo_rpm_snapshot,
+            "{repo_rpm_release}": ctx.attr.repo_rpm_release,
         },
         is_executable = True
     )
 
     symlinks = {
         'package.rpm': ctx.files.target[0],
-        "common.py": ctx.file._common_py,
     }
 
     return DefaultInfo(executable = ctx.outputs.deployment_script,
@@ -207,11 +206,11 @@ deploy_rpm = rule(
             aspects = [collect_rpm_package_name],
             doc = "`assemble_rpm` target to deploy"
         ),
-        "rpm_deployment_snapshot": attr.string(
+        "repo_rpm_snapshot": attr.string(
             mandatory = True,
             doc = "Remote repository to deploy rpm snapshot to"
         ),
-        "rpm_deployment_release": attr.string(
+        "repo_rpm_release": attr.string(
             mandatory = True,
             doc = "Remote repository to deploy rpm release to"
         ),
@@ -219,10 +218,6 @@ deploy_rpm = rule(
             allow_single_file = True,
             default = "//rpm/templates:deploy.py"
         ),
-        "_common_py": attr.label(
-            allow_single_file = True,
-            default = "@graknlabs_bazel_distribution//common:common.py",
-        )
     },
     outputs = {
         "deployment_script": "%{name}.py",
