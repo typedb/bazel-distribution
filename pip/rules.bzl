@@ -167,6 +167,8 @@ def _deploy_pip_impl(ctx):
         substitutions = {
             "{package_file}": ctx.attr.target[PyDeploymentInfo].package.short_path,
             "{version_file}": ctx.attr.target[PyDeploymentInfo].version_file.short_path
+            "{pip_deployment_snapshot}": ctx.attr.pip_deployment_snapshot,
+            "{pip_deployment_release}": ctx.attr.pip_deployment_release,
         }
     )
 
@@ -175,13 +177,13 @@ def _deploy_pip_impl(ctx):
         all_python_files.extend(dep.data_runfiles.files.to_list())
         all_python_files.extend(dep.default_runfiles.files.to_list())
 
-    return DefaultInfo(executable = deployment_script,
-                       runfiles = ctx.runfiles(
-                           symlinks = {
-                               "deployment.properties": ctx.file.deployment_properties,
-                               "common.py": ctx.file._common_py
-                           },
-                           files=[ctx.attr.target[PyDeploymentInfo].package, ctx.attr.target[PyDeploymentInfo].version_file] + all_python_files))
+    return DefaultInfo(
+        executable = deployment_script,
+        runfiles = ctx.runfiles(
+                symlinks = { "common.py": ctx.file._common_py },
+                files=[ctx.attr.target[PyDeploymentInfo].package, ctx.attr.target[PyDeploymentInfo].version_file] + all_python_files
+            )
+        )
 
 
 python_repackage = rule(
@@ -285,10 +287,13 @@ deploy_pip = rule(
             providers = [PyDeploymentInfo],
             doc = "`assemble_pip` label to be included in the package",
         ),
-        "deployment_properties": attr.label(
-            allow_single_file = True,
+        "pip_deployment_snapshot": attr.string(
             mandatory = True,
-            doc = "File containing Python pip repository url by `repo.pypi` key"
+            doc = "Remote repository to deploy pip snapshot to"
+        ),
+        "pip_deployment_release": attr.string(
+            mandatory = True,
+            doc = "Remote repository to deploy pip release to"
         ),
         "_deploy_py_template": attr.label(
             allow_single_file = True,

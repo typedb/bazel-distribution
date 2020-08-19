@@ -39,17 +39,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')
 args = parser.parse_args()
 
-PIP_REPO_PREFIX = 'repo.pypi.'
-repo_type_key = PIP_REPO_PREFIX + args.repo_type
+repo_type_key = args.repo_type
 
-properties = parse_deployment_properties('deployment.properties')
-if repo_type_key not in properties:
-    raise Exception('invalid repo type {}. valid repo types are: {}'.format(
-        args.repo_type,
-        list(
-            map(lambda x: x.replace(PIP_REPO_PREFIX, ''),
-                filter(lambda x: x.startswith(PIP_REPO_PREFIX), properties)))
-    ))
+pip_deployments = {
+    'snapshot' : "{pip_deployment_snapshot}",
+    'release' : "{pip_deployment_release}"
+}
 
 pip_registry = properties[repo_type_key]
 
