@@ -27,10 +27,6 @@ import subprocess as sp
 import sys
 import tempfile
 
-# usual importing is not possible because
-# this script and module with common functions
-# are at different directory levels in sandbox
-from runpy import run_path
 
 def get_distribution_url_from_formula(content):
     url_line = next(filter(lambda l: l.lstrip().startswith('url'), content.split('\n')))
