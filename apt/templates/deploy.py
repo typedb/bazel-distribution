@@ -31,8 +31,6 @@ import tarfile
 import tempfile
 from runpy import run_path
 
-parse_deployment_properties = run_path('common.py')['parse_deployment_properties']
-
 parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')
 args = parser.parse_args()
@@ -40,8 +38,8 @@ args = parser.parse_args()
 repo_type_key = args.repo_type
 
 apt_deployments = {
-    'snapshot' : "{APT_DEPLOYMENT_SNAPSHOT}",
-    'release' : "{APT_DEPLOYMENT_RELEASE}"
+    'snapshot' : "{apt_deployment_snapshot}",
+    'release' : "{apt_deployment_release}"
 }
 
 apt_registry = apt_deployments[repo_type_key]

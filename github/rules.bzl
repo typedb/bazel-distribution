@@ -41,7 +41,9 @@ def _deploy_github_impl(ctx):
             "{ghr_osx_binary}": ctx.files._ghr[0].path,
             "{ghr_linux_binary}": ctx.files._ghr[1].path,
             "{release_title}": ctx.attr.title or "",
-            "{title_append_version}": str(int(bool(ctx.attr.title_append_version)))
+            "{title_append_version}": str(int(bool(ctx.attr.title_append_version))),
+            "{repo_github_organisation}" : ctx.attr.repo_github_organisation,
+            "{repo_github_repository}" : ctx.attr.repo_github_repository,
         }
     )
     files = [
@@ -106,7 +108,7 @@ deploy_github = rule(
         ),
         "_deploy_script": attr.label(
             allow_single_file = True,
-            default = "//github:deploy.py",
+            default = "//distribution/github/templates:deploy.py",
         ),
         "_ghr": attr.label_list(
             allow_files = True,

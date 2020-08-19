@@ -90,10 +90,6 @@ deploy_artifact = rule(
             allow_single_file = True,
             default = "//distribution/artifact/templates:deploy.py",
         ),
-        "_common_py": attr.label(
-            allow_single_file = True,
-            default = "@graknlabs_bazel_distribution//common:common.py",
-        ),
         "release_repository_url": attr.string(
             mandatory = True,
             doc = "Repository that the release artifact will be uploaded to"

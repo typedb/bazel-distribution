@@ -146,8 +146,8 @@ def _deploy_apt_impl(ctx):
         template = ctx.file._deployment_script,
         output = ctx.outputs.deployment_script,
         substitutions = {
-            'APT_DEPLOYMENT_SNAPSHOT' : ctx.attr.apt_deployment_snapshot,
-            'APT_DEPLOYMENT_RELEASE' : ctx.attr.apt_deployment_release
+            '{apt_deployment_snapshot}' : ctx.attr.apt_deployment_snapshot,
+            '{apt_deployment_release}' : ctx.attr.apt_deployment_release
         },
         is_executable = True
     )
@@ -179,10 +179,6 @@ deploy_apt = rule(
         "_deployment_script": attr.label(
             allow_single_file = True,
             default = "//apt/templates:deploy.py"
-        ),
-        "_common_py": attr.label(
-            allow_single_file = True,
-            default = "//common:common.py"
         ),
     },
     outputs = {

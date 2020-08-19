@@ -33,8 +33,6 @@ import zipfile
 # this script and module with common functions
 # are at different directory levels in sandbox
 from runpy import run_path
-parse_deployment_properties = run_path('common.py')['parse_deployment_properties']
-
 
 GHR_BINARIES = {
     "Darwin": os.path.abspath("{ghr_osx_binary}"),
@@ -81,9 +79,8 @@ title_append_version = bool(int("{title_append_version}"))
 has_release_description = bool(int("{has_release_description}"))
 github_token = os.getenv('DEPLOY_GITHUB_TOKEN')
 target_commit_id = args.commit_id
-properties = parse_deployment_properties('deployment.properties')
-github_organisation = properties['repo.github.organisation']
-github_repository = properties['repo.github.repository']
+github_organisation =  "{repo_github_organisation}"
+github_repository = "{repo_github_repository}"
 ghr = GHR_BINARIES[system]
 
 with open('VERSION') as version_file:
