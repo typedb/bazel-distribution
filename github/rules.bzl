@@ -107,7 +107,7 @@ deploy_github = rule(
         ),
         "_deploy_script": attr.label(
             allow_single_file = True,
-            default = "//distribution/github/templates:deploy.py",
+            default = "//github/templates:deploy.py",
         ),
         "_ghr": attr.label_list(
             allow_files = True,
