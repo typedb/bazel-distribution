@@ -498,11 +498,11 @@ deploy_maven = rule(
             providers = [MavenDeploymentInfo],
             doc = "assemble_maven target to deploy"
         ),
-        "snapshot_repository" : attr.string(
+        "repo_maven_snapshot" : attr.string(
             mandatory = True,
             doc = 'Snapshot repository to release maven artifact to',
         ),
-        "release_repository" : attr.string(
+        "repo_maven_release" : attr.string(
             mandatory = True,
             doc = 'Release repository to release maven artifact to'
         ),
