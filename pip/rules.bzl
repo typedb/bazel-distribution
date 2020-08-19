@@ -167,8 +167,8 @@ def _deploy_pip_impl(ctx):
         substitutions = {
             "{package_file}": ctx.attr.target[PyDeploymentInfo].package.short_path,
             "{version_file}": ctx.attr.target[PyDeploymentInfo].version_file.short_path,
-            "{snapshot_repository}": ctx.attr.snapshot_repository,
-            "{release_repository}": ctx.attr.release_repository,
+            "{snapshot}": ctx.attr.snapshot,
+            "{release}": ctx.attr.release,
         }
     )
 
@@ -286,11 +286,11 @@ deploy_pip = rule(
             providers = [PyDeploymentInfo],
             doc = "`assemble_pip` label to be included in the package",
         ),
-        "snapshot_repository": attr.string(
+        "snapshot": attr.string(
             mandatory = True,
             doc = "Remote repository to deploy pip snapshot to"
         ),
-        "release_repository": attr.string(
+        "release": attr.string(
             mandatory = True,
             doc = "Remote repository to deploy pip release to"
         ),

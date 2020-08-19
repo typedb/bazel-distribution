@@ -36,8 +36,8 @@ args = parser.parse_args()
 repo_type_key = args.repo_type
 
 pip_repositories = {
-    'snapshot' : "{snapshot_repository}",
-    'release' : "{release_repository}"
+    'snapshot' : "{snapshot}",
+    'release' : "{release}"
 }
 
 pip_registry = pip_repositories[repo_type_key]

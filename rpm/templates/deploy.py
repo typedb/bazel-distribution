@@ -33,8 +33,8 @@ args = parser.parse_args()
 repo_type_key = args.repo_type
 
 rpm_repositories = {
-    'snapshot' : "{snapshot_repository}",
-    'release' : "{release_repository}"
+    'snapshot' : "{snapshot}",
+    'release' : "{release}"
 }
 
 rpm_registry = rpm_repositories[repo_type_key]
