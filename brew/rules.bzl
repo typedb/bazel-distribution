@@ -109,10 +109,6 @@ deploy_brew = rule(
             allow_single_file = True,
             default = "//brew/templates:deploy.py"
         ),
-        "_common_py": attr.label(
-            allow_single_file = True,
-            default = "//common:common.py"
-        )
     },
     executable = True,
     outputs = {
