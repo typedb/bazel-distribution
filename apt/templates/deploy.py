@@ -37,19 +37,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')
 args = parser.parse_args()
 
-APT_REPO_PREFIX = 'repo.apt.'
-repo_type_key = APT_REPO_PREFIX + args.repo_type
+repo_type_key = args.repo_type
 
-properties = parse_deployment_properties('deployment.properties')
-if repo_type_key not in properties:
-    raise Exception('invalid repo type {}. valid repo types are: {}'.format(
-        args.repo_type,
-        list(
-            map(lambda x: x.replace(APT_REPO_PREFIX, ''),
-                filter(lambda x: x.startswith(APT_REPO_PREFIX), properties)))
-    ))
+apt_deployments = {
+    'snapshot' : "{APT_DEPLOYMENT_SNAPSHOT}",
+    'release' : "{APT_DEPLOYMENT_RELEASE}"
+}
 
-apt_registry = properties[repo_type_key]
+apt_registry = apt_deployments[repo_type_key]
 
 apt_username, apt_password = (
     os.getenv('DEPLOY_APT_USERNAME'),

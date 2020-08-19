@@ -145,7 +145,9 @@ def _deploy_apt_impl(ctx):
     ctx.actions.expand_template(
         template = ctx.file._deployment_script,
         output = ctx.outputs.deployment_script,
-        substitutions = {},
+        substitutions = {
+            'APT_'
+        },
         is_executable = True
     )
 
@@ -166,10 +168,13 @@ deploy_apt = rule(
         "target": attr.label(
             doc = 'assemble_apt label to deploy'
         ),
-        "deployment_properties": attr.label(
-            allow_single_file = True,
+        "apt_deployment_snapshot": attr.string(
             mandatory = True,
-            doc = 'Properties file containing repo.apt.(snapshot|release) key'
+            doc = 'Remote repository to deploy apt snapshot to'
+        ),
+        "apt_deployment_release": attr.string(
+            mandatory = True,
+            doc = 'Remote repository to deploy apt release to'
         ),
         "_deployment_script": attr.label(
             allow_single_file = True,
