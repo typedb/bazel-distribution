@@ -31,8 +31,6 @@ import tempfile
 # this script and module with common functions
 # are at different directory levels in sandbox
 from runpy import run_path
-parse_deployment_properties = run_path('common.py')['parse_deployment_properties']
-
 
 def get_distribution_url_from_formula(content):
     url_line = next(filter(lambda l: l.lstrip().startswith('url'), content.split('\n')))
@@ -70,14 +68,18 @@ if len(sys.argv) != 2:
 # configurations #
 git_username = 'Grabl'
 git_email = 'grabl@grakn.ai'
-properties = parse_deployment_properties('deployment.properties')
 formula_filename = os.path.basename(os.readlink('formula'))
 with open('formula') as formula_file:
     formula_template = formula_file.read()
 with open('VERSION') as version_file:
     version = version_file.read().strip()
 tap_type = sys.argv[1]
-tap_url = properties['repo.brew.{}'.format(tap_type)]
+
+tap_repositories = {
+    "snapshot": "{BREW_DEPLOYMENT_SNAPSHOT}",
+    "release": "{BREW_DEPLOYMENT_RELEASE"
+}
+tap_url = tap_repositories[tap_type]
 
 checksum_of_distribution_local = get_checksum()
 

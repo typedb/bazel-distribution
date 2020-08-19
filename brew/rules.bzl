@@ -26,8 +26,9 @@ def _deploy_brew_impl(ctx):
     ctx.actions.expand_template(
         template = ctx.file._deploy_brew_template,
         output = ctx.outputs.deployment_script,
-        substitutions = {
-            "{brew_folder}": brew_formula_folder
+         substitutions = {
+            'BREW_DEPLOYMENT_SNAPSHOT' : ctx.attr.brew_deployment_snapshot,
+            'BREW_DEPLOYMENT_RELEASE' : ctx.attr.brew_deployment_release
         },
         is_executable = True
     )
@@ -45,14 +46,12 @@ def _deploy_brew_impl(ctx):
         version_file = ctx.file.version_file
 
     files = [
-        ctx.file.deployment_properties,
         ctx.file.formula,
         version_file,
         ctx.file._common_py
     ]
 
     symlinks = {
-        'deployment.properties': ctx.file.deployment_properties,
         'formula': ctx.file.formula,
         'VERSION': version_file,
         'common.py': ctx.file._common_py,
@@ -85,10 +84,13 @@ deploy_brew = rule(
             Cask is generally used for graphic applications
             """
         ),
-        "deployment_properties": attr.label(
-            allow_single_file = True,
+        "repo_brew_snapshot" : attr.string(
             mandatory = True,
-            doc = 'Properties file containing repo.brew.(snapshot|release) key'
+            doc = 'Snapshot repository to deploy brew artifact to'
+        ),
+        "repo_brew_release" : attr.string(
+            mandatory = True,
+            doc = 'Release repository to deploy brew artifact to'
         ),
         "formula": attr.label(
             allow_single_file = True,
