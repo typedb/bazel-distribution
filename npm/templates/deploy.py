@@ -21,37 +21,24 @@
 
 
 import argparse
-import io
-import json
 import os
 import subprocess
-import shutil
 
 # usual importing is not possible because
 # this script and module with common functions
 # are at different directory levels in sandbox
-import tarfile
 import tempfile
-from runpy import run_path
-parse_deployment_properties = run_path('common.py')['parse_deployment_properties']
 
 parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')
 args = parser.parse_args()
 
-NPM_REPO_PREFIX = 'repo.npm.'
-repo_type_key = NPM_REPO_PREFIX + args.repo_type
-
-properties = parse_deployment_properties('deployment.properties')
-if repo_type_key not in properties:
-    raise Exception('invalid repo type {}. valid repo types are: {}'.format(
-        args.repo_type,
-        list(
-            map(lambda x: x.replace(NPM_REPO_PREFIX, ''),
-                filter(lambda x: x.startswith(NPM_REPO_PREFIX), properties)))
-    ))
-
-npm_registry = properties[repo_type_key]
+repo_type = args.repo_type
+npm_repositories = {
+    "snapshot": "{repo_npm_snapshot}",
+    "release": "{repo_npm_release}",
+}
+npm_registry = npm_repositories[repo_type]
 
 npm_username, npm_password, npm_email = (
     os.getenv('DEPLOY_NPM_USERNAME'),
