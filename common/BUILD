@@ -17,7 +17,7 @@
 # under the License.
 #
 
-exports_files(["archiver.py"])
+exports_files(["archiver.py", "common.py"])
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
@@ -43,6 +43,12 @@ py_binary(
 py_binary(
     name = "tgz2zip",
     srcs = ["tgz2zip.py"],
+    visibility = ["//visibility:public"]
+)
+
+py_library(
+    name = "common",
+    srcs = ["common.py"],
     visibility = ["//visibility:public"]
 )
 
