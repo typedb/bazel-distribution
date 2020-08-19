@@ -39,8 +39,8 @@ def _deploy_artifact_impl(ctx):
             "{artifact_path}": ctx.file.target.short_path,
             "{artifact_group}": ctx.attr.artifact_group,
             "{artifact_filename}": ctx.attr.artifact_name,
-            "{repo_artifact_release}": ctx.attr.repo_artifact_release,
-            "{repo_artifact_snapshot}": ctx.attr.repo_artifact_snapshot,
+            "{release}": ctx.attr.release,
+            "{snapshot}": ctx.attr.snapshot,
         },
     )
     files = [
@@ -88,11 +88,11 @@ deploy_artifact = rule(
             allow_single_file = True,
             default = "//distribution/artifact/templates:deploy.py",
         ),
-        "repo_artifact_release": attr.string(
+        "release": attr.string(
             mandatory = True,
             doc = "Repository that the release artifact will be uploaded to"
         ),
-        "repo_artifact_snapshot": attr.string(
+        "snapshot": attr.string(
             mandatory = True,
             doc = "Repository that the snapshot artifact will be uploaded to"
         ),
@@ -110,8 +110,8 @@ def artifact_file(name,
                   commit = None,
                   tag = None,
                   sha = None,
-                  repo_artifact_release,
-                  repo_artifact_snapshot,
+                  release,
+                  snapshot,
                   tags = []):
     """Macro to assist depending on a deployed artifact by generating urls for http_file.
 
@@ -122,15 +122,15 @@ def artifact_file(name,
         downloaded_file_path: Equivalent to http_file downloaded_file_path, defaults to artifact_name, includes {version} interpolation.
         commit: Commit sha, for when this was used as the version for upload.
         tag: Git tag, for when this was used as the version for upload.
-        repo_artifact_release: The base repository URL for tag releases.
-        repo_artifact_snapshot: The base repository URL for snapshot/commit sha releases.
+        release: The base repository URL for tag releases.
+        snapshot: The base repository URL for snapshot/commit sha releases.
         tags: Tags to forward onto the http_file rule.
     """
 
     version = tag if tag != None else commit
     versiontype = "tag" if tag != None else "commit"
 
-    repository_url = repo_artifact_release if tag != None else repo_artifact_snapshot
+    repository_url = release if tag != None else snapshot
 
     if downloaded_file_path == None:
         downloaded_file_path = artifact_name

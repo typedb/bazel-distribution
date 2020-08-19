@@ -28,8 +28,8 @@ def _deploy_brew_impl(ctx):
         output = ctx.outputs.deployment_script,
          substitutions = {
             '{brew_folder}': brew_formula_folder,
-            '{repo_brew_snapshot}' : ctx.attr.repo_brew_snapshot,
-            '{repo_brew_release}' : ctx.attr.repo_brew_release
+            '{snapshot}' : ctx.attr.snapshot,
+            '{release}' : ctx.attr.release
         },
         is_executable = True
     )
@@ -83,11 +83,11 @@ deploy_brew = rule(
             Cask is generally used for graphic applications
             """
         ),
-        "repo_brew_snapshot" : attr.string(
+        "snapshot" : attr.string(
             mandatory = True,
             doc = 'Snapshot repository to deploy brew artifact to'
         ),
-        "repo_brew_release" : attr.string(
+        "release" : attr.string(
             mandatory = True,
             doc = 'Release repository to deploy brew artifact to'
         ),

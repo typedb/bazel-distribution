@@ -90,8 +90,8 @@ def _deploy_npm(ctx):
         template = ctx.file._deployment_script_template,
         output = ctx.outputs.executable,
         substitutions = {
-            "{repo_npm_snapshot}" : ctx.attr.repo_npm_snapshot,
-            "{repo_npm_release}" : ctx.attr.repo_npm_release,
+            "{snapshot}" : ctx.attr.snapshot,
+            "{release}" : ctx.attr.release,
         },
         is_executable = True
     )
@@ -119,11 +119,11 @@ deploy_npm = rule(
             allow_single_file = True,
             doc = "`assemble_npm` label to be included in the package",
         ),
-        "repo_npm_snapshot": attr.string(
+        "snapshot": attr.string(
             mandatory = True,
             doc = 'Snapshot repository to deploy npm artifact to',
         ),
-        "repo_npm_release": attr.string(
+        "release": attr.string(
             mandatory = True,
             doc = 'Release repository to deploy npm artifact to',
         ),
