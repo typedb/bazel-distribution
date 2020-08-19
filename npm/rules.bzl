@@ -119,7 +119,7 @@ deploy_npm = rule(
             allow_single_file = True,
             doc = "`assemble_npm` label to be included in the package",
         ),
-        "repo_npm_snapshot": attr.string
+        "repo_npm_snapshot": attr.string(
             mandatory = True,
             doc = 'Snapshot repository to deploy npm artifact to',
         ),
