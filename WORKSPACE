@@ -31,12 +31,6 @@ http_archive(
 load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories")
 node_repositories()
 
-# Load Apt and RPM
-load("//common:dependencies.bzl", "bazelbuild_rules_pkg")
-bazelbuild_rules_pkg()
-load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
-rules_pkg_dependencies()
-
 # Load Github
 load("//github:dependencies.bzl", "tcnksm_ghr")
 tcnksm_ghr()
@@ -62,6 +56,12 @@ pip_import(
 )
 load("@graknlabs_bazel_distribution_pip//:requirements.bzl", graknlabs_bazel_distribution_pip_install = "pip_install")
 graknlabs_bazel_distribution_pip_install()
+
+# Load Apt and RPM
+load("//common:dependencies.bzl", "bazelbuild_rules_pkg")
+bazelbuild_rules_pkg()
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+rules_pkg_dependencies()
 
 # Load Stardoc
 git_repository(
