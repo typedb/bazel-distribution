@@ -1,0 +1,13 @@
+diff --git a/python/pip.bzl b/python/pip.bzl
+index 60793fd..5e514f5 100644
+--- a/python/pip.bzl
++++ b/python/pip.bzl
+@@ -20,7 +20,7 @@ def _pip_import_impl(repository_ctx):
+     # This is because Bazel requires BUILD files along all paths accessed
+     # via //this/sort/of:path and we wouldn't be able to load our generated
+     # requirements.bzl without it.
+-    repository_ctx.file("BUILD", "")
++    repository_ctx.file("BUILD", "exports_files(['requirements.bzl'])")
+ 
+     args = [
+         repository_ctx.attr.python_interpreter,

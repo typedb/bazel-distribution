@@ -20,9 +20,9 @@
 # File which loads *all* rules to make them visible for doc generation
 # Rules *do* need to be reexported because otherwise they are not visible
 
-load("//apt:rules.bzl", a = "assemble_apt", d = "deploy_apt")
-assemble_apt = a
-deploy_apt = d
+load("//apt:rules.bzl", _assemble_apt = "assemble_apt", _deploy_apt = "deploy_apt")
+assemble_apt = _assemble_apt
+deploy_apt = _deploy_apt
 
 load("//aws:rules.bzl", _ = "assemble_aws")
 assemble_aws = _
@@ -43,18 +43,19 @@ load("//common:generate_json_config.bzl", _ = "generate_json_config")
 generate_json_config = _
 
 load("//common:java_deps.bzl",
-    J = "JarToMavenCoordinatesMapping",
-    j = "java_deps",
-    M = "MAVEN_COORDINATES_PREFIX",
-    T = "TransitiveJarToMavenCoordinatesMapping")
-JarToMavenCoordinatesMapping = J
-java_deps = j
-MAVEN_COORDINATES_PREFIX = M
-TransitiveJarToMavenCoordinatesMapping = T
+    _MAVEN_COORDINATES_PREFIX = "MAVEN_COORDINATES_PREFIX",
+    _JarToMavenCoordinatesMapping = "JarToMavenCoordinatesMapping",
+    _TransitiveJarToMavenCoordinatesMapping = "TransitiveJarToMavenCoordinatesMapping",
+    _java_deps = "java_deps",
+)
+MAVEN_COORDINATES_PREFIX = _MAVEN_COORDINATES_PREFIX
+JarToMavenCoordinatesMapping = _JarToMavenCoordinatesMapping
+TransitiveJarToMavenCoordinatesMapping = _TransitiveJarToMavenCoordinatesMapping
+java_deps = _java_deps
 
-load("//common:rules.bzl", _ = "assemble_targz", __ = "assemble_zip")
-assemble_targz = _
-assemble_zip = __
+load("//common:rules.bzl", _assemble_targz = "assemble_targz", _assemble_zip = "assemble_zip")
+assemble_targz = _assemble_targz
+assemble_zip = _assemble_zip
 
 load("//common:tgz2zip.bzl", _ = "tgz2zip")
 tgz2zip = _
@@ -65,19 +66,31 @@ assemble_gcp = _
 load('//github:rules.bzl', _ = "deploy_github")
 deploy_github = _
 
+load('//maven:rules.bzl',
+    _JavaLibInfo = "JavaLibInfo",
+    _MavenPomInfo = "MavenPomInfo",
+    _MavenDeploymentInfo = "MavenDeploymentInfo",
+    _assemble_maven = "assemble_maven",
+    _deploy_maven = "deploy_maven",
+)
+JavaLibInfo = _JavaLibInfo
+MavenPomInfo = _MavenPomInfo
+MavenDeploymentInfo = _MavenDeploymentInfo
+assemble_maven = _assemble_maven
+deploy_maven = _deploy_maven
 
-load("//npm:rules.bzl", a = "assemble_npm", d = "deploy_npm")
-assemble_npm = a
-deploy_npm = d
+load("//npm:rules.bzl", _assemble_npm = "assemble_npm", _deploy_npm = "deploy_npm")
+assemble_npm = _assemble_npm
+deploy_npm = _deploy_npm
 
-load("//packer:rules.bzl", a = "assemble_packer", d = "deploy_packer")
-assemble_packer = a
-deploy_packer = d
+load("//packer:rules.bzl", _assemble_packer = "assemble_packer", _deploy_packer = "deploy_packer")
+assemble_packer = _assemble_packer
+deploy_packer = _deploy_packer
 
-load("//pip:rules.bzl", a = "assemble_pip", d = "deploy_pip")
-assemble_pip = a
-deploy_pip = d
+load("//pip:rules.bzl", _assemble_pip = "assemble_pip", _deploy_pip = "deploy_pip")
+assemble_pip = _assemble_pip
+deploy_pip = _deploy_pip
 
-load("//rpm:rules.bzl", a = "assemble_rpm", d = "deploy_rpm")
-assemble_rpm = a
-deploy_rpm = d
+load("//rpm:rules.bzl", _assemble_rpm = "assemble_rpm", _deploy_rpm = "deploy_rpm")
+assemble_rpm = _assemble_rpm
+deploy_rpm = _deploy_rpm
