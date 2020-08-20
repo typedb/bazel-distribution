@@ -61,67 +61,67 @@ stardoc(
         ":stardoc_hacks",
     ],
     symbol_names = [
-        # //apt:rules.bzl
+        # From: //apt:rules.bzl
         "assemble_apt",
         "deploy_apt",
 
-        # //aws:rules.bzl
+        # From: //aws:rules.bzl
         "assemble_aws",
 
-        # //azure:rules.bzl
+        # From: //azure:rules.bzl
         "assemble_azure",
 
-        # //brew:rules.bzl
+        # From: //brew:rules.bzl
         "deploy_brew",
 
-        # //common:assemble_versioned.bzl
+        # From: //common:assemble_versioned.bzl
         "assemble_versioned",
 
-        # //common:checksum.bzl
+        # From: //common:checksum.bzl
         "checksum",
 
-        # //common:generate_json_config.bzl
+        # From: //common:generate_json_config.bzl
         "generate_json_config",
 
-        # //common:java_deps.bzl
+        # From: //common:java_deps.bzl
         "MAVEN_COORDINATES_PREFIX",
         "JarToMavenCoordinatesMapping",
         "TransitiveJarToMavenCoordinatesMapping",
         "java_deps",
 
-        # //common:rules.bzl
+        # From: //common:rules.bzl
         "assemble_targz",
         "assemble_zip",
 
-        # //common:tgz2zip.bzl
+        # From: //common:tgz2zip.bzl
         "tgz2zip",
 
-        # //gcp:rules.bzl
+        # From: //gcp:rules.bzl
         "assemble_gcp",
 
-        # //github:rules.bzl
+        # From: //github:rules.bzl
         "deploy_github",
 
-        # //maven:rules.bzl
+        # From: //maven:rules.bzl
         "JavaLibInfo",
         "MavenPomInfo",
         "MavenDeploymentInfo",
         "assemble_maven",
         "deploy_maven",
 
-        # //npm:rules.bzl
+        # From: //npm:rules.bzl
         "assemble_npm",
         "deploy_npm",
 
-        # //packer:rules.bzl
+        # From: //packer:rules.bzl
         "assemble_packer",
         "deploy_packer",
 
-        # //pip:rules.bzl
+        # From: //pip:rules.bzl
         "assemble_pip",
         "deploy_pip",
 
-        # //rpm:rules.bzl
+        # From: //rpm:rules.bzl
         "assemble_rpm",
         "deploy_rpm",
     ],
