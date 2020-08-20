@@ -19,6 +19,16 @@
 
 exports_files(["_pom_replace_version.py", "rules.bzl"])
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+bzl_library(
+    name = "lib",
+    srcs = [
+        "rules.bzl",
+    ],
+    visibility = ["//visibility:public"]
+)
+
 py_binary(
     name = "assemble",
     srcs = ["assemble.py"],

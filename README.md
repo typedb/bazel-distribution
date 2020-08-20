@@ -1,5 +1,35 @@
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
+<a id="#assemble_maven"></a>
+
+## assemble_maven
+
+<pre>
+assemble_maven(<a href="#assemble_maven-name">name</a>, <a href="#assemble_maven-developers">developers</a>, <a href="#assemble_maven-license">license</a>, <a href="#assemble_maven-package">package</a>, <a href="#assemble_maven-project_description">project_description</a>, <a href="#assemble_maven-project_name">project_name</a>, <a href="#assemble_maven-project_url">project_url</a>,
+               <a href="#assemble_maven-scm_url">scm_url</a>, <a href="#assemble_maven-target">target</a>, <a href="#assemble_maven-version_file">version_file</a>, <a href="#assemble_maven-version_overrides">version_overrides</a>, <a href="#assemble_maven-workspace_refs">workspace_refs</a>)
+</pre>
+
+Assemble Java package for subsequent deployment to Maven repo
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="assemble_maven-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| <a id="assemble_maven-developers"></a>developers |  Project developers to fill into pom.xml   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> List of strings</a> | optional | {} |
+| <a id="assemble_maven-license"></a>license |  Project license to fill into pom.xml   | String | optional | "apache" |
+| <a id="assemble_maven-package"></a>package |  Bazel package of this target. Must match one defined in <code>_maven_packages</code>   | String | optional | "" |
+| <a id="assemble_maven-project_description"></a>project_description |  Project description to fill into pom.xml   | String | optional | "PROJECT_DESCRIPTION" |
+| <a id="assemble_maven-project_name"></a>project_name |  Project name to fill into pom.xml   | String | optional | "PROJECT_NAME" |
+| <a id="assemble_maven-project_url"></a>project_url |  Project URL to fill into pom.xml   | String | optional | "PROJECT_URL" |
+| <a id="assemble_maven-scm_url"></a>scm_url |  Project source control URL to fill into pom.xml   | String | optional | "PROJECT_URL" |
+| <a id="assemble_maven-target"></a>target |  Java target for subsequent deployment   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| <a id="assemble_maven-version_file"></a>version_file |  File containing version string.             Alternatively, pass --define version=VERSION to Bazel invocation.             Not specifying version at all defaults to '0.0.0'   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="assemble_maven-version_overrides"></a>version_overrides |  Dictionary of maven artifact : version to pin artifact versions to   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
+| <a id="assemble_maven-workspace_refs"></a>workspace_refs |  JSON file describing dependencies to other Bazel workspaces   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+
+
 <a id="#assemble_npm"></a>
 
 ## assemble_npm
@@ -156,6 +186,26 @@ Deploy `assemble_versioned` target to GitHub Releases
 | <a id="deploy_github-title"></a>title |  Title of GitHub release   | String | optional | "" |
 | <a id="deploy_github-title_append_version"></a>title_append_version |  Append version to GitHub release title   | Boolean | optional | False |
 | <a id="deploy_github-version_file"></a>version_file |  File containing version string.             Alternatively, pass --define version=VERSION to Bazel invocation.             Not specifying version at all defaults to '0.0.0'   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+
+
+<a id="#deploy_maven"></a>
+
+## deploy_maven
+
+<pre>
+deploy_maven(<a href="#deploy_maven-name">name</a>, <a href="#deploy_maven-deployment_properties">deployment_properties</a>, <a href="#deploy_maven-target">target</a>)
+</pre>
+
+Deploy `assemble_maven` target into Maven repo
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="deploy_maven-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| <a id="deploy_maven-deployment_properties"></a>deployment_properties |  Properties file containing repo.maven.(snapshot|release) key   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| <a id="deploy_maven-target"></a>target |  assemble_maven target to deploy   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 
 
 <a id="#deploy_npm"></a>
@@ -318,6 +368,64 @@ JarToMavenCoordinatesMapping(<a href="#JarToMavenCoordinatesMapping-filename">fi
 | :------------- | :------------- |
 | <a id="JarToMavenCoordinatesMapping-filename"></a>filename |  jar filename    |
 | <a id="JarToMavenCoordinatesMapping-maven_coordinates"></a>maven_coordinates |  Maven coordinates of the jar    |
+
+
+<a id="#JavaLibInfo"></a>
+
+## JavaLibInfo
+
+<pre>
+JavaLibInfo(<a href="#JavaLibInfo-target_coordinates">target_coordinates</a>, <a href="#JavaLibInfo-target_deps_coordinates">target_deps_coordinates</a>)
+</pre>
+
+
+
+**FIELDS**
+
+
+| Name  | Description |
+| :------------- | :------------- |
+| <a id="JavaLibInfo-target_coordinates"></a>target_coordinates |  The Maven coordinates for the artifacts that are exported by this target: i.e. the target         itself and its transitively exported targets.    |
+| <a id="JavaLibInfo-target_deps_coordinates"></a>target_deps_coordinates |  The Maven coordinates of the direct dependencies, and the transitively exported targets, of         this target.    |
+
+
+<a id="#MavenDeploymentInfo"></a>
+
+## MavenDeploymentInfo
+
+<pre>
+MavenDeploymentInfo(<a href="#MavenDeploymentInfo-jar">jar</a>, <a href="#MavenDeploymentInfo-srcjar">srcjar</a>, <a href="#MavenDeploymentInfo-pom">pom</a>)
+</pre>
+
+
+
+**FIELDS**
+
+
+| Name  | Description |
+| :------------- | :------------- |
+| <a id="MavenDeploymentInfo-jar"></a>jar |  JAR file to deploy    |
+| <a id="MavenDeploymentInfo-srcjar"></a>srcjar |  JAR file with sources    |
+| <a id="MavenDeploymentInfo-pom"></a>pom |  Accompanying pom.xml file    |
+
+
+<a id="#MavenPomInfo"></a>
+
+## MavenPomInfo
+
+<pre>
+MavenPomInfo(<a href="#MavenPomInfo-direct_pom_deps">direct_pom_deps</a>, <a href="#MavenPomInfo-transitive_pom_deps">transitive_pom_deps</a>)
+</pre>
+
+
+
+**FIELDS**
+
+
+| Name  | Description |
+| :------------- | :------------- |
+| <a id="MavenPomInfo-direct_pom_deps"></a>direct_pom_deps |  Maven coordinates declared directly by a target    |
+| <a id="MavenPomInfo-transitive_pom_deps"></a>transitive_pom_deps |  Maven coordinates for dependencies, transitively collected    |
 
 
 <a id="#TransitiveJarToMavenCoordinatesMapping"></a>
