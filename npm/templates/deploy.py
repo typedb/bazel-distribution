@@ -23,6 +23,8 @@
 import argparse
 import os
 import subprocess
+import shutil
+import re
 
 # usual importing is not possible because
 # this script and module with common functions
@@ -67,16 +69,14 @@ if not npm_email:
 expect_input_tmpl = '''spawn npm adduser --registry={registry}
 expect {{
   "Username:" {{send "{username}\r"; exp_continue}}
-  "Password:" {{send "{password}\r"; exp_continue}}
+  "Password:" {{send "$env(PASSWORD)\r"; exp_continue}}
   "Email: (this IS public)" {{send "{email}\r"; exp_continue}}
 }}'''
-
 
 with tempfile.NamedTemporaryFile('wt', delete=False) as expect_input_file:
     expect_input_file.write(expect_input_tmpl.format(
         registry=npm_registry,
         username=npm_username,
-        password=npm_password,
         email=npm_email,
     ))
 
@@ -93,7 +93,8 @@ with open(expect_input_file.name) as expect_input:
     subprocess.check_call([
         '/usr/bin/expect',
     ], stdin=expect_input, env={
-        'PATH': node_path
+        'PATH': node_path,
+        'PASSWORD': npm_password
     })
 
 subprocess.check_call([

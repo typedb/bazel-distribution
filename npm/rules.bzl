@@ -74,7 +74,7 @@ assemble_npm = rule(
             cfg = "host"
         ),
         "_npm": attr.label(
-            default = Label("@nodejs//:bin/npm"),
+            default = Label("@nodejs//:npm"),
             allow_files = True
         )
     },
@@ -132,7 +132,7 @@ deploy_npm = rule(
             default = "//npm/templates:deploy.py",
         ),
         "_npm": attr.label(
-            default = Label("@nodejs//:bin/npm"),
+            default = Label("@nodejs//:npm"),
             allow_files = True
         ),
     },
