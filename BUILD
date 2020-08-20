@@ -17,17 +17,27 @@
 # under the License.
 #
 
-load("@io_bazel_skydoc//stardoc:stardoc.bzl", "stardoc")
+load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
+exports_files(["bazelbuild_rules_python-export-requirements-bzl-for-stardoc.patch"])
+
+# Stardoc is unable to generate documentation unless it can
+# load files that our rule files depends on via load(...)
+# statements.
+# This means it needs to have them accessible within the
+# sandbox, which it can only do if it depends on the files
+# as source.
+# https://github.com/bazelbuild/skydoc/issues/166
 bzl_library(
-    name = "bzl_srcs",
+    name = "stardoc_hacks",
     srcs = [
         "@rules_pkg//:pkg.bzl",
         "@rules_pkg//:path.bzl",
         "@rules_pkg//:rpm.bzl",
         "@bazel_tools//tools:bzl_srcs",
-        # "@graknlabs_bazel_distribution_pip//:requirements.bzl",
+        "@graknlabs_bazel_distribution_pip//:requirements.bzl",
+        "@rules_python//python:whl.bzl",
     ],
 )
 
@@ -47,7 +57,7 @@ stardoc(
         "//packer:lib",
         "//pip:lib",
         "//rpm:lib",
-        ":bzl_srcs",
+        ":stardoc_hacks",
     ],
     symbol_names = [
         "assemble_azure",

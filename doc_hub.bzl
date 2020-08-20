@@ -73,9 +73,9 @@ load("//packer:rules.bzl", a = "assemble_packer", d = "deploy_packer")
 assemble_packer = a
 deploy_packer = d
 
-# load("//pip:rules.bzl", a = "assemble_pip", d = "deploy_pip")
-# assemble_pip = a
-# deploy_pip = d
+load("//pip:rules.bzl", a = "assemble_pip", d = "deploy_pip")
+assemble_pip = a
+deploy_pip = d
 
 load("//rpm:rules.bzl", a = "assemble_rpm", d = "deploy_rpm")
 assemble_rpm = a

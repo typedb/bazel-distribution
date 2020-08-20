@@ -37,30 +37,24 @@ bazelbuild_rules_pkg()
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
 
-# Load Docker
-# git_repository(
-#     name = "io_bazel_skydoc",
-#     remote = "https://github.com/graknlabs/skydoc.git",
-#     branch = "experimental-skydoc-allow-dep-on-bazel-tools",
-# )
-# load("@io_bazel_skydoc//:setup.bzl", "skydoc_repositories")
-# skydoc_repositories()
-# load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
-# rules_sass_dependencies()
-# load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
-# sass_repositories()
-
 # Load Github
 load("//github:dependencies.bzl", "tcnksm_ghr")
 tcnksm_ghr()
 
 # Load Python
 git_repository(
-    name = "io_bazel_rules_python",
+    name = "rules_python",
     remote = "https://github.com/bazelbuild/rules_python.git",
-    commit = "fdbb17a4118a1728d19e638a5291b4c4266ea5b8",
+    tag = "0.0.2",
+    patches = [
+        # Force rules_python to export the requirements.bzl file in
+        # order for stardoc to be able to load it during documentation
+        # generation.
+        "//:bazelbuild_rules_python-export-requirements-bzl-for-stardoc.patch",
+    ],
+    patch_args = ["-p1"],
 )
-load("@io_bazel_rules_python//python:pip.bzl", "pip_repositories", "pip_import")
+load("@rules_python//python:pip.bzl", "pip_repositories", "pip_import")
 pip_repositories()
 pip_import(
     name = "graknlabs_bazel_distribution_pip",
@@ -69,10 +63,11 @@ pip_import(
 load("@graknlabs_bazel_distribution_pip//:requirements.bzl", graknlabs_bazel_distribution_pip_install = "pip_install")
 graknlabs_bazel_distribution_pip_install()
 
+# Load Stardoc
 git_repository(
-    name = "io_bazel_skydoc",
+    name = "io_bazel_stardoc",
     remote = "https://github.com/bazelbuild/stardoc",
     commit = "87dc99cfe1baa9255c607ac0229bfd33a65367f5",
 )
-load("@io_bazel_skydoc//:setup.bzl", "stardoc_repositories")
+load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
 stardoc_repositories()
