@@ -41,21 +41,19 @@ def _deploy_github_impl(ctx):
             "{ghr_osx_binary}": ctx.files._ghr[0].path,
             "{ghr_linux_binary}": ctx.files._ghr[1].path,
             "{release_title}": ctx.attr.title or "",
-            "{title_append_version}": str(int(bool(ctx.attr.title_append_version)))
+            "{title_append_version}": str(int(bool(ctx.attr.title_append_version))),
+            "{organisation}" : ctx.attr.organisation,
+            "{repository}" : ctx.attr.repository,
         }
     )
     files = [
-        ctx.file.deployment_properties,
         version_file,
-        ctx.file._common_py
     ] + ctx.files._ghr
 
     if ctx.file.archive!=None:
         files.append(ctx.file.archive)
 
     symlinks = {
-        "deployment.properties": ctx.file.deployment_properties,
-        "common.py": ctx.file._common_py,
         'VERSION': version_file
     }
 
@@ -91,10 +89,13 @@ deploy_github = rule(
             allow_single_file = True,
             doc = "Description of GitHub release"
         ),
-        "deployment_properties": attr.label(
-            allow_single_file = True,
+        "organisation" : attr.string(
             mandatory = True,
-            doc = "File containing `repo.github.organisation` and `repo.github.repository` keys"
+            doc = "Github organisation to deploy to",
+        ),
+        "repository" : attr.string(
+            mandatory = True,
+            doc = "Github repository to deploy to within organisation",
         ),
         "version_file": attr.label(
             allow_single_file = True,
@@ -106,16 +107,12 @@ deploy_github = rule(
         ),
         "_deploy_script": attr.label(
             allow_single_file = True,
-            default = "//github:deploy.py",
+            default = "//github/templates:deploy.py",
         ),
         "_ghr": attr.label_list(
             allow_files = True,
             default = ["@ghr_osx_zip//:ghr", "@ghr_linux_tar//:ghr"]
         ),
-        "_common_py": attr.label(
-            allow_single_file = True,
-            default = "//common:common.py",
-        )
     },
     implementation = _deploy_github_impl,
     executable = True,

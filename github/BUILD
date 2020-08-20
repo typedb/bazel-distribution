@@ -17,8 +17,6 @@
 # under the License.
 #
 
-exports_files(["deploy.py"])
-
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 bzl_library(

@@ -183,20 +183,20 @@ def _deploy_rpm_impl(ctx):
         template = ctx.file._deployment_script,
         output = ctx.outputs.deployment_script,
         substitutions = {
-            "{RPM_PKG}": ctx.attr.target[RpmInfo].package_name
+            "{RPM_PKG}": ctx.attr.target[RpmInfo].package_name,
+            "{snapshot}": ctx.attr.snapshot,
+            "{release}": ctx.attr.release,
         },
         is_executable = True
     )
 
     symlinks = {
         'package.rpm': ctx.files.target[0],
-        'deployment.properties': ctx.file.deployment_properties,
-        "common.py": ctx.file._common_py,
     }
 
     return DefaultInfo(executable = ctx.outputs.deployment_script,
                        runfiles = ctx.runfiles(
-                           files=[ctx.files.target[0], ctx.file.deployment_properties],
+                           files=[ctx.files.target[0]],
                            symlinks = symlinks))
 
 
@@ -206,19 +206,18 @@ deploy_rpm = rule(
             aspects = [collect_rpm_package_name],
             doc = "`assemble_rpm` target to deploy"
         ),
-        "deployment_properties": attr.label(
-            allow_single_file = True,
+        "snapshot": attr.string(
             mandatory = True,
-            doc = 'Properties file containing repo.rpm.(snapshot|release) key'
+            doc = "Remote repository to deploy rpm snapshot to"
+        ),
+        "release": attr.string(
+            mandatory = True,
+            doc = "Remote repository to deploy rpm release to"
         ),
         "_deployment_script": attr.label(
             allow_single_file = True,
             default = "//rpm/templates:deploy.py"
         ),
-        "_common_py": attr.label(
-            allow_single_file = True,
-            default = "@graknlabs_bazel_distribution//common:common.py",
-        )
     },
     outputs = {
         "deployment_script": "%{name}.py",

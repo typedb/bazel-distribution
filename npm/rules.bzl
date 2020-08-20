@@ -89,14 +89,15 @@ def _deploy_npm(ctx):
     ctx.actions.expand_template(
         template = ctx.file._deployment_script_template,
         output = ctx.outputs.executable,
-        substitutions = {},
+        substitutions = {
+            "{snapshot}" : ctx.attr.snapshot,
+            "{release}" : ctx.attr.release,
+        },
         is_executable = True
     )
 
     files = [
         ctx.file.target,
-        ctx.file.deployment_properties,
-        ctx.file._common_py
     ]
     files.extend(ctx.files._npm)
 
@@ -106,8 +107,6 @@ def _deploy_npm(ctx):
             files = files,
             symlinks = {
                 "deploy_npm.tgz": ctx.file.target,
-                "deployment.properties": ctx.file.deployment_properties,
-                "common.py": ctx.file._common_py
             }))
 
 
@@ -120,18 +119,17 @@ deploy_npm = rule(
             allow_single_file = True,
             doc = "`assemble_npm` label to be included in the package",
         ),
-        "deployment_properties": attr.label(
-            allow_single_file = True,
+        "snapshot": attr.string(
             mandatory = True,
-            doc = "File containing Node repository url by `repo.npm` key"
+            doc = 'Snapshot repository to deploy npm artifact to',
+        ),
+        "release": attr.string(
+            mandatory = True,
+            doc = 'Release repository to deploy npm artifact to',
         ),
         "_deployment_script_template": attr.label(
             allow_single_file = True,
             default = "//npm/templates:deploy.py",
-        ),
-        "_common_py": attr.label(
-            allow_single_file = True,
-            default = "//common:common.py"
         ),
         "_npm": attr.label(
             default = Label("@nodejs//:npm"),

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -19,22 +17,4 @@
 # under the License.
 #
 
-
-import os
-import zipfile
-
-
-# This ZipFile extends Python's ZipFile and fixes the lost permission issue
-class ZipFile(zipfile.ZipFile):
-    def extract(self, member, path=None, pwd=None):
-        if not isinstance(member, zipfile.ZipInfo):
-            member = self.getinfo(member)
-
-        if path is None:
-            path = os.getcwd()
-
-        ret_val = self._extract_member(member, path, pwd)
-        attr = member.external_attr >> 16
-        os.chmod(ret_val, attr)
-        return ret_val
-
+exports_files(["deploy.py"])

@@ -22,36 +22,22 @@
 import argparse
 import os
 import subprocess
-import shutil
 
-# usual importing is not possible because
-# this script and module with common functions
-# are at different directory levels in sandbox
-import tarfile
-import tempfile
-from runpy import run_path
 
 rpm_pkg="{RPM_PKG}"
-
-parse_deployment_properties = run_path('common.py')['parse_deployment_properties']
 
 parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')
 args = parser.parse_args()
 
-RPM_REPO_PREFIX = 'repo.rpm.'
-repo_type_key = RPM_REPO_PREFIX + args.repo_type
+repo_type_key = args.repo_type
 
-properties = parse_deployment_properties('deployment.properties')
-if repo_type_key not in properties:
-    raise Exception('invalid repo type {}. valid repo types are: {}'.format(
-        args.repo_type,
-        list(
-            map(lambda x: x.replace(RPM_REPO_PREFIX, ''),
-                filter(lambda x: x.startswith(RPM_REPO_PREFIX), properties)))
-    ))
+rpm_repositories = {
+    'snapshot' : "{snapshot}",
+    'release' : "{release}"
+}
 
-rpm_registry = properties[repo_type_key]
+rpm_registry = rpm_repositories[repo_type_key]
 
 rpm_username, rpm_password = (
     os.getenv('DEPLOY_RPM_USERNAME'),

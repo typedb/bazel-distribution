@@ -125,7 +125,7 @@ Computes SHA256 checksum of file
 ## deploy_apt
 
 <pre>
-deploy_apt(<a href="#deploy_apt-name">name</a>, <a href="#deploy_apt-deployment_properties">deployment_properties</a>, <a href="#deploy_apt-target">target</a>)
+deploy_apt(<a href="#deploy_apt-name">name</a>, <a href="#deploy_apt-release">release</a>, <a href="#deploy_apt-snapshot">snapshot</a>, <a href="#deploy_apt-target">target</a>)
 </pre>
 
 Deploy package built with `assemble_apt` to APT repository
@@ -136,7 +136,8 @@ Deploy package built with `assemble_apt` to APT repository
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="deploy_apt-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="deploy_apt-deployment_properties"></a>deployment_properties |  Properties file containing repo.apt.(snapshot|release) key   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| <a id="deploy_apt-release"></a>release |  Release repository to deploy apt artifact to   | String | required |  |
+| <a id="deploy_apt-snapshot"></a>snapshot |  Snapshot repository to deploy apt artifact to   | String | required |  |
 | <a id="deploy_apt-target"></a>target |  assemble_apt label to deploy   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 
 
@@ -145,7 +146,7 @@ Deploy package built with `assemble_apt` to APT repository
 ## deploy_brew
 
 <pre>
-deploy_brew(<a href="#deploy_brew-name">name</a>, <a href="#deploy_brew-checksum">checksum</a>, <a href="#deploy_brew-deployment_properties">deployment_properties</a>, <a href="#deploy_brew-formula">formula</a>, <a href="#deploy_brew-type">type</a>, <a href="#deploy_brew-version_file">version_file</a>)
+deploy_brew(<a href="#deploy_brew-name">name</a>, <a href="#deploy_brew-checksum">checksum</a>, <a href="#deploy_brew-formula">formula</a>, <a href="#deploy_brew-release">release</a>, <a href="#deploy_brew-snapshot">snapshot</a>, <a href="#deploy_brew-type">type</a>, <a href="#deploy_brew-version_file">version_file</a>)
 </pre>
 
 Deploy Homebrew (Caskroom) formula to Homebrew tap
@@ -157,8 +158,9 @@ Deploy Homebrew (Caskroom) formula to Homebrew tap
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="deploy_brew-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
 | <a id="deploy_brew-checksum"></a>checksum |  Checksum of deployed artifact   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="deploy_brew-deployment_properties"></a>deployment_properties |  Properties file containing repo.brew.(snapshot|release) key   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="deploy_brew-formula"></a>formula |  The brew formula definition   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| <a id="deploy_brew-release"></a>release |  Release repository to deploy brew artifact to   | String | required |  |
+| <a id="deploy_brew-snapshot"></a>snapshot |  Snapshot repository to deploy brew artifact to   | String | required |  |
 | <a id="deploy_brew-type"></a>type |  Type of deployment (Homebrew/Caskroom).             Cask is generally used for graphic applications   | String | optional | "brew" |
 | <a id="deploy_brew-version_file"></a>version_file |  File containing version string.             Alternatively, pass --define version=VERSION to Bazel invocation.             Not specifying version at all defaults to '0.0.0'   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 
@@ -168,7 +170,7 @@ Deploy Homebrew (Caskroom) formula to Homebrew tap
 ## deploy_github
 
 <pre>
-deploy_github(<a href="#deploy_github-name">name</a>, <a href="#deploy_github-archive">archive</a>, <a href="#deploy_github-deployment_properties">deployment_properties</a>, <a href="#deploy_github-release_description">release_description</a>, <a href="#deploy_github-title">title</a>,
+deploy_github(<a href="#deploy_github-name">name</a>, <a href="#deploy_github-archive">archive</a>, <a href="#deploy_github-organisation">organisation</a>, <a href="#deploy_github-release_description">release_description</a>, <a href="#deploy_github-repository">repository</a>, <a href="#deploy_github-title">title</a>,
               <a href="#deploy_github-title_append_version">title_append_version</a>, <a href="#deploy_github-version_file">version_file</a>)
 </pre>
 
@@ -181,8 +183,9 @@ Deploy `assemble_versioned` target to GitHub Releases
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="deploy_github-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
 | <a id="deploy_github-archive"></a>archive |  <code>assemble_versioned</code> label to be deployed.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="deploy_github-deployment_properties"></a>deployment_properties |  File containing <code>repo.github.organisation</code> and <code>repo.github.repository</code> keys   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| <a id="deploy_github-organisation"></a>organisation |  Github organisation to deploy to   | String | required |  |
 | <a id="deploy_github-release_description"></a>release_description |  Description of GitHub release   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="deploy_github-repository"></a>repository |  Github repository to deploy to within organisation   | String | required |  |
 | <a id="deploy_github-title"></a>title |  Title of GitHub release   | String | optional | "" |
 | <a id="deploy_github-title_append_version"></a>title_append_version |  Append version to GitHub release title   | Boolean | optional | False |
 | <a id="deploy_github-version_file"></a>version_file |  File containing version string.             Alternatively, pass --define version=VERSION to Bazel invocation.             Not specifying version at all defaults to '0.0.0'   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
@@ -193,7 +196,7 @@ Deploy `assemble_versioned` target to GitHub Releases
 ## deploy_maven
 
 <pre>
-deploy_maven(<a href="#deploy_maven-name">name</a>, <a href="#deploy_maven-deployment_properties">deployment_properties</a>, <a href="#deploy_maven-target">target</a>)
+deploy_maven(<a href="#deploy_maven-name">name</a>, <a href="#deploy_maven-release">release</a>, <a href="#deploy_maven-snapshot">snapshot</a>, <a href="#deploy_maven-target">target</a>)
 </pre>
 
 Deploy `assemble_maven` target into Maven repo
@@ -204,7 +207,8 @@ Deploy `assemble_maven` target into Maven repo
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="deploy_maven-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="deploy_maven-deployment_properties"></a>deployment_properties |  Properties file containing repo.maven.(snapshot|release) key   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| <a id="deploy_maven-release"></a>release |  Release repository to release maven artifact to   | String | required |  |
+| <a id="deploy_maven-snapshot"></a>snapshot |  Snapshot repository to release maven artifact to   | String | required |  |
 | <a id="deploy_maven-target"></a>target |  assemble_maven target to deploy   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 
 
@@ -213,7 +217,7 @@ Deploy `assemble_maven` target into Maven repo
 ## deploy_npm
 
 <pre>
-deploy_npm(<a href="#deploy_npm-name">name</a>, <a href="#deploy_npm-deployment_properties">deployment_properties</a>, <a href="#deploy_npm-target">target</a>)
+deploy_npm(<a href="#deploy_npm-name">name</a>, <a href="#deploy_npm-release">release</a>, <a href="#deploy_npm-snapshot">snapshot</a>, <a href="#deploy_npm-target">target</a>)
 </pre>
 
 
@@ -224,7 +228,8 @@ deploy_npm(<a href="#deploy_npm-name">name</a>, <a href="#deploy_npm-deployment_
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="deploy_npm-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="deploy_npm-deployment_properties"></a>deployment_properties |  File containing Node repository url by <code>repo.npm</code> key   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| <a id="deploy_npm-release"></a>release |  Release repository to deploy npm artifact to   | String | required |  |
+| <a id="deploy_npm-snapshot"></a>snapshot |  Snapshot repository to deploy npm artifact to   | String | required |  |
 | <a id="deploy_npm-target"></a>target |  <code>assemble_npm</code> label to be included in the package   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 
 
@@ -252,7 +257,7 @@ Execute Packer to perform deployment
 ## deploy_pip
 
 <pre>
-deploy_pip(<a href="#deploy_pip-name">name</a>, <a href="#deploy_pip-deployment_properties">deployment_properties</a>, <a href="#deploy_pip-target">target</a>)
+deploy_pip(<a href="#deploy_pip-name">name</a>, <a href="#deploy_pip-release">release</a>, <a href="#deploy_pip-snapshot">snapshot</a>, <a href="#deploy_pip-target">target</a>)
 </pre>
 
 
@@ -263,7 +268,8 @@ deploy_pip(<a href="#deploy_pip-name">name</a>, <a href="#deploy_pip-deployment_
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="deploy_pip-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="deploy_pip-deployment_properties"></a>deployment_properties |  File containing Python pip repository url by <code>repo.pypi</code> key   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| <a id="deploy_pip-release"></a>release |  Remote repository to deploy pip release to   | String | required |  |
+| <a id="deploy_pip-snapshot"></a>snapshot |  Remote repository to deploy pip snapshot to   | String | required |  |
 | <a id="deploy_pip-target"></a>target |  <code>assemble_pip</code> label to be included in the package   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 
 
@@ -272,7 +278,7 @@ deploy_pip(<a href="#deploy_pip-name">name</a>, <a href="#deploy_pip-deployment_
 ## deploy_rpm
 
 <pre>
-deploy_rpm(<a href="#deploy_rpm-name">name</a>, <a href="#deploy_rpm-deployment_properties">deployment_properties</a>, <a href="#deploy_rpm-target">target</a>)
+deploy_rpm(<a href="#deploy_rpm-name">name</a>, <a href="#deploy_rpm-release">release</a>, <a href="#deploy_rpm-snapshot">snapshot</a>, <a href="#deploy_rpm-target">target</a>)
 </pre>
 
 Deploy package built with `assemble_rpm` to RPM repository
@@ -283,7 +289,8 @@ Deploy package built with `assemble_rpm` to RPM repository
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="deploy_rpm-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="deploy_rpm-deployment_properties"></a>deployment_properties |  Properties file containing repo.rpm.(snapshot|release) key   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| <a id="deploy_rpm-release"></a>release |  Remote repository to deploy rpm release to   | String | required |  |
+| <a id="deploy_rpm-snapshot"></a>snapshot |  Remote repository to deploy rpm snapshot to   | String | required |  |
 | <a id="deploy_rpm-target"></a>target |  <code>assemble_rpm</code> target to deploy   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 
 
