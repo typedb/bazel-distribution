@@ -112,7 +112,8 @@ def artifact_file(name,
                   sha = None,
                   release,
                   snapshot,
-                  tags = []):
+                  tags = [],
+                  **kwargs):
     """Macro to assist depending on a deployed artifact by generating urls for http_file.
 
     Args:
@@ -143,7 +144,8 @@ def artifact_file(name,
         urls = ["{}/{}/{}/{}".format(repository_url, group_name, version, artifact_name)],
         downloaded_file_path = artifact_name,
         sha = sha,
-        tags = tags + ["{}={}".format(versiontype, version)]
+        tags = tags + ["{}={}".format(versiontype, version)],
+        **kwargs
     )
 
 script_template = """\
