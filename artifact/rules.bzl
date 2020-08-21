@@ -106,12 +106,12 @@ deploy_artifact = rule(
 def artifact_file(name,
                   group_name,
                   artifact_name,
+                  tag_source,
+                  commit_source,
                   downloaded_file_path = None,
                   commit = None,
                   tag = None,
                   sha = None,
-                  release,
-                  snapshot,
                   tags = [],
                   **kwargs):
     """Macro to assist depending on a deployed artifact by generating urls for http_file.
@@ -120,18 +120,18 @@ def artifact_file(name,
         name: Target name.
         group_name: Repo group name used to deploy artifact.
         artifact_name: Artifact name, use {version} to interpolate the version from tag/commit.
+        tag_source: Which repository to download the artifact from, if the version given is a tag.
+        commit_source: Which repository to download the artifact from, if the version given is a commit.
         downloaded_file_path: Equivalent to http_file downloaded_file_path, defaults to artifact_name, includes {version} interpolation.
         commit: Commit sha, for when this was used as the version for upload.
         tag: Git tag, for when this was used as the version for upload.
-        release: The base repository URL for tag releases.
-        snapshot: The base repository URL for snapshot/commit sha releases.
         tags: Tags to forward onto the http_file rule.
     """
 
     version = tag if tag != None else commit
     versiontype = "tag" if tag != None else "commit"
 
-    repository_url = release if tag != None else snapshot
+    repository_url = tag_source if tag != None else commit_source
 
     if downloaded_file_path == None:
         downloaded_file_path = artifact_name
