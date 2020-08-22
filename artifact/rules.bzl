@@ -86,7 +86,7 @@ deploy_artifact = rule(
         ),
         "_deploy_script": attr.label(
             allow_single_file = True,
-            default = "//distribution/artifact/templates:deploy.py",
+            default = "//artifact/templates:deploy.py",
         ),
         "release": attr.string(
             mandatory = True,
