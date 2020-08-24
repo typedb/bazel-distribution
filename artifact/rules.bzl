@@ -168,7 +168,6 @@ rm -rf {artifact_unpacked_name}
 def _artifact_extractor_impl(ctx):
     artifact_file = ctx.file.artifact
     artifact_extention = artifact_file.extension
-    print(artifact_file.basename)
 
     if artifact_extention == 'zip': 
         target_script_template = script_template_zip
@@ -185,7 +184,7 @@ def _artifact_extractor_impl(ctx):
         artifact_location = artifact_file.short_path,
         artifact_unpacked_name = artifact_unpacked_name
     )
-    print(script_content)
+
     ctx.actions.write(script, script_content, is_executable = True)
 
     # The datafile must be in the runfiles for the executable to see it.
