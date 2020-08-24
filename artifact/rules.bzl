@@ -148,22 +148,44 @@ def artifact_file(name,
         **kwargs
     )
 
-script_template = """\
+script_template_gz = """\
 #!/bin/bash
 set -ex
 mkdir -p $BUILD_WORKSPACE_DIRECTORY/$1
-tar -xzf {artifact_location} -C $BUILD_WORKSPACE_DIRECTORY/$1 --strip-components={strip_components}
+tar -xzf {artifact_location} -C $BUILD_WORKSPACE_DIRECTORY/$1 --strip-components=2
+"""
+
+script_template_zip = """\
+#!/bin/bash
+set -ex
+mkdir -p $BUILD_WORKSPACE_DIRECTORY/$1
+tmp_dir=$(mktemp -d)
+unzip -qq {artifact_location} -d $tmp_dir
+mv -v $tmp_dir/{artifact_unpacked_name}/* $BUILD_WORKSPACE_DIRECTORY/$1/
+rm -rf {artifact_unpacked_name}
 """
 
 def _artifact_extractor_impl(ctx):
     artifact_file = ctx.file.artifact
+    artifact_extention = artifact_file.extension
+    print(artifact_file.basename)
+
+    if artifact_extention == 'zip': 
+        target_script_template = script_template_zip
+        artifact_unpacked_name = artifact_file.basename.replace('.zip', '')
+    elif artifact_extention == 'gz':
+        target_script_template = script_template_gz
+        artifact_unpacked_name = artifact_file.basename.replace('.tar.gz', '')
+    else:
+        fail("Extention [{extention}] is not supported by artifiact_etractor".format(extention = artifact_extention))
 
     # Emit the executable shell script.
     script = ctx.actions.declare_file("%s.sh" % ctx.label.name)
-    script_content = script_template.format(
+    script_content = target_script_template.format(
         artifact_location = artifact_file.short_path,
-        strip_components = ctx.attr.strip_components,
+        artifact_unpacked_name = artifact_unpacked_name
     )
+    print(script_content)
     ctx.actions.write(script, script_content, is_executable = True)
 
     # The datafile must be in the runfiles for the executable to see it.
@@ -177,10 +199,6 @@ artifact_extractor = rule(
             mandatory = True,
             allow_single_file = True,
             doc = "Artifact archive to extract.",
-        ),
-        "strip_components": attr.int(
-            default = 2,
-            doc = "tar --strip-components argument (default 2).",
         )
     },
     executable = True,
