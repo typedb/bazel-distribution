@@ -148,14 +148,14 @@ def artifact_file(name,
         **kwargs
     )
 
-script_template_gz = """\
+script_template_tar = """\
 #!/bin/bash
 set -ex
 mkdir -p $BUILD_WORKSPACE_DIRECTORY/$1
 tar -xzf {artifact_location} -C $BUILD_WORKSPACE_DIRECTORY/$1 --strip-components=2
 """
 
-script_template_zip = """\
+script_template_unzip = """\
 #!/bin/bash
 set -ex
 mkdir -p $BUILD_WORKSPACE_DIRECTORY/$1
@@ -166,17 +166,32 @@ rm -rf {artifact_unpacked_name}
 """
 
 def _artifact_extractor_impl(ctx):
-    artifact_file = ctx.file.artifact
-    artifact_extention = artifact_file.extension
+    supported_extensions_script_map = {
+        'zip': script_template_unzip,
+        'tar.gz': script_template_tar,
+        'tgz': script_template_tar
+    }
 
-    if artifact_extention == 'zip': 
-        target_script_template = script_template_zip
-        artifact_unpacked_name = artifact_file.basename.replace('.zip', '')
-    elif artifact_extention == 'gz':
-        target_script_template = script_template_gz
-        artifact_unpacked_name = artifact_file.basename.replace('.tar.gz', '')
-    else:
-        fail("Extention [{extention}] is not supported by artifiact_etractor".format(extention = artifact_extention))
+    artifact_file = ctx.file.artifact
+    artifact_filename = artifact_file.basename
+
+    extraction_method = ctx.attr.extraction_method
+
+    if (extraction_method == 'auto'):
+        artifact_extention = None
+        for ext in supported_extensions_script_map.keys():
+            if artifact_filename.rfind(ext) == len(artifact_filename) - len(ext):
+                artifact_extention = ext
+                target_script_template = supported_extensions_script_map.get(ext)
+                artifact_unpacked_name = artifact_filename.replace('.' + ext, '')
+                break
+        
+        if artifact_extention == None:
+            fail("Extention [{extention}] is not supported by the artifiact_etractor.".format(extention = artifact_file.extension))
+    elif (extraction_method == 'tar'):
+        target_script_template = script_template_tar
+    elif (extraction_method == 'unzip'):
+        target_script_template = script_template_unzip
 
     # Emit the executable shell script.
     script = ctx.actions.declare_file("%s.sh" % ctx.label.name)
@@ -198,6 +213,11 @@ artifact_extractor = rule(
             mandatory = True,
             allow_single_file = True,
             doc = "Artifact archive to extract.",
+        ),
+        "extraction_method": attr.string(
+            default = "auto",
+            values = ["unzip", "tar", "auto"],
+            doc = "the method to use for extracting the artifact."
         )
     },
     executable = True,
