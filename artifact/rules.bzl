@@ -169,7 +169,21 @@ def _artifact_extractor_impl(ctx):
     supported_extensions_script_map = {
         'zip': script_template_unzip,
         'tar.gz': script_template_tar,
-        'tgz': script_template_tar
+        'tgz': script_template_tar,
+        'taz': script_template_tar,
+        'tar.bz2': script_template_tar,
+        'tb2': script_template_tar,
+        'tbz': script_template_tar,
+        'tbz2': script_template_tar,
+        'tz2': script_template_tar,
+        'tar.lz': script_template_tar,
+        'tar.lzma': script_template_tar,
+        'tlz': script_template_tar,
+        'tar.lzo': script_template_tar,
+        'tar.xz': script_template_tar,
+        'txz': script_template_tar,
+        'tar.Z': script_template_tar,
+        'tar.zst': script_template_tar,
     }
 
     artifact_file = ctx.file.artifact
