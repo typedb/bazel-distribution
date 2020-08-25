@@ -39,6 +39,7 @@ with open(args.version_file) as version_file:
     version = version_file.read().strip()
 
 new_package_root = tempfile.mktemp()
+
 shutil.copytree(args.package, new_package_root,
                 ignore=lambda _, names: list(
                     filter(lambda x: 'external' in x, names)))
