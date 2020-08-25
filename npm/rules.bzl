@@ -38,7 +38,7 @@ def _assemble_npm_impl(ctx):
         version_file = ctx.file.version_file
 
     args = ctx.actions.args()
-    args.add('--package', ctx.attr.target.label.package)
+    args.add('--package', ctx.files.target[0].path)
     args.add('--output', ctx.outputs.npm_package.path)
     args.add('--version_file', version_file.path)
 
@@ -47,9 +47,7 @@ def _assemble_npm_impl(ctx):
         outputs = [ctx.outputs.npm_package],
         arguments = [args],
         executable = ctx.executable._assemble_script,
-        execution_requirements = {
-            "local": "1"
-        }
+        # note: do not run in RBE
     )
 
 
@@ -81,7 +79,7 @@ assemble_npm = rule(
     outputs = {
           "npm_package": "%{name}.tar.gz",
     },
-    doc = "Assemble `npm_package` target for further deployment"
+    doc = "Assemble `npm_package` target for further deployment. Currently does not support remote execution (RBE)."
 )
 
 
