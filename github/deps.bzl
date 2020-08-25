@@ -19,7 +19,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def tcnksm_ghr():
+def deps():
     http_archive(
         name = "ghr_osx_zip",
         urls = ["https://github.com/tcnksm/ghr/releases/download/v0.12.1/ghr_v0.12.1_darwin_amd64.zip"],
