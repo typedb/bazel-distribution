@@ -28,8 +28,8 @@ load("@rules_python//python:pip.bzl", "pip_repositories", "pip_import")
 pip_repositories()
 
 # Load @graknlabs_bazel_distribution_pip
-load("//pip:deps.bzl", "graknlabs_bazel_distribution_ci_pip")
-graknlabs_bazel_distribution_ci_pip()
+load("//pip:deps.bzl", pip_deps = "deps")
+pip_deps()
 load("@graknlabs_bazel_distribution_pip//:requirements.bzl", graknlabs_bazel_distribution_pip_install = "pip_install")
 graknlabs_bazel_distribution_pip_install()
 
