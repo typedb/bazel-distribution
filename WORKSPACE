@@ -20,25 +20,22 @@
 workspace(name="graknlabs_bazel_distribution")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Load @rules_python
-load("//common:deps.bzl", "bazelbuild_rules_python")
-bazelbuild_rules_python()
+load("//common:deps.bzl", "rules_python")
+rules_python()
 load("@rules_python//python:pip.bzl", "pip_repositories", "pip_import")
 pip_repositories()
 
 # Load @graknlabs_bazel_distribution_pip
-pip_import(
-    name = "graknlabs_bazel_distribution_pip",
-    requirements = "//pip:requirements.txt",
-)
+load("//pip:deps.bzl", "graknlabs_bazel_distribution_ci_pip")
+graknlabs_bazel_distribution_ci_pip()
 load("@graknlabs_bazel_distribution_pip//:requirements.bzl", graknlabs_bazel_distribution_pip_install = "pip_install")
 graknlabs_bazel_distribution_pip_install()
 
 # Load @rules_pkg
-load("//common:deps.bzl", "bazelbuild_rules_pkg")
-bazelbuild_rules_pkg()
+load("//common:deps.bzl", "rules_pkg")
+rules_pkg()
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
 

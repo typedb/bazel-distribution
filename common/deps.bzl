@@ -1,7 +1,7 @@
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def bazelbuild_rules_python():
+def rules_python():
     git_repository(
         name = "rules_python",
         remote = "https://github.com/bazelbuild/rules_python.git",
@@ -15,7 +15,7 @@ def bazelbuild_rules_python():
         patch_args = ["-p1"],
     )
 
-def bazelbuild_rules_pkg():
+def rules_pkg():
     http_archive(
         name = "rules_pkg",
         urls = [
