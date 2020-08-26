@@ -220,7 +220,7 @@ def _artifact_extractor_impl(ctx):
     runfiles = ctx.runfiles(files = [artifact_file])
     return [DefaultInfo(executable = script, runfiles = runfiles)]
 
-artifact_extractor = rule(
+_artifact_extractor = rule(
     implementation = _artifact_extractor_impl,
     attrs = {
         "artifact": attr.label(
@@ -236,3 +236,22 @@ artifact_extractor = rule(
     },
     executable = True,
 )
+
+def artifact_extractor(
+        name,
+        artifact,
+        extraction_method = "auto",
+    ):
+    
+    extractor_name = "{}_extract__do_not_reference".format(name)
+    
+    _artifact_extractor(
+        name = extractor_name,
+        artifact = artifact,
+        extraction_method = extraction_method,
+    )
+
+    native.sh_binary(
+        name = name,
+        srcs = [extractor_name],
+    )
