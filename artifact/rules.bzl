@@ -255,4 +255,3 @@ def artifact_extractor(
         name = name,
         srcs = [extractor_name],
     )
-    
