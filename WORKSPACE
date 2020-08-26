@@ -20,56 +20,26 @@
 workspace(name="graknlabs_bazel_distribution")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# Load NodeJS
-http_archive(
-    name = "build_bazel_rules_nodejs",
-    sha256 = "10fffa29f687aa4d8eb6dfe8731ab5beb63811ab00981fc84a93899641fd4af1",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/2.0.3/rules_nodejs-2.0.3.tar.gz"],
-)
-load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories")
-node_repositories()
-
-# Common helper tools
-http_archive(
-    name = "bazel_skylib",
-    urls = ["https://github.com/bazelbuild/bazel-skylib/releases/download/0.8.0/bazel-skylib.0.8.0.tar.gz"],
-    sha256 = "2ef429f5d7ce7111263289644d233707dba35e39696377ebab8b0bc701f7818e",
-)
-# Load Github
-load("//github:dependencies.bzl", "tcnksm_ghr")
-tcnksm_ghr()
-
-# Load Python
-git_repository(
-    name = "rules_python",
-    remote = "https://github.com/bazelbuild/rules_python.git",
-    tag = "0.0.2",
-    patches = [
-        # Force rules_python to export the requirements.bzl file in
-        # order for stardoc to be able to load it during documentation
-        # generation.
-        "//:bazelbuild_rules_python-export-requirements-bzl-for-stardoc.patch",
-    ],
-    patch_args = ["-p1"],
-)
+# Load @rules_python
+load("//common:deps.bzl", "rules_python")
+rules_python()
 load("@rules_python//python:pip.bzl", "pip_repositories", "pip_import")
 pip_repositories()
-pip_import(
-    name = "graknlabs_bazel_distribution_pip",
-    requirements = "//pip:requirements.txt",
-)
+
+# Load @graknlabs_bazel_distribution_pip
+load("//pip:deps.bzl", pip_deps = "deps")
+pip_deps()
 load("@graknlabs_bazel_distribution_pip//:requirements.bzl", graknlabs_bazel_distribution_pip_install = "pip_install")
 graknlabs_bazel_distribution_pip_install()
 
-# Load Apt and RPM
-load("//common:dependencies.bzl", "bazelbuild_rules_pkg")
-bazelbuild_rules_pkg()
+# Load @rules_pkg
+load("//common:deps.bzl", "rules_pkg")
+rules_pkg()
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
 
-# Load Stardoc
+# Load @io_bazel_stardoc
 git_repository(
     name = "io_bazel_stardoc",
     remote = "https://github.com/bazelbuild/stardoc",
