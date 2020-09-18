@@ -333,7 +333,7 @@ def _generate_pom_xml(ctx, maven_coordinates):
     # Step 2: fill in {pom_version} from version_file
     ctx.actions.run(
         inputs = inputs,
-        executable = ctx.file._pom_replace_version,
+        executable = ctx.executable._pom_replace_version,
         arguments = [args],
         outputs = [pom_file],
     )
@@ -446,8 +446,9 @@ assemble_maven = rule(
             cfg = "host"
         ),
         "_pom_replace_version": attr.label(
-            allow_single_file = True,
-            default = "@graknlabs_bazel_distribution//maven:_pom_replace_version.py"
+            default = "@graknlabs_bazel_distribution//maven:pom_replace_version",
+            executable = True,
+            cfg = "host",
         )
     },
     implementation = _assemble_maven_impl,

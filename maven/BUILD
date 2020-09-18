@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,7 +16,7 @@
 # under the License.
 #
 
-exports_files(["_pom_replace_version.py", "rules.bzl"])
+exports_files(["rules.bzl"])
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
@@ -32,5 +31,11 @@ bzl_library(
 py_binary(
     name = "assemble",
     srcs = ["assemble.py"],
+    visibility = ["//visibility:public"]
+)
+
+py_binary(
+    name = "pom_replace_version",
+    srcs = ["pom_replace_version.py"],
     visibility = ["//visibility:public"]
 )
