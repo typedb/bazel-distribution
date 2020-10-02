@@ -374,7 +374,7 @@ def _assemble_maven_impl(ctx):
     if srcjar == None:
         return [
             DefaultInfo(files = depset([output_jar, pom_file])),
-            MavenDeploymentInfo(jar = output_jar, pom = pom_file)
+            MavenDeploymentInfo(jar = output_jar, pom = pom_file, srcjar = srcjar)
         ]
     else:
         return [
@@ -478,17 +478,21 @@ def _deploy_maven_impl(ctx):
         }
     )
 
+    files = [
+        ctx.attr.target[MavenDeploymentInfo].jar,
+        ctx.attr.target[MavenDeploymentInfo].pom,
+    ]
+    symlinks = {
+        lib_jar_link: ctx.attr.target[MavenDeploymentInfo].jar,
+        pom_xml_link: ctx.attr.target[MavenDeploymentInfo].pom,
+    }
+    if ctx.attr.target[MavenDeploymentInfo].srcjar:
+        files.append(ctx.attr.target[MavenDeploymentInfo].srcjar)
+        symlinks[src_jar_link] = ctx.attr.target[MavenDeploymentInfo].srcjar
+
     return DefaultInfo(
         executable = deploy_maven_script,
-        runfiles = ctx.runfiles(files=[
-            ctx.attr.target[MavenDeploymentInfo].jar,
-            ctx.attr.target[MavenDeploymentInfo].pom,
-            ctx.attr.target[MavenDeploymentInfo].srcjar,
-        ], symlinks = {
-            lib_jar_link: ctx.attr.target[MavenDeploymentInfo].jar,
-            pom_xml_link: ctx.attr.target[MavenDeploymentInfo].pom,
-            src_jar_link: ctx.attr.target[MavenDeploymentInfo].srcjar,
-        })
+        runfiles = ctx.runfiles(files=files, symlinks = symlinks)
     )
 
 deploy_maven = rule(
