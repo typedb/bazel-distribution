@@ -113,7 +113,7 @@ def _java_deps_impl(ctx):
 
     mapping = ctx.attr.target[TransitiveJarToMavenCoordinatesMapping].mapping
 
-    for file in ctx.attr.target.data_runfiles.files.to_list():
+    for file in ctx.attr.target.data_runfiles.files.to_list() + ctx.attr.target.files.to_list():
         if file.extension == 'jar' and not file.path.startswith(LOCAL_JDK_PREFIX):
             if ctx.attr.maven_name and file.path not in mapping:
                 fail("{} does not have associated Maven coordinate".format(file.owner))
