@@ -110,6 +110,7 @@ def _java_deps_impl(ctx):
     names = {}
     files = []
     filenames = []
+    outputPathOverrides = ctx.attr.java_deps_root_overrides
 
     mapping = ctx.attr.target[TransitiveJarToMavenCoordinatesMapping].mapping
 
@@ -121,7 +122,12 @@ def _java_deps_impl(ctx):
             if filename in filenames:
                 print("Excluded duplicate: {}".format(filename))
                 continue # do not pack JARs with same name
-            names[file.path] = ctx.attr.java_deps_root + filename + ".jar"
+            for jarPattern in outputPathOverrides:
+                if file.basename == jarPattern or (jarPattern.endswith("*") and file.basename.startswith(jarPattern.rstrip("*"))):
+                    names[file.path] = outputPathOverrides.get(jarPattern) + filename + ".jar"
+                    continue
+            if names.get(file.path) == None:
+                names[file.path] = ctx.attr.java_deps_root + filename + ".jar"
             files.append(file)
             filenames.append(filename)
 
@@ -166,6 +172,12 @@ java_deps = rule(
         ),
         "java_deps_root": attr.string(
             doc = "Folder inside archive to put JARs into"
+        ),
+        "java_deps_root_overrides": attr.string_dict(
+            doc = """
+            JARs with filenames matching the given patterns will be placed into the specified folders inside the archive,
+            instead of the default folder. Patterns can be either the full name of a JAR, or a prefix followed by a '*'.
+            """
         ),
         "version_file": attr.label(
             allow_single_file = True,
