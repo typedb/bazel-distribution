@@ -124,9 +124,9 @@ def _java_deps_impl(ctx):
                 continue # do not pack JARs with same name
             for jarPattern in outputPathOverrides:
                 if file.basename == jarPattern or (jarPattern.endswith("*") and file.basename.startswith(jarPattern.rstrip("*"))):
-                    names[file.path] = outputPathOverrides.get(jarPattern) + filename + ".jar"
+                    names[file.path] = outputPathOverrides[jarPattern] + filename + ".jar"
                     break
-            if names.get(file.path) == None:
+            if file.path not in names:
                 names[file.path] = ctx.attr.java_deps_root + filename + ".jar"
             files.append(file)
             filenames.append(filename)
