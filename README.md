@@ -38,7 +38,7 @@ Assemble Java package for subsequent deployment to Maven repo
 assemble_npm(<a href="#assemble_npm-name">name</a>, <a href="#assemble_npm-target">target</a>, <a href="#assemble_npm-version_file">version_file</a>)
 </pre>
 
-Assemble `npm_package` target for further deployment
+Assemble `npm_package` target for further deployment. Currently does not support remote execution (RBE).
 
 **ATTRIBUTES**
 
@@ -319,7 +319,7 @@ Fills in JSON template with provided values
 ## java_deps
 
 <pre>
-java_deps(<a href="#java_deps-name">name</a>, <a href="#java_deps-java_deps_root">java_deps_root</a>, <a href="#java_deps-maven_name">maven_name</a>, <a href="#java_deps-target">target</a>, <a href="#java_deps-version_file">version_file</a>)
+java_deps(<a href="#java_deps-name">name</a>, <a href="#java_deps-java_deps_root">java_deps_root</a>, <a href="#java_deps-java_deps_root_overrides">java_deps_root_overrides</a>, <a href="#java_deps-maven_name">maven_name</a>, <a href="#java_deps-target">target</a>, <a href="#java_deps-version_file">version_file</a>)
 </pre>
 
 Packs Java library alongside with its dependencies into archive
@@ -331,6 +331,7 @@ Packs Java library alongside with its dependencies into archive
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="java_deps-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
 | <a id="java_deps-java_deps_root"></a>java_deps_root |  Folder inside archive to put JARs into   | String | optional | "" |
+| <a id="java_deps-java_deps_root_overrides"></a>java_deps_root_overrides |  JARs with filenames matching the given patterns will be placed into the specified folders inside the archive,             instead of the default folder. Patterns can be either the full name of a JAR, or a prefix followed by a '*'.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 | <a id="java_deps-maven_name"></a>maven_name |  Name JAR files inside archive based on Maven coordinates   | Boolean | optional | False |
 | <a id="java_deps-target"></a>target |  Java target to pack into archive   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="java_deps-version_file"></a>version_file |  File containing version string.             Alternatively, pass --define version=VERSION to Bazel invocation.             Not specifying version at all defaults to '0.0.0'   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
