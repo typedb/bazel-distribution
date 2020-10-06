@@ -126,7 +126,7 @@ def _java_deps_impl(ctx):
                 if file.basename == jarPattern or (jarPattern.endswith("*") and file.basename.startswith(jarPattern.rstrip("*"))):
                     names[file.path] = outputPathOverrides.get(jarPattern) + filename + ".jar"
                     continue
-            if names.get(file.path) == None:
+            if file.path not in names:
                 names[file.path] = ctx.attr.java_deps_root + filename + ".jar"
             files.append(file)
             filenames.append(filename)
