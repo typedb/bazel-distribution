@@ -125,7 +125,7 @@ if repo_type == 'snapshot' and len(re.findall(version_snapshot_regex, version)) 
 if repo_type == 'release' and len(re.findall(version_release_regex, version)) == 0:
     raise ValueError('Invalid version: {}. An artifact uploaded to a {} repository '
                      'must have a version which complies to this regex: {}'
-                     .format(version, repo_type, version_snapshot_regex))
+                     .format(version, repo_type, version_release_regex))
 
 filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format(
     coordinates=group_id.text.replace('.', '/'), version=version, artifact=artifact_id.text)
