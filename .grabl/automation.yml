@@ -1,0 +1,9 @@
+build:
+  correctness:
+    build:
+      machine: graknlabs-ubuntu-20.04
+      type: foreground
+      script: |
+        bazel build //...
+  execution:
+    - build
