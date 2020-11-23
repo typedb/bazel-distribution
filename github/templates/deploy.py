@@ -105,7 +105,7 @@ try:
         '-n', title,
         '-b', open('release_description.txt').read() if has_release_description else '',
         '-c', target_commit_id,
-        '-delete', '-draft', github_tag,  # TODO: tag must reference the current commit
+        '-delete', github_tag,  # TODO: tag must reference the current commit
         directory_to_upload
     ], env={'GITHUB_TOKEN': github_token})
 finally:
