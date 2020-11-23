@@ -36,14 +36,15 @@ def _deploy_github_impl(ctx):
         template = ctx.file._deploy_script,
         output = _deploy_script,
         substitutions = {
-            "{archive}": ctx.file.archive.short_path if (ctx.file.archive!=None) else "",
-            "{has_release_description}": str(int(bool(ctx.file.release_description))),
-            "{ghr_osx_binary}": ctx.files._ghr[0].path,
-            "{ghr_linux_binary}": ctx.files._ghr[1].path,
-            "{release_title}": ctx.attr.title or "",
-            "{title_append_version}": str(int(bool(ctx.attr.title_append_version))),
             "{organisation}" : ctx.attr.organisation,
             "{repository}" : ctx.attr.repository,
+            "{title}": ctx.attr.title or "",
+            "{title_append_version}": str(bool(ctx.attr.title_append_version)),
+            "{release_description}": str(bool(ctx.file.release_description)),
+            "{archive}": ctx.file.archive.short_path if (ctx.file.archive!=None) else "",
+            "{draft}": str(bool(ctx.attr.draft)),
+            "{ghr_binary_mac}": ctx.files._ghr[0].path,
+            "{ghr_binary_linux}": ctx.files._ghr[1].path,
         }
     )
     files = [
@@ -72,10 +73,13 @@ def _deploy_github_impl(ctx):
 
 deploy_github = rule(
     attrs = {
-        "archive": attr.label(
-            mandatory = False,
-            allow_single_file = [".zip"],
-            doc = "`assemble_versioned` label to be deployed.",
+        "organisation" : attr.string(
+            mandatory = True,
+            doc = "Github organisation to deploy to",
+        ),
+        "repository" : attr.string(
+            mandatory = True,
+            doc = "Github repository to deploy to within organisation",
         ),
         "title": attr.string(
             mandatory = False,
@@ -89,13 +93,10 @@ deploy_github = rule(
             allow_single_file = True,
             doc = "Description of GitHub release"
         ),
-        "organisation" : attr.string(
-            mandatory = True,
-            doc = "Github organisation to deploy to",
-        ),
-        "repository" : attr.string(
-            mandatory = True,
-            doc = "Github repository to deploy to within organisation",
+        "archive": attr.label(
+            mandatory = False,
+            allow_single_file = [".zip"],
+            doc = "`assemble_versioned` label to be deployed.",
         ),
         "version_file": attr.label(
             allow_single_file = True,
@@ -103,6 +104,13 @@ deploy_github = rule(
             File containing version string.
             Alternatively, pass --define version=VERSION to Bazel invocation.
             Not specifying version at all defaults to '0.0.0'
+            """
+        ),
+        "draft": attr.bool(
+            default = True,
+            doc = """
+            Creates an unpublished / draft release when set to True.
+            Defaults to True.
             """
         ),
         "_deploy_script": attr.label(

@@ -31,8 +31,8 @@ import zipfile
 
 
 GHR_BINARIES = {
-    "Darwin": os.path.abspath("{ghr_osx_binary}"),
-    "Linux": os.path.abspath("{ghr_linux_binary}"),
+    "Darwin": os.path.abspath("{ghr_binary_mac}"),
+    "Linux": os.path.abspath("{ghr_binary_linux}"),
 }
 
 system = platform.system()
@@ -69,14 +69,14 @@ if args.archive and not os.path.isfile(args.archive):
 
 archive = "{archive}" or args.archive
 
-title = "{release_title}"
-title_append_version = bool(int("{title_append_version}"))
-
-has_release_description = bool(int("{has_release_description}"))
-github_token = os.getenv('DEPLOY_GITHUB_TOKEN')
-target_commit_id = args.commit_id
 github_organisation =  "{organisation}"
 github_repository = "{repository}"
+title = "{title}"
+title_append_version = {title_append_version}
+release_description = {release_description}
+draft = {draft}
+github_token = os.getenv('DEPLOY_GITHUB_TOKEN')
+target_commit_id = args.commit_id
 ghr = GHR_BINARIES[system]
 
 with open('VERSION') as version_file:
@@ -98,16 +98,17 @@ else:
     # satisfied and we're able to proceed
 
 try:
-    exit_code = sp.call([
+    cmd = [
         ghr,
         '-u', github_organisation,
         '-r', github_repository,
         '-n', title,
-        '-b', open('release_description.txt').read() if has_release_description else '',
+        '-b', open('release_description.txt').read() if release_description else '',
         '-c', target_commit_id,
-        '-delete', github_tag,  # TODO: tag must reference the current commit
-        directory_to_upload
-    ], env={'GITHUB_TOKEN': github_token})
+    ]
+    cmd += [ '-delete', '-draft', github_tag ] if draft else [ '-delete', github_tag ]
+    cmd += [ directory_to_upload ]
+    exit_code = sp.call(cmd, env={'GITHUB_TOKEN': github_token})
 finally:
     shutil.rmtree(directory_to_upload)
 sys.exit(exit_code)
