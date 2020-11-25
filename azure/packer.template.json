@@ -14,9 +14,9 @@
       "managed_image_name": "{image_name}",
       "managed_image_resource_group_name": "{resource_group_name}",
       "os_type": "Linux",
-      "image_publisher": "Canonical",
-      "image_offer": "0001-com-ubuntu-server-focal",
-      "image_sku": "20_04-lts",
+      "image_publisher": "{image_publisher}",
+      "image_offer": "{image_offer}",
+      "image_sku": "{image_sku}",
       "build_resource_group_name": "{resource_group_name}",
       "vm_size": "Standard_B2s"
     }

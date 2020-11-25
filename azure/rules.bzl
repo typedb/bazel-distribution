@@ -24,6 +24,9 @@ def assemble_azure(name,
                    image_name,
                    resource_group_name,
                    install,
+                   image_publisher="Canonical",
+                   image_offer="0001-com-ubuntu-server-focal",
+                   image_sku="20_04-lts",
                    files=None):
     """Assemble files for GCP deployment
 
@@ -45,6 +48,9 @@ def assemble_azure(name,
             "{image_name}": image_name,
             "{resource_group_name}": resource_group_name,
             "{install}": install_fn,
+            "{image_publisher}": image_publisher,
+            "{image_offer}": image_offer,
+            "{image_sku}": image_sku,
         }
     )
     files[install] = install_fn
