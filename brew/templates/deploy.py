@@ -26,6 +26,7 @@ import shutil
 import subprocess as sp
 import sys
 import tempfile
+import zipfile
 
 
 def get_distribution_url_from_formula(content):
@@ -49,6 +50,13 @@ def get_checksum():
         raise ValueError('Error - checksum should either be defined '
                          'in checksum.sha256 file or '
                          '$DEPLOY_BREW_CHECKSUM env variable')
+
+
+def verify_zip_file(fn):
+    with zipfile.ZipFile(fn) as zf:
+        first_bad_file = zf.testzip()
+        if first_bad_file:
+            raise ValueError('Corrupt ZIP found at {}; first bad file is {}'.format(fn, first_bad_file))
 
 
 if not os.getenv('DEPLOY_BREW_TOKEN'):
@@ -92,10 +100,12 @@ try:
     sp.check_call([
         'curl',
         distribution_url,
+        '--fail',
         '--location',
         '--output',
         'distribution-github.zip'
     ])
+    verify_zip_file('distribution-github.zip')
     checksum_of_distribution_github = hashlib.sha256(open('distribution-github.zip', 'rb').read()).hexdigest()
     if checksum_of_distribution_local != checksum_of_distribution_github:
         print('Error - unable to proceed with deploying to brew! The checksums do not match:')
