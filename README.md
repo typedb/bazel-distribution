@@ -208,7 +208,7 @@ Deploy `assemble_maven` target into Maven repo
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="deploy_maven-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="deploy_maven-bintray_package_and_version"></a>bintray_package_and_version |  The bintray package and version release to, in the form of $pkg/$version   | String | optional | "" |
+| <a id="deploy_maven-bintray_package_and_version"></a>bintray_package_and_version |  The bintray package and version to release to, in the form of $pkg/$version   | String | optional | "" |
 | <a id="deploy_maven-release"></a>release |  Release repository to release maven artifact to   | String | required |  |
 | <a id="deploy_maven-snapshot"></a>snapshot |  Snapshot repository to release maven artifact to   | String | required |  |
 | <a id="deploy_maven-target"></a>target |  assemble_maven target to deploy   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |

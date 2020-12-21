@@ -515,7 +515,7 @@ deploy_maven = rule(
         "bintray_package_and_version": attr.string(
             mandatory = False,
             default = "",
-            doc = "The bintray package and version release to, in the form of $pkg/$version",
+            doc = "The bintray package and version to release to, in the form of $pkg/$version",
         ),
         "_deployment_script": attr.label(
             allow_single_file = True,
