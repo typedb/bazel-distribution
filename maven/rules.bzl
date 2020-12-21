@@ -475,8 +475,9 @@ def _deploy_maven_impl(ctx):
             "$SRCJAR_PATH": src_jar_link,
             "$POM_PATH": pom_xml_link,
             "{snapshot}": ctx.attr.snapshot,
-            "{release}": ctx.attr.release
-        }
+            "{release}": ctx.attr.release,
+            "{bintray_package_and_version}": str(ctx.attr.bintray_package_and_version),
+        },
     )
 
     files = [
@@ -510,6 +511,11 @@ deploy_maven = rule(
         "release" : attr.string(
             mandatory = True,
             doc = 'Release repository to release maven artifact to'
+        ),
+        "bintray_package_and_version": attr.string(
+            mandatory = False,
+            default = "",
+            doc = "The bintray package and version release to, in the form of $pkg/$version",
         ),
         "_deployment_script": attr.label(
             allow_single_file = True,

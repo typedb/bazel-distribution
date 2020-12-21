@@ -130,6 +130,11 @@ if repo_type == 'release' and len(re.findall(version_release_regex, version)) ==
 filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format(
     coordinates=group_id.text.replace('.', '/'), version=version, artifact=artifact_id.text)
 
+bintray_package_and_version = "{bintray_package_and_version}"
+if bintray_package_and_version:
+    filename_base = '{bintray_package_and_version}/{filename_base}'.format(
+        bintray_package_and_version=bintray_package_and_version, filename_base=filename_base)
+
 upload(maven_url, username, password, pom_file_path, filename_base + '.pom')
 if should_sign:
     upload(maven_url, username, password, sign(pom_file_path), filename_base + '.pom.asc')

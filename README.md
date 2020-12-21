@@ -170,7 +170,7 @@ Deploy Homebrew (Caskroom) formula to Homebrew tap
 ## deploy_github
 
 <pre>
-deploy_github(<a href="#deploy_github-name">name</a>, <a href="#deploy_github-archive">archive</a>, <a href="#deploy_github-organisation">organisation</a>, <a href="#deploy_github-release_description">release_description</a>, <a href="#deploy_github-repository">repository</a>, <a href="#deploy_github-title">title</a>,
+deploy_github(<a href="#deploy_github-name">name</a>, <a href="#deploy_github-archive">archive</a>, <a href="#deploy_github-draft">draft</a>, <a href="#deploy_github-organisation">organisation</a>, <a href="#deploy_github-release_description">release_description</a>, <a href="#deploy_github-repository">repository</a>, <a href="#deploy_github-title">title</a>,
               <a href="#deploy_github-title_append_version">title_append_version</a>, <a href="#deploy_github-version_file">version_file</a>)
 </pre>
 
@@ -183,6 +183,7 @@ Deploy `assemble_versioned` target to GitHub Releases
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="deploy_github-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
 | <a id="deploy_github-archive"></a>archive |  <code>assemble_versioned</code> label to be deployed.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="deploy_github-draft"></a>draft |  Creates an unpublished / draft release when set to True.             Defaults to True.   | Boolean | optional | True |
 | <a id="deploy_github-organisation"></a>organisation |  Github organisation to deploy to   | String | required |  |
 | <a id="deploy_github-release_description"></a>release_description |  Description of GitHub release   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="deploy_github-repository"></a>repository |  Github repository to deploy to within organisation   | String | required |  |
@@ -196,7 +197,7 @@ Deploy `assemble_versioned` target to GitHub Releases
 ## deploy_maven
 
 <pre>
-deploy_maven(<a href="#deploy_maven-name">name</a>, <a href="#deploy_maven-release">release</a>, <a href="#deploy_maven-snapshot">snapshot</a>, <a href="#deploy_maven-target">target</a>)
+deploy_maven(<a href="#deploy_maven-name">name</a>, <a href="#deploy_maven-bintray_package_and_version">bintray_package_and_version</a>, <a href="#deploy_maven-release">release</a>, <a href="#deploy_maven-snapshot">snapshot</a>, <a href="#deploy_maven-target">target</a>)
 </pre>
 
 Deploy `assemble_maven` target into Maven repo
@@ -207,6 +208,7 @@ Deploy `assemble_maven` target into Maven repo
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="deploy_maven-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| <a id="deploy_maven-bintray_package_and_version"></a>bintray_package_and_version |  The bintray package and version release to, in the form of $pkg/$version   | String | optional | "" |
 | <a id="deploy_maven-release"></a>release |  Release repository to release maven artifact to   | String | required |  |
 | <a id="deploy_maven-snapshot"></a>snapshot |  Snapshot repository to release maven artifact to   | String | required |  |
 | <a id="deploy_maven-target"></a>target |  assemble_maven target to deploy   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
@@ -512,7 +514,8 @@ Assemble files for AWS deployment
 ## assemble_azure
 
 <pre>
-assemble_azure(<a href="#assemble_azure-name">name</a>, <a href="#assemble_azure-image_name">image_name</a>, <a href="#assemble_azure-resource_group_name">resource_group_name</a>, <a href="#assemble_azure-install">install</a>, <a href="#assemble_azure-files">files</a>)
+assemble_azure(<a href="#assemble_azure-name">name</a>, <a href="#assemble_azure-image_name">image_name</a>, <a href="#assemble_azure-resource_group_name">resource_group_name</a>, <a href="#assemble_azure-install">install</a>, <a href="#assemble_azure-image_publisher">image_publisher</a>, <a href="#assemble_azure-image_offer">image_offer</a>,
+               <a href="#assemble_azure-image_sku">image_sku</a>, <a href="#assemble_azure-files">files</a>)
 </pre>
 
 Assemble files for GCP deployment
@@ -526,6 +529,9 @@ Assemble files for GCP deployment
 | <a id="assemble_azure-image_name"></a>image_name |  name of deployed image   |  none |
 | <a id="assemble_azure-resource_group_name"></a>resource_group_name |  name of the resource group to place image in   |  none |
 | <a id="assemble_azure-install"></a>install |  Bazel label for install file   |  none |
+| <a id="assemble_azure-image_publisher"></a>image_publisher |  <p align="center"> - </p>   |  <code>"Canonical"</code> |
+| <a id="assemble_azure-image_offer"></a>image_offer |  <p align="center"> - </p>   |  <code>"0001-com-ubuntu-server-focal"</code> |
+| <a id="assemble_azure-image_sku"></a>image_sku |  <p align="center"> - </p>   |  <code>"20_04-lts"</code> |
 | <a id="assemble_azure-files"></a>files |  Files to include into Azure deployment   |  <code>None</code> |
 
 
