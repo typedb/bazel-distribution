@@ -115,7 +115,6 @@ def _assemble_pip_impl(ctx):
           "{author}": ctx.attr.author,
           "{author_email}": ctx.attr.author_email,
           "{license}": ctx.attr.license,
-          "{install_requires}": str(ctx.attr.install_requires),
           "{long_description_file}": ctx.file.long_description_file.path
       },
     )
@@ -144,11 +143,12 @@ def _assemble_pip_impl(ctx):
           version_file.path, preprocessed_setup_py.path, setup_py.path)
     )
 
+    args.add("--install_requires_file", ctx.file.install_requires_file.path)
     args.add("--setup_py", setup_py.path)
     args.add_all("--imports", imports)
 
     ctx.actions.run(
-        inputs = [version_file, setup_py, ctx.file.long_description_file] + python_source_files,
+        inputs = [version_file, setup_py, ctx.file.long_description_file, ctx.file.install_requires_file] + python_source_files,
         outputs = [ctx.outputs.pip_package],
         arguments = [args],
         executable = ctx.executable._assemble_script,
@@ -257,13 +257,14 @@ assemble_pip = rule(
             mandatory = True,
             doc = "The type of license to use"
         ),
-        "install_requires": attr.string_list(
+        "install_requires_file": attr.label(
+            allow_single_file = True,
             mandatory = True,
-            doc = "A list of strings which are names of required packages for this one"
+            doc = "A file with the list of required packages for this one",
         ),
         "_setup_py_template": attr.label(
             allow_single_file = True,
-            default = "//pip/templates:new_setup.py",
+            default = "//pip/templates:setup.py",
         ),
         "_assemble_script": attr.label(
             default = "//pip:assemble",

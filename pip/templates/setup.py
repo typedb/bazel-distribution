@@ -35,6 +35,6 @@ setup(
     author_email = "{author_email}",
     license = "{license}",
     packages=packages,
-    install_requires={install_requires},
+    install_requires=INSTALL_REQUIRES_PLACEHOLDER,
     zip_safe=False,
 )
