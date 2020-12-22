@@ -55,7 +55,7 @@ Assemble `npm_package` target for further deployment. Currently does not support
 ## assemble_pip
 
 <pre>
-assemble_pip(<a href="#assemble_pip-name">name</a>, <a href="#assemble_pip-author">author</a>, <a href="#assemble_pip-author_email">author_email</a>, <a href="#assemble_pip-classifiers">classifiers</a>, <a href="#assemble_pip-description">description</a>, <a href="#assemble_pip-install_requires">install_requires</a>, <a href="#assemble_pip-keywords">keywords</a>,
+assemble_pip(<a href="#assemble_pip-name">name</a>, <a href="#assemble_pip-author">author</a>, <a href="#assemble_pip-author_email">author_email</a>, <a href="#assemble_pip-classifiers">classifiers</a>, <a href="#assemble_pip-description">description</a>, <a href="#assemble_pip-install_requires_file">install_requires_file</a>, <a href="#assemble_pip-keywords">keywords</a>,
              <a href="#assemble_pip-license">license</a>, <a href="#assemble_pip-long_description_file">long_description_file</a>, <a href="#assemble_pip-package_name">package_name</a>, <a href="#assemble_pip-target">target</a>, <a href="#assemble_pip-url">url</a>, <a href="#assemble_pip-version_file">version_file</a>)
 </pre>
 
@@ -71,7 +71,7 @@ assemble_pip(<a href="#assemble_pip-name">name</a>, <a href="#assemble_pip-autho
 | <a id="assemble_pip-author_email"></a>author_email |  The email for the author   | String | required |  |
 | <a id="assemble_pip-classifiers"></a>classifiers |  A list of strings, containing Python package classifiers   | List of strings | required |  |
 | <a id="assemble_pip-description"></a>description |  A string with the short description of the package   | String | required |  |
-| <a id="assemble_pip-install_requires"></a>install_requires |  A list of strings which are names of required packages for this one   | List of strings | required |  |
+| <a id="assemble_pip-install_requires_file"></a>install_requires_file |  A file with the list of required packages for this one   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="assemble_pip-keywords"></a>keywords |  A list of strings, containing keywords   | List of strings | required |  |
 | <a id="assemble_pip-license"></a>license |  The type of license to use   | String | required |  |
 | <a id="assemble_pip-long_description_file"></a>long_description_file |  A label with the long description of the package. Usually a README or README.rst file   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
@@ -170,7 +170,7 @@ Deploy Homebrew (Caskroom) formula to Homebrew tap
 ## deploy_github
 
 <pre>
-deploy_github(<a href="#deploy_github-name">name</a>, <a href="#deploy_github-archive">archive</a>, <a href="#deploy_github-organisation">organisation</a>, <a href="#deploy_github-release_description">release_description</a>, <a href="#deploy_github-repository">repository</a>, <a href="#deploy_github-title">title</a>,
+deploy_github(<a href="#deploy_github-name">name</a>, <a href="#deploy_github-archive">archive</a>, <a href="#deploy_github-draft">draft</a>, <a href="#deploy_github-organisation">organisation</a>, <a href="#deploy_github-release_description">release_description</a>, <a href="#deploy_github-repository">repository</a>, <a href="#deploy_github-title">title</a>,
               <a href="#deploy_github-title_append_version">title_append_version</a>, <a href="#deploy_github-version_file">version_file</a>)
 </pre>
 
@@ -183,6 +183,7 @@ Deploy `assemble_versioned` target to GitHub Releases
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="deploy_github-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
 | <a id="deploy_github-archive"></a>archive |  <code>assemble_versioned</code> label to be deployed.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="deploy_github-draft"></a>draft |  Creates an unpublished / draft release when set to True.             Defaults to True.   | Boolean | optional | True |
 | <a id="deploy_github-organisation"></a>organisation |  Github organisation to deploy to   | String | required |  |
 | <a id="deploy_github-release_description"></a>release_description |  Description of GitHub release   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="deploy_github-repository"></a>repository |  Github repository to deploy to within organisation   | String | required |  |
@@ -512,7 +513,8 @@ Assemble files for AWS deployment
 ## assemble_azure
 
 <pre>
-assemble_azure(<a href="#assemble_azure-name">name</a>, <a href="#assemble_azure-image_name">image_name</a>, <a href="#assemble_azure-resource_group_name">resource_group_name</a>, <a href="#assemble_azure-install">install</a>, <a href="#assemble_azure-files">files</a>)
+assemble_azure(<a href="#assemble_azure-name">name</a>, <a href="#assemble_azure-image_name">image_name</a>, <a href="#assemble_azure-resource_group_name">resource_group_name</a>, <a href="#assemble_azure-install">install</a>, <a href="#assemble_azure-image_publisher">image_publisher</a>, <a href="#assemble_azure-image_offer">image_offer</a>,
+               <a href="#assemble_azure-image_sku">image_sku</a>, <a href="#assemble_azure-files">files</a>)
 </pre>
 
 Assemble files for GCP deployment
@@ -526,6 +528,9 @@ Assemble files for GCP deployment
 | <a id="assemble_azure-image_name"></a>image_name |  name of deployed image   |  none |
 | <a id="assemble_azure-resource_group_name"></a>resource_group_name |  name of the resource group to place image in   |  none |
 | <a id="assemble_azure-install"></a>install |  Bazel label for install file   |  none |
+| <a id="assemble_azure-image_publisher"></a>image_publisher |  <p align="center"> - </p>   |  <code>"Canonical"</code> |
+| <a id="assemble_azure-image_offer"></a>image_offer |  <p align="center"> - </p>   |  <code>"0001-com-ubuntu-server-focal"</code> |
+| <a id="assemble_azure-image_sku"></a>image_sku |  <p align="center"> - </p>   |  <code>"20_04-lts"</code> |
 | <a id="assemble_azure-files"></a>files |  Files to include into Azure deployment   |  <code>None</code> |
 
 
