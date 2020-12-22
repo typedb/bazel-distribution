@@ -39,7 +39,7 @@ def create_init_files(directory):
 parser = argparse.ArgumentParser()
 parser.add_argument('--output', help="Output archive")
 parser.add_argument('--setup_py', help="setup.py")
-parser.add_argument('--install_requires_file', help="install_requires")
+parser.add_argument('--requirements_file', help="install_requires")
 parser.add_argument('--readme', help="README file")
 parser.add_argument('--files', nargs='+', help='Python files to pack into archive')
 parser.add_argument('--imports', nargs='+', help='Folders considered to be source code roots')
@@ -78,7 +78,7 @@ readme = os.path.join(pkg_dir, 'README.md')
 
 with open(args.setup_py) as setup_py_template:
     install_requires = []
-    with open(args.install_requires_file) as requirements_file:
+    with open(args.requirements_file) as requirements_file:
         for line in requirements_file.readlines():
             if not line.startswith('#') and line.strip() != '':
                 install_requires.append(line.strip())

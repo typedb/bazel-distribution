@@ -55,8 +55,8 @@ Assemble `npm_package` target for further deployment. Currently does not support
 ## assemble_pip
 
 <pre>
-assemble_pip(<a href="#assemble_pip-name">name</a>, <a href="#assemble_pip-author">author</a>, <a href="#assemble_pip-author_email">author_email</a>, <a href="#assemble_pip-classifiers">classifiers</a>, <a href="#assemble_pip-description">description</a>, <a href="#assemble_pip-install_requires_file">install_requires_file</a>, <a href="#assemble_pip-keywords">keywords</a>,
-             <a href="#assemble_pip-license">license</a>, <a href="#assemble_pip-long_description_file">long_description_file</a>, <a href="#assemble_pip-package_name">package_name</a>, <a href="#assemble_pip-target">target</a>, <a href="#assemble_pip-url">url</a>, <a href="#assemble_pip-version_file">version_file</a>)
+assemble_pip(<a href="#assemble_pip-name">name</a>, <a href="#assemble_pip-author">author</a>, <a href="#assemble_pip-author_email">author_email</a>, <a href="#assemble_pip-classifiers">classifiers</a>, <a href="#assemble_pip-description">description</a>, <a href="#assemble_pip-keywords">keywords</a>, <a href="#assemble_pip-license">license</a>,
+             <a href="#assemble_pip-long_description_file">long_description_file</a>, <a href="#assemble_pip-package_name">package_name</a>, <a href="#assemble_pip-requirements_file">requirements_file</a>, <a href="#assemble_pip-target">target</a>, <a href="#assemble_pip-url">url</a>, <a href="#assemble_pip-version_file">version_file</a>)
 </pre>
 
 
@@ -71,11 +71,11 @@ assemble_pip(<a href="#assemble_pip-name">name</a>, <a href="#assemble_pip-autho
 | <a id="assemble_pip-author_email"></a>author_email |  The email for the author   | String | required |  |
 | <a id="assemble_pip-classifiers"></a>classifiers |  A list of strings, containing Python package classifiers   | List of strings | required |  |
 | <a id="assemble_pip-description"></a>description |  A string with the short description of the package   | String | required |  |
-| <a id="assemble_pip-install_requires_file"></a>install_requires_file |  A file with the list of required packages for this one   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="assemble_pip-keywords"></a>keywords |  A list of strings, containing keywords   | List of strings | required |  |
 | <a id="assemble_pip-license"></a>license |  The type of license to use   | String | required |  |
 | <a id="assemble_pip-long_description_file"></a>long_description_file |  A label with the long description of the package. Usually a README or README.rst file   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="assemble_pip-package_name"></a>package_name |  A string with Python pip package name   | String | required |  |
+| <a id="assemble_pip-requirements_file"></a>requirements_file |  A file with the list of required packages for this one   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="assemble_pip-target"></a>target |  <code>py_library</code> label to be included in the package   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="assemble_pip-url"></a>url |  A homepage for the project   | String | required |  |
 | <a id="assemble_pip-version_file"></a>version_file |  File containing version string.             Alternatively, pass --define version=VERSION to Bazel invocation.             Not specifying version at all defaults to '0.0.0'   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
