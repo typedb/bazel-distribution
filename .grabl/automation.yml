@@ -3,7 +3,5 @@ build:
     build:
       image: graknlabs-ubuntu-20.04
       type: foreground
-      script: |
+      command: |
         bazel build //...
-  execution:
-    - build
