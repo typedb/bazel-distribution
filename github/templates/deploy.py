@@ -103,7 +103,7 @@ try:
         '-u', github_organisation,
         '-r', github_repository,
         '-n', title,
-        '-b', open('release_description.txt').read() if release_description else '',
+        '-b', open('release_description.txt').read().replace('{version}', github_tag) if release_description else '',
         '-c', target_commit_id,
     ]
     cmd += [ '-delete', '-draft', github_tag ] if draft else [ '-delete', github_tag ]
