@@ -80,7 +80,7 @@ with open(args.setup_py) as setup_py_template:
     install_requires = []
     with open(args.requirements_file) as requirements_file:
         for line in requirements_file.readlines():
-            if not line.startswith('#') and line.strip() != '':
+            if not line.startswith('#') and not line.startswith('--') and line.strip() != '':
                 install_requires.append(line.strip())
     with open(setup_py, 'w') as setup_py_file:
         setup_py_file.write(
