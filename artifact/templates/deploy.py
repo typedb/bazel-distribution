@@ -60,7 +60,7 @@ version = open("{version_file}", "r").read().strip()
 snapshot = 'snapshot'
 version_snapshot_regex = '^[0-9|a-f|A-F]{40}$'
 release = 'release'
-version_release_regex = '^[0-9]+.[0-9]+.[0-9]+(-[a-zA-Z0-9]+)?$'
+version_release_regex = '^[0-9]+.[0-9]+.[0-9]+(-[a-zA-Z0-9]+)*$'
 
 if repo_type not in [snapshot, release]:
     raise ValueError("Invalid repository type: {}. It should be one of these: {}"
