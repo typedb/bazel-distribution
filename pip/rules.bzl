@@ -23,7 +23,6 @@ load("@graknlabs_bazel_distribution_pip//:requirements.bzl", graknlabs_bazel_dis
 def _python_repackage_impl(ctx):
     outputs = []
     actions = []
-    all_packages = []
     for file in ctx.files.src:
         path = file.short_path
 
@@ -41,11 +40,8 @@ def _python_repackage_impl(ctx):
             ''
         )
 
-        # add original package root
-        all_packages.append(path.split('/')[0])
-
-        # prepend Python package folder
-        path = '{}/{}'.format(ctx.attr.package, path)
+        # prepend Python package prefix
+        path = '{}/{}'.format(ctx.attr.py_package_add_prefix, path)
 
         actions.append({
             'file': file,
@@ -58,8 +54,8 @@ def _python_repackage_impl(ctx):
 
         args.add('--src', action['file'].path)
         args.add('--dest', outputFile.path)
-        args.add('--pkg', ctx.attr.package)
-        args.add_all('--all_pkgs', all_packages)
+        args.add('--pkg', ctx.attr.src_package)
+        args.add('--prefix', ctx.attr.py_package_add_prefix)
 
         ctx.actions.run(
             inputs = [action['file']],
@@ -191,9 +187,13 @@ python_repackage = rule(
             mandatory = True,
             doc = "Python source files"
         ),
-        "package": attr.string(
+        "src_package": attr.string(
             mandatory = True,
-            doc = "New package root for files to be put in"
+            doc = "Package name whose import paths should be prefixed"
+        ),
+        "py_package_add_prefix": attr.string(
+            mandatory = True,
+            doc = "The prefix to add"
         ),
         "_repackage_script": attr.label(
             default = "//pip:repackage",
