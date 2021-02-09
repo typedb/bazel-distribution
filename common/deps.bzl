@@ -5,7 +5,7 @@ def rules_python():
     git_repository(
         name = "rules_python",
         remote = "https://github.com/bazelbuild/rules_python.git",
-        tag = "0.0.2",
+        tag = "0.1.0",
         patches = [
             # Force rules_python to export the requirements.bzl file in
             # order for stardoc to be able to load it during documentation
