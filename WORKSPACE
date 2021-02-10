@@ -24,14 +24,10 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 # Load @rules_python
 load("//common:deps.bzl", "rules_python")
 rules_python()
-load("@rules_python//python:pip.bzl", "pip_repositories", "pip_import")
-pip_repositories()
 
 # Load @graknlabs_bazel_distribution_pip
 load("//pip:deps.bzl", pip_deps = "deps")
 pip_deps()
-load("@graknlabs_bazel_distribution_pip//:requirements.bzl", graknlabs_bazel_distribution_pip_install = "pip_install")
-graknlabs_bazel_distribution_pip_install()
 
 # Load @rules_pkg
 load("//common:deps.bzl", "rules_pkg")
