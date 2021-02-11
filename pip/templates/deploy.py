@@ -25,7 +25,7 @@ import shutil
 import sys
 
 
-sys.path.extend(map(os.path.abspath, glob.glob('external/*/')))
+sys.path.extend(map(os.path.abspath, glob.glob('external/*/*')))
 # noinspection PyUnresolvedReferences
 import twine.commands.upload
 
