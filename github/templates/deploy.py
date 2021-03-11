@@ -106,7 +106,7 @@ try:
         '-b', open('release_description.txt').read().replace('{version}', github_tag) if release_description else '',
         '-c', target_commit_id,
     ]
-    cmd += [ '-delete', '-draft', github_tag ] if draft else [ '-delete', github_tag ]
+    cmd += [ '-replace', '-draft', github_tag ] if draft else [ '-replace', github_tag ]
     cmd += [ directory_to_upload ]
     exit_code = sp.call(cmd, env={'GITHUB_TOKEN': github_token})
 finally:
