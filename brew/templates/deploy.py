@@ -97,16 +97,19 @@ try:
     formula_content = formula_template.replace('{version}', version).replace('{sha256}', checksum_of_distribution_local)
     distribution_url = get_distribution_url_from_formula(formula_content)
     print('Attempting to match the checksums of local distribution and Github distribution from "{}"...'.format(distribution_url))
+    _, ext = os.path.splitext(distribution_url)
+    filename = 'distribution-github' + ext
     sp.check_call([
         'curl',
         distribution_url,
         '--fail',
         '--location',
         '--output',
-        'distribution-github.zip'
+        filename
     ])
-    verify_zip_file('distribution-github.zip')
-    checksum_of_distribution_github = hashlib.sha256(open('distribution-github.zip', 'rb').read()).hexdigest()
+    if ext == '.zip':
+        verify_zip_file(filename)
+    checksum_of_distribution_github = hashlib.sha256(open(filename, 'rb').read()).hexdigest()
     if checksum_of_distribution_local != checksum_of_distribution_github:
         print('Error - unable to proceed with deploying to brew! The checksums do not match:')
         print('- The checksum of local distribution: {}'.format(checksum_of_distribution_local))
