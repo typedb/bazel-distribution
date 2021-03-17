@@ -30,7 +30,7 @@ import zipfile
 
 
 def get_distribution_url_from_formula(content):
-    url_line = next(filter(lambda l: l.lstrip().startswith('url'), content.split('\n')))
+    url_line = next(iter(filter(lambda l: l.lstrip().startswith('url'), content.split('\n'))))
     url = url_line.strip().split(' ')[1].replace('"', '')
     return url
 
