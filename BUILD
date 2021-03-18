@@ -20,7 +20,10 @@
 load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-exports_files(["bazelbuild_rules_python-export-requirements-bzl-for-stardoc.patch"])
+exports_files([
+    "bazelbuild_rules_python-export-requirements-bzl-for-stardoc.patch",
+    "bazelbuild_rules_pkg-fix-tarfile-format.patch",
+])
 
 # Stardoc is unable to generate documentation unless it can
 # load files that our rule files depends on via load(...)
