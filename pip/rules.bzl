@@ -54,7 +54,7 @@ def _python_repackage_impl(ctx):
 
         args.add('--src', action['file'].path)
         args.add('--dest', outputFile.path)
-        args.add('--pkg', ctx.attr.src_package)
+        args.add('--pkgs', ",".join(ctx.attr.src_packages))
         args.add('--prefix', ctx.attr.py_package_add_prefix)
 
         ctx.actions.run(
@@ -187,7 +187,7 @@ python_repackage = rule(
             mandatory = True,
             doc = "Python source files"
         ),
-        "src_package": attr.string(
+        "src_packages": attr.string_list(
             mandatory = True,
             doc = "Package name whose import paths should be prefixed"
         ),

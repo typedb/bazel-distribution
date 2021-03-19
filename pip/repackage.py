@@ -27,17 +27,18 @@ PACKAGE_PATTERN = re.compile("from (?P<original_package>.*) import (?:.*) as (?:
 parser = argparse.ArgumentParser()
 parser.add_argument('--src', help='Source file')
 parser.add_argument('--dest', help='Destination file')
-parser.add_argument('--pkg', help='Source package')
+parser.add_argument('--pkgs', help='Source packages')
 parser.add_argument('--prefix', help='Prefix to add to Python package')
 args = parser.parse_args()
 
 with open(args.src) as srcf, open(args.dest, 'w') as destf:
     lines = srcf.readlines()
+    packages = args.pkgs.split(",")
     for i, line in enumerate(lines):
         match = PACKAGE_PATTERN.match(line)
         if match:
             original_package = match.group('original_package')
-            if original_package == args.pkg:
+            if original_package in packages:
                 package = '{}.{}'.format(args.prefix, original_package)
                 lines[i] = line.replace(
                     'from {}'.format(original_package),
