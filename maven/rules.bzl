@@ -310,7 +310,7 @@ def _generate_pom_xml(ctx, maven_coordinates):
 
     # Step 1: fill in everything except version using `pom_file` rule implementation
     ctx.actions.expand_template(
-        template = ctx.file._pom_xml_template,
+        template = ctx.file._pom_template,
         output = preprocessed_template,
         substitutions = {
             "{project_name}": ctx.attr.project_name,
@@ -391,7 +391,7 @@ def _assemble_maven_impl(ctx):
     source_jar = None
 
     ctx.actions.run(
-        executable = ctx.executable._repackager,
+        executable = ctx.executable._jar_repackager,
         inputs = [jar] + target[JavaLibInfo].class_jars.to_list(),
         outputs = [output_jar_without_pom],
         arguments = ["", output_jar_without_pom.path, jar.path] + [x.path for x in target[JavaLibInfo].class_jars.to_list()]
@@ -400,7 +400,7 @@ def _assemble_maven_impl(ctx):
     if srcjar:
         source_jar = ctx.actions.declare_file("{}:{}-sources.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
         ctx.actions.run(
-            executable = ctx.executable._repackager,
+            executable = ctx.executable._jar_repackager,
             inputs = [srcjar] + target[JavaLibInfo].source_jars.to_list(),
             outputs = [source_jar],
             arguments = [ctx.attr.source_jar_prefix, source_jar.path, srcjar.path] + [x.path for x in target[JavaLibInfo].source_jars.to_list()]
@@ -410,7 +410,7 @@ def _assemble_maven_impl(ctx):
         inputs = [output_jar_without_pom, pom_file],
         outputs = [output_jar],
         arguments = [output_jar.path, output_jar_without_pom.path, pom_file.path],
-        executable = ctx.executable._assemble_script,
+        executable = ctx.executable._jar_assembler,
     )
 
     files = [output_jar, pom_file]
@@ -480,25 +480,25 @@ assemble_maven = rule(
             default = "",
             doc = 'Prefix source JAR files with this directory'
         ),
-        "_repackager": attr.label(
+        "_jar_repackager": attr.label(
             default = "@graknlabs_bazel_distribution//maven:repackager",
             executable = True,
             cfg = "host"
         ),
-        "_pom_xml_template": attr.label(
+        "_pom_template": attr.label(
             allow_single_file = True,
             default = "@graknlabs_bazel_distribution//maven/templates:pom.xml",
-        ),
-        "_assemble_script": attr.label(
-            default = "@graknlabs_bazel_distribution//maven:assemble",
-            executable = True,
-            cfg = "host"
         ),
         "_pom_replace_version": attr.label(
             default = "@graknlabs_bazel_distribution//maven:pom_replace_version",
             executable = True,
             cfg = "host",
-        )
+        ),
+        "_jar_assembler": attr.label(
+            default = "@graknlabs_bazel_distribution//maven:assemble",
+            executable = True,
+            cfg = "host"
+        ),
     },
     implementation = _assemble_maven_impl,
     doc = "Assemble Java package for subsequent deployment to Maven repo"
