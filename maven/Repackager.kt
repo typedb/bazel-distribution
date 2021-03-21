@@ -7,9 +7,6 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
 fun main(args: Array<String>) {
-    for (arg in args) {
-        println(arg)
-    }
     val prefix = args[0]
     val output = args[1]
     val jars = args.sliceArray(2..args.lastIndex)
