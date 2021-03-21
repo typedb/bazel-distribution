@@ -31,6 +31,8 @@ JavaLibInfo = provider(
         The Maven coordinates of the direct dependencies, and the transitively exported targets, of
         this target.
         """,
+        "class_jars": "Class JAR files to be merged into this target's class jar",
+        "source_jars": "Source JAR files to be merged into this target's source jar",
     },
 )
 
@@ -44,6 +46,12 @@ _TAG_KEY_MAVEN_COORDINATES = "maven_coordinates="
 def _target_coordinates(targets):
     return [target[JavaLibInfo].target_coordinates for target in targets]
 
+def _source_jars(targets):
+    return [target[JavaLibInfo].source_jars for target in targets]
+
+def _class_jars(targets):
+    return [target[JavaLibInfo].class_jars for target in targets]
+
 def _java_lib_deps_impl(_target, ctx):
     tags = getattr(ctx.rule.attr, "tags", [])
     deps = getattr(ctx.rule.attr, "deps", [])
@@ -52,6 +60,8 @@ def _java_lib_deps_impl(_target, ctx):
     deps_all = deps + exports + runtime_deps
 
     maven_coordinates = []
+    source_jars = []
+    class_jars = []
     for tag in tags:
         if tag in ("maven:compile_only", "maven:shaded"):
             return _JAVA_LIB_INFO_EMPTY
@@ -66,8 +76,21 @@ def _java_lib_deps_impl(_target, ctx):
         if len(maven_coordinates) > 1:
             fail("You should not set more than one maven_coordinates tag per java_library")
 
-    java_lib_info = JavaLibInfo(target_coordinates = depset(maven_coordinates, transitive=_target_coordinates(exports)),
-                                target_deps_coordinates = depset([], transitive = _target_coordinates(deps_all)))
+    if len(maven_coordinates) == 0:
+        # Targets that don't have Maven coordinates are subject to
+        # merging into the target being deployed
+        source_jars.append(
+            _target[OutputGroupInfo]._source_jars.to_list()[-1]
+        )
+        class_jars.append(
+            _target[OutputGroupInfo].compilation_outputs.to_list()[0]
+        )
+    java_lib_info = JavaLibInfo(
+        target_coordinates = depset(maven_coordinates, transitive=_target_coordinates(exports)),
+        target_deps_coordinates = depset([], transitive = _target_coordinates(deps_all)),
+        source_jars = depset(source_jars, transitive = _source_jars(deps_all)),
+        class_jars = depset(class_jars, transitive = _class_jars(deps_all))
+    )
     return [java_lib_info]
 
 _java_lib_deps = aspect(
@@ -349,6 +372,7 @@ def _assemble_maven_impl(ctx):
     pom_file = _generate_pom_xml(ctx, maven_coordinates)
 
     # there is also .source_jar which produces '.srcjar'
+    jar = None
     srcjar = None
 
     if hasattr(target, "files") and target.files.to_list() and target.files.to_list()[0].extension == 'jar':
@@ -362,25 +386,41 @@ def _assemble_maven_impl(ctx):
     else:
         fail("Could not find JAR file to deploy in {}".format(target))
 
+    output_jar_without_pom = ctx.actions.declare_file("{}:{}__without_pom.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
     output_jar = ctx.actions.declare_file("{}:{}.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
+    source_jar = None
 
     ctx.actions.run(
-        inputs = [jar, pom_file],
+        executable = ctx.executable._repackager,
+        inputs = [jar] + target[JavaLibInfo].class_jars.to_list(),
+        outputs = [output_jar_without_pom],
+        arguments = ["", output_jar_without_pom.path, jar.path] + [x.path for x in target[JavaLibInfo].class_jars.to_list()]
+    )
+
+    if srcjar:
+        source_jar = ctx.actions.declare_file("{}:{}-sources.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
+        ctx.actions.run(
+            executable = ctx.executable._repackager,
+            inputs = [srcjar] + target[JavaLibInfo].source_jars.to_list(),
+            outputs = [source_jar],
+            arguments = [ctx.attr.source_jar_prefix, source_jar.path, srcjar.path] + [x.path for x in target[JavaLibInfo].source_jars.to_list()]
+        )
+
+    ctx.actions.run(
+        inputs = [output_jar_without_pom, pom_file],
         outputs = [output_jar],
-        arguments = [output_jar.path, jar.path, pom_file.path],
+        arguments = [output_jar.path, output_jar_without_pom.path, pom_file.path],
         executable = ctx.executable._assemble_script,
     )
 
-    if srcjar == None:
-        return [
-            DefaultInfo(files = depset([output_jar, pom_file])),
-            MavenDeploymentInfo(jar = output_jar, pom = pom_file, srcjar = srcjar)
-        ]
-    else:
-        return [
-            DefaultInfo(files = depset([output_jar, pom_file, srcjar])),
-            MavenDeploymentInfo(jar = output_jar, pom = pom_file, srcjar = srcjar)
-        ]
+    files = [output_jar, pom_file]
+    if source_jar:
+        files.append(source_jar)
+
+    return [
+        DefaultInfo(files = depset(files)),
+        MavenDeploymentInfo(jar = output_jar, pom = pom_file, srcjar = source_jar)
+    ]
 
 assemble_maven = rule(
     attrs = {
@@ -435,6 +475,15 @@ assemble_maven = rule(
         "developers": attr.string_list_dict(
             default = {},
             doc = 'Project developers to fill into pom.xml'
+        ),
+        "source_jar_prefix": attr.string(
+            default = "",
+            doc = 'Prefix source JAR files with this directory'
+        ),
+        "_repackager": attr.label(
+            default = "@graknlabs_bazel_distribution//maven:repackager",
+            executable = True,
+            cfg = "host"
         ),
         "_pom_xml_template": attr.label(
             allow_single_file = True,
