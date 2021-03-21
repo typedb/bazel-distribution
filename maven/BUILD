@@ -19,6 +19,7 @@
 exports_files(["rules.bzl"])
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 
 bzl_library(
     name = "lib",
@@ -37,5 +38,22 @@ py_binary(
 py_binary(
     name = "pom_replace_version",
     srcs = ["pom_replace_version.py"],
+    visibility = ["//visibility:public"]
+)
+
+
+# FIXME(vmax): I couldn't make it a kt_jvm_binary because
+#  it complained it couldn't find `java` executable
+kt_jvm_library(
+    name = "repackager_lib",
+    srcs = ["Repackager.kt"],
+)
+
+java_binary(
+    name = "repackager",
+    runtime_deps = [
+        ":repackager_lib"
+    ],
+    main_class = "RepackagerKt",
     visibility = ["//visibility:public"]
 )
