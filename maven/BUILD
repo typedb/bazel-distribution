@@ -49,11 +49,52 @@ kt_jvm_library(
     srcs = ["Repackager.kt"],
 )
 
+
+kt_jvm_library(
+    name = "pom_generator_lib",
+    deps = [
+      "@maven//:com_eclipsesource_minimal_json_minimal_json",
+      "@maven//:info_picocli_picocli",
+    ],
+    srcs = [
+        "PomGenerator.kt",
+    ]
+)
+
+java_binary(
+    name = "pom_generator",
+    runtime_deps = [
+        ":pom_generator_lib"
+    ],
+    main_class = "PomGeneratorKt",
+    visibility = ["//visibility:public"]
+)
+
 java_binary(
     name = "repackager",
     runtime_deps = [
         ":repackager_lib"
     ],
     main_class = "RepackagerKt",
+    visibility = ["//visibility:public"]
+)
+
+
+kt_jvm_library(
+    name = "jar_assembler_lib",
+    deps = [
+      "@maven//:info_picocli_picocli",
+    ],
+    srcs = [
+        "JarAssembler.kt"
+    ]
+)
+
+java_binary(
+    name = "jar_assembler",
+    runtime_deps = [
+        ":jar_assembler_lib"
+    ],
+    main_class = "JarAssemblerKt",
     visibility = ["//visibility:public"]
 )

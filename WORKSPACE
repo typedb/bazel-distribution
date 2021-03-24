@@ -43,3 +43,21 @@ git_repository(
 )
 load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
 stardoc_repositories()
+
+
+load("@graknlabs_bazel_distribution//maven:deps.bzl", assemble_maven_deps = "deps", "maven_artifacts_with_versions")
+assemble_maven_deps()
+
+load("@rules_jvm_external//:defs.bzl", rje_maven_install = "maven_install")
+rje_maven_install(
+    artifacts = maven_artifacts_with_versions,
+    repositories = [
+        "https://repo1.maven.org/maven2",
+    ],
+    strict_visibility = True,
+    version_conflict_policy = "pinned",
+    fetch_sources = True,
+)
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
+kotlin_repositories()
+kt_register_toolchains()
