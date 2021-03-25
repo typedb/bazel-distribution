@@ -198,7 +198,7 @@ aggregate_dependency_info = aspect(
         "exports",
         "runtime_deps",
     ],
-    doc = "Collects the Maven coordinates of the given java_library, its direct dependencies and transitive dependencies",
+    doc = "Collects the Maven coordinates of the given java_library, its direct dependencies, and its transitive dependencies",
     implementation = _aggregate_dependency_info_impl,
     provides = [AggregatedDependencyInfo],
 )
