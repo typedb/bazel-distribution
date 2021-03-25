@@ -254,12 +254,12 @@ assemble_maven = rule(
             doc = "Project source control URL to fill into pom.xml",
         ),
         "_pom_generator": attr.label(
-            default = "@graknlabs_bazel_distribution//maven:pom_generator",
+            default = "@graknlabs_bazel_distribution//maven:pom-generator",
             executable = True,
             cfg = "host",
         ),
         "_jar_assembler": attr.label(
-            default = "@graknlabs_bazel_distribution//maven:jar_assembler",
+            default = "@graknlabs_bazel_distribution//maven:jar-assembler",
             executable = True,
             cfg = "host",
         ),
