@@ -1,7 +1,7 @@
 load("@graknlabs_bazel_distribution//maven:rules.bzl", "MavenDeploymentInfo")
 
-def _parse_maven_coordinates(coordinate_string):
-    group_id, artifact_id, version = coordinate_string.split(":")
+def _parse_maven_coordinates(coordinates_string):
+    group_id, artifact_id, version = coordinates_string.split(":")
     if version != "{pom_version}":
         fail("should assign {pom_version} as Maven version via `tags` attribute")
     return struct(
@@ -9,9 +9,9 @@ def _parse_maven_coordinates(coordinate_string):
         artifact_id = artifact_id,
     )
 
-def _parse_maven_artifact(coordinate_string):
+def _parse_maven_artifact(coordinates_string):
     """ Return the artifact (group + artifact) and version """
-    group_id, artifact_id, version = coordinate_string.split(":")
+    group_id, artifact_id, version = coordinates_string.split(":")
     return group_id + ":" + artifact_id, version
 
 def _construct_version_file(ctx):
