@@ -45,15 +45,56 @@ py_binary(
 # FIXME(vmax): I couldn't make it a kt_jvm_binary because
 #  it complained it couldn't find `java` executable
 kt_jvm_library(
-    name = "repackager_lib",
+    name = "repackager-lib",
     srcs = ["Repackager.kt"],
+)
+
+
+kt_jvm_library(
+    name = "pom-generator-lib",
+    deps = [
+      "@maven//:com_eclipsesource_minimal_json_minimal_json",
+      "@maven//:info_picocli_picocli",
+    ],
+    srcs = [
+        "PomGenerator.kt",
+    ]
+)
+
+java_binary(
+    name = "pom-generator",
+    runtime_deps = [
+        ":pom-generator-lib"
+    ],
+    main_class = "PomGeneratorKt",
+    visibility = ["//visibility:public"]
 )
 
 java_binary(
     name = "repackager",
     runtime_deps = [
-        ":repackager_lib"
+        ":repackager-lib"
     ],
     main_class = "RepackagerKt",
+    visibility = ["//visibility:public"]
+)
+
+
+kt_jvm_library(
+    name = "jar-assembler-lib",
+    deps = [
+      "@maven//:info_picocli_picocli",
+    ],
+    srcs = [
+        "JarAssembler.kt"
+    ]
+)
+
+java_binary(
+    name = "jar-assembler",
+    runtime_deps = [
+        ":jar-assembler-lib"
+    ],
+    main_class = "JarAssemblerKt",
     visibility = ["//visibility:public"]
 )
