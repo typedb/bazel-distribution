@@ -33,7 +33,8 @@ def _generate_pom_file(ctx, version_file):
     pom_file = ctx.actions.declare_file("{}_pom.xml".format(ctx.attr.name))
 
     pom_deps = []
-    for pom_dependency in target[AggregatedDependencyInfo].pom_deps.to_list():
+    for pom_dependency in [dep for dep in target[AggregatedDependencyInfo].deps.to_list() if dep.type == 'pom']:
+        pom_dependency = pom_dependency.maven_coordinates
         if pom_dependency == target[AggregatedDependencyInfo].maven_coordinates:
             continue
         pom_dependency_artifact, pom_dependency_version = _parse_maven_artifact(pom_dependency)
@@ -73,11 +74,12 @@ def _generate_class_jar(ctx, pom_file):
 
     output_jar = ctx.actions.declare_file("{}:{}.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
 
-    class_jar_paths = [jar.path] + [target.path for target in target[AggregatedDependencyInfo].class_jar_deps.to_list()]
+    class_jar_deps = [dep.class_jar for dep in target[AggregatedDependencyInfo].deps.to_list() if dep.type == 'jar']
+    class_jar_paths = [jar.path] + [target.path for target in class_jar_deps]
 
     ctx.actions.run(
         executable = ctx.executable._jar_assembler,
-        inputs = [jar, pom_file] + target[AggregatedDependencyInfo].class_jar_deps.to_list(),
+        inputs = [jar, pom_file] + class_jar_deps,
         outputs = [output_jar],
         arguments = [
             "--prefix=",  # prefix is deliberately left empty
@@ -110,11 +112,12 @@ def _generate_source_jar(ctx):
 
     output_jar = ctx.actions.declare_file("{}:{}-sources.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
 
-    source_jar_paths = [srcjar.path] + [target.path for target in target[AggregatedDependencyInfo].source_jar_deps.to_list()]
+    source_jar_deps = [dep.source_jar for dep in target[AggregatedDependencyInfo].deps.to_list() if dep.type == 'jar']
+    source_jar_paths = [srcjar.path] + [target.path for target in source_jar_deps]
 
     ctx.actions.run(
         executable = ctx.executable._jar_assembler,
-        inputs = [srcjar] + target[AggregatedDependencyInfo].source_jar_deps.to_list(),
+        inputs = [srcjar] + source_jar_deps,
         outputs = [output_jar],
         arguments = [
             "--prefix=" + ctx.attr.source_jar_prefix,
@@ -126,6 +129,7 @@ def _generate_source_jar(ctx):
     return output_jar
 
 def _assemble_maven_impl(ctx):
+    print(ctx.attr.target[AggregatedDependencyInfo])
     version_file = _construct_version_file(ctx)
     pom_file = _generate_pom_file(ctx, version_file)
     class_jar = _generate_class_jar(ctx, pom_file)
@@ -153,9 +157,7 @@ def find_maven_coordinates(target, tags):
 AggregatedDependencyInfo = provider(
     fields = {
         "maven_coordinates": "Coordinates of a given JAR",
-        "pom_deps": "The depset of all of the Maven coordinates this JAR depends on",
-        "source_jar_deps": "The depset of all of the source JARs this JAR is comprised of",
-        "class_jar_deps": "The depset of all of the class JARs this JAR is comprised of",
+        "deps": "The depset of all Maven coordinates / other JARs this JAR depends on",
     },
 )
 
@@ -167,29 +169,26 @@ def _aggregate_dependency_info_impl(target, ctx):
     deps_all = deps + exports + runtime_deps
 
     maven_coordinates = find_maven_coordinates(target, tags)
+    dependency = None
 
     if maven_coordinates:
         # depend via POM
-        return AggregatedDependencyInfo(
-            maven_coordinates = maven_coordinates,
-            pom_deps = depset([maven_coordinates], transitive = [target[AggregatedDependencyInfo].pom_deps for target in deps_all]),
-            source_jar_deps = depset([], transitive = [target[AggregatedDependencyInfo].source_jar_deps for target in deps_all]),
-            class_jar_deps = depset([], transitive = [target[AggregatedDependencyInfo].class_jar_deps for target in deps_all]),
+        dependency = struct(
+            type = "pom",
+            maven_coordinates = maven_coordinates
         )
     else:
         # include in the JAR
-        return AggregatedDependencyInfo(
-            maven_coordinates = "",
-            pom_deps = depset([], transitive = [target[AggregatedDependencyInfo].pom_deps for target in ctx.rule.attr.deps]),
-            source_jar_deps = depset(
-                [target[OutputGroupInfo]._source_jars.to_list()[-1]],
-                transitive = [target[AggregatedDependencyInfo].source_jar_deps for target in deps_all],
-            ),
-            class_jar_deps = depset(
-                [target[OutputGroupInfo].compilation_outputs.to_list()[0]],
-                transitive = [target[AggregatedDependencyInfo].class_jar_deps for target in deps_all],
-            ),
+        dependency = struct(
+            type = "jar",
+            class_jar = target[OutputGroupInfo].compilation_outputs.to_list()[0],
+            source_jar = target[OutputGroupInfo]._source_jars.to_list()[-1],
         )
+
+    return AggregatedDependencyInfo(
+        maven_coordinates = maven_coordinates,
+        deps = depset([dependency], transitive = [target[AggregatedDependencyInfo].deps for target in deps_all]),
+    )
 
 aggregate_dependency_info = aspect(
     attr_aspects = [
