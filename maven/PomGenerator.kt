@@ -16,7 +16,7 @@ import javax.xml.transform.stream.StreamResult
 import kotlin.system.exitProcess
 
 
-@Command(name = "pom_generator", mixinStandardHelpOptions = true)
+@Command(name = "pom-generator", mixinStandardHelpOptions = true)
 class PomGenerator : Callable<Unit> {
 
     @Option(names = ["--version_file"])

@@ -13,7 +13,7 @@ import java.util.zip.ZipOutputStream
 import kotlin.system.exitProcess
 
 
-@Command(name = "pom_generator", mixinStandardHelpOptions = true)
+@Command(name = "jar-assembler", mixinStandardHelpOptions = true)
 class JarAssembler : Callable<Unit> {
 
     @Option(names = ["--output"], required = true)
