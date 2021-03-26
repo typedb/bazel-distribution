@@ -1,20 +1,17 @@
 load("@graknlabs_bazel_distribution//maven:rules.bzl", "MavenDeploymentInfo")
 
-def _parse_maven_coordinates(coordinates_string):
+def _parse_maven_coordinates(coordinates_string, enforce_version_template=True):
     group_id, artifact_id, version = coordinates_string.split(":")
-    if version != "{pom_version}":
+    if enforce_version_template and version != "{pom_version}":
         fail("should assign {pom_version} as Maven version via `tags` attribute")
     return struct(
         group_id = group_id,
         artifact_id = artifact_id,
+        version = version
     )
 
-def _parse_maven_artifact(coordinates_string):
-    """ Return the artifact (group + artifact) and version """
-    group_id, artifact_id, version = coordinates_string.split(":")
-    return group_id + ":" + artifact_id, version
 
-def _construct_version_file(ctx):
+def _generate_version_file(ctx):
     version_file = ctx.file.version_file
     if not ctx.attr.version_file:
         version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
@@ -29,15 +26,18 @@ def _construct_version_file(ctx):
 
 def _generate_pom_file(ctx, version_file):
     target = ctx.attr.target
-    maven_coordinates = _parse_maven_coordinates(target[AggregatedDependencyInfo].maven_coordinates)
+    maven_coordinates = _parse_maven_coordinates(target[JarInfo].name)
     pom_file = ctx.actions.declare_file("{}_pom.xml".format(ctx.attr.name))
 
     pom_deps = []
-    for pom_dependency in [dep for dep in target[AggregatedDependencyInfo].deps.to_list() if dep.type == 'pom']:
+    for pom_dependency in [dep for dep in target[JarInfo].deps.to_list() if dep.type == 'pom']:
         pom_dependency = pom_dependency.maven_coordinates
-        if pom_dependency == target[AggregatedDependencyInfo].maven_coordinates:
+        if pom_dependency == target[JarInfo].name:
             continue
-        pom_dependency_artifact, pom_dependency_version = _parse_maven_artifact(pom_dependency)
+        pom_dependency_coordinates = _parse_maven_coordinates(pom_dependency, False)
+        pom_dependency_artifact = pom_dependency_coordinates.group_id + ":" + pom_dependency_coordinates.artifact_id
+        pom_dependency_version = pom_dependency_coordinates.version
+
         version = ctx.attr.version_overrides.get(pom_dependency_artifact, pom_dependency_version)
         pom_deps.append(pom_dependency_artifact + ":" + version)
 
@@ -64,7 +64,7 @@ def _generate_pom_file(ctx, version_file):
 
 def _generate_class_jar(ctx, pom_file):
     target = ctx.attr.target
-    maven_coordinates = _parse_maven_coordinates(target[AggregatedDependencyInfo].maven_coordinates)
+    maven_coordinates = _parse_maven_coordinates(target[JarInfo].name)
 
     jar = None
     if hasattr(target, "files") and target.files.to_list() and target.files.to_list()[0].extension == "jar":
@@ -74,7 +74,7 @@ def _generate_class_jar(ctx, pom_file):
 
     output_jar = ctx.actions.declare_file("{}:{}.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
 
-    class_jar_deps = [dep.class_jar for dep in target[AggregatedDependencyInfo].deps.to_list() if dep.type == 'jar']
+    class_jar_deps = [dep.class_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar']
     class_jar_paths = [jar.path] + [target.path for target in class_jar_deps]
 
     ctx.actions.run(
@@ -95,7 +95,7 @@ def _generate_class_jar(ctx, pom_file):
 
 def _generate_source_jar(ctx):
     target = ctx.attr.target
-    maven_coordinates = _parse_maven_coordinates(target[AggregatedDependencyInfo].maven_coordinates)
+    maven_coordinates = _parse_maven_coordinates(target[JarInfo].name)
 
     srcjar = None
 
@@ -112,7 +112,7 @@ def _generate_source_jar(ctx):
 
     output_jar = ctx.actions.declare_file("{}:{}-sources.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
 
-    source_jar_deps = [dep.source_jar for dep in target[AggregatedDependencyInfo].deps.to_list() if dep.type == 'jar']
+    source_jar_deps = [dep.source_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar']
     source_jar_paths = [srcjar.path] + [target.path for target in source_jar_deps]
 
     ctx.actions.run(
@@ -129,7 +129,7 @@ def _generate_source_jar(ctx):
     return output_jar
 
 def _assemble_maven_impl(ctx):
-    version_file = _construct_version_file(ctx)
+    version_file = _generate_version_file(ctx)
     pom_file = _generate_pom_file(ctx, version_file)
     class_jar = _generate_class_jar(ctx, pom_file)
     source_jar = _generate_source_jar(ctx)
@@ -153,10 +153,10 @@ def find_maven_coordinates(target, tags):
                 coordinates = coordinates.replace("{pom_version}", target.label.workspace_root.replace("external/", ""))
             return coordinates
 
-AggregatedDependencyInfo = provider(
+JarInfo = provider(
     fields = {
-        "maven_coordinates": "Coordinates of a given JAR",
-        "deps": "The depset of all Maven coordinates / other JARs this JAR depends on",
+        "name": "The name of a the JAR (Maven coordinates)",
+        "deps": "The list of dependencies of this JAR. A dependency may be of two types, POM or JAR.",
     },
 )
 
@@ -184,9 +184,9 @@ def _aggregate_dependency_info_impl(target, ctx):
             source_jar = target[OutputGroupInfo]._source_jars.to_list()[-1],
         )
 
-    return AggregatedDependencyInfo(
-        maven_coordinates = maven_coordinates,
-        deps = depset([dependency], transitive = [target[AggregatedDependencyInfo].deps for target in deps_all]),
+    return JarInfo(
+        name = maven_coordinates,
+        deps = depset([dependency], transitive = [target[JarInfo].deps for target in deps_all]),
     )
 
 aggregate_dependency_info = aspect(
@@ -198,7 +198,7 @@ aggregate_dependency_info = aspect(
     ],
     doc = "Collects the Maven coordinates of the given java_library, its direct dependencies, and its transitive dependencies",
     implementation = _aggregate_dependency_info_impl,
-    provides = [AggregatedDependencyInfo],
+    provides = [JarInfo],
 )
 
 assemble_maven = rule(

@@ -21,7 +21,7 @@ workspace(name="graknlabs_bazel_distribution")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-# Load @rules_python
+# Load @rules_python, @io_bazel_rules_kotlin and @rules_jvm_external
 load("//common:deps.bzl", "rules_python", "rules_kotlin", "rules_jvm_external")
 rules_python()
 rules_kotlin()
