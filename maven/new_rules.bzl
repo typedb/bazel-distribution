@@ -23,7 +23,7 @@ def _construct_version_file(ctx):
         ctx.actions.run_shell(
             inputs = [],
             outputs = [version_file],
-            command = "echo {} > {}".format(version, version_file.path),
+            command = "echo -n {} > {}".format(version, version_file.path),
         )
     return version_file
 
@@ -52,7 +52,7 @@ def _generate_pom_file(ctx, version_file):
             "--license=" + ctx.attr.license,
             "--scm_url=" + ctx.attr.scm_url,
             "--target_group_id=" + maven_coordinates.group_id,
-            "--target_artifact_id= " + maven_coordinates.artifact_id,
+            "--target_artifact_id=" + maven_coordinates.artifact_id,
             "--target_deps_coordinates=" + ";".join(pom_deps),
             "--version_file=" + version_file.path,
             "--output_file=" + pom_file.path,
@@ -129,7 +129,6 @@ def _generate_source_jar(ctx):
     return output_jar
 
 def _assemble_maven_impl(ctx):
-    print(ctx.attr.target[AggregatedDependencyInfo])
     version_file = _construct_version_file(ctx)
     pom_file = _generate_pom_file(ctx, version_file)
     class_jar = _generate_class_jar(ctx, pom_file)
