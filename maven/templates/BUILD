@@ -17,4 +17,4 @@
 # under the License.
 #
 
-exports_files(["pom.xml", "deploy.py",])
+exports_files(["deploy.py"])

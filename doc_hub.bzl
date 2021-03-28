@@ -67,14 +67,12 @@ load('//github:rules.bzl', _ = "deploy_github")
 deploy_github = _
 
 load('//maven:rules.bzl',
-    _JavaLibInfo = "JavaLibInfo",
-    _MavenPomInfo = "MavenPomInfo",
+    _JarInfo = "JarInfo",
     _MavenDeploymentInfo = "MavenDeploymentInfo",
     _assemble_maven = "assemble_maven",
     _deploy_maven = "deploy_maven",
 )
-JavaLibInfo = _JavaLibInfo
-MavenPomInfo = _MavenPomInfo
+JarInfo = _JarInfo
 MavenDeploymentInfo = _MavenDeploymentInfo
 assemble_maven = _assemble_maven
 deploy_maven = _deploy_maven
