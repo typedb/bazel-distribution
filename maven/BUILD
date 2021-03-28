@@ -30,13 +30,6 @@ bzl_library(
 )
 
 
-py_binary(
-    name = "pom_replace_version",
-    srcs = ["pom_replace_version.py"],
-    visibility = ["//visibility:public"]
-)
-
-
 # FIXME(vmax): I couldn't make it a kt_jvm_binary because
 #  it complained it couldn't find `java` executable
 kt_jvm_library(
