@@ -29,11 +29,6 @@ bzl_library(
     visibility = ["//visibility:public"]
 )
 
-py_binary(
-    name = "assemble",
-    srcs = ["assemble.py"],
-    visibility = ["//visibility:public"]
-)
 
 py_binary(
     name = "pom_replace_version",
@@ -44,12 +39,6 @@ py_binary(
 
 # FIXME(vmax): I couldn't make it a kt_jvm_binary because
 #  it complained it couldn't find `java` executable
-kt_jvm_library(
-    name = "repackager-lib",
-    srcs = ["Repackager.kt"],
-)
-
-
 kt_jvm_library(
     name = "pom-generator-lib",
     deps = [
@@ -67,15 +56,6 @@ java_binary(
         ":pom-generator-lib"
     ],
     main_class = "PomGeneratorKt",
-    visibility = ["//visibility:public"]
-)
-
-java_binary(
-    name = "repackager",
-    runtime_deps = [
-        ":repackager-lib"
-    ],
-    main_class = "RepackagerKt",
     visibility = ["//visibility:public"]
 )
 
