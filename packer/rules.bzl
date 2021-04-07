@@ -49,7 +49,8 @@ def _deploy_packer_impl(ctx):
         substitutions = {
             "{packer_osx_binary}": ctx.files._packer[0].path,
             "{packer_linux_binary}": ctx.files._packer[1].path,
-            "{target_tar}": ctx.file.target.short_path
+            "{target_tar}": ctx.file.target.short_path,
+            "{force}": "-force" if ctx.attr.overwrite else "",
         },
         is_executable = True
     )
@@ -65,6 +66,11 @@ deploy_packer = rule(
             mandatory = False,
             allow_single_file = [".packer.tar"],
             doc = "`assemble_packer` label to be deployed.",
+        ),
+        "overwrite": attr.bool(
+            mandatory = False,
+            default = False,
+            doc = "Overwrite already-existing image",
         ),
         "_deployment_script_template": attr.label(
             allow_single_file = True,
