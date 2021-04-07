@@ -70,7 +70,7 @@ deploy_packer = rule(
         "overwrite": attr.bool(
             mandatory = False,
             default = False,
-            doc = "If overwriting the image if the same named image already exists",
+            doc = "Overwrite already-existing image",
         ),
         "_deployment_script_template": attr.label(
             allow_single_file = True,
