@@ -42,10 +42,13 @@ target_temp_dir = tempfile.mkdtemp('deploy_packer')
 with tarfile.open(TARGET_TAR_LOCATION, 'r') as target_tar:
     target_tar.extractall(target_temp_dir)
 
-sp.check_call([
+args = [
     PACKER_BINARIES[system],
     'build',
-    'config.json'
-], cwd=target_temp_dir)
+]
+if "{force}":
+    args.append("-force")
+args.append('config.json')
+sp.check_call(args, cwd=target_temp_dir)
 
 shutil.rmtree(target_temp_dir)
