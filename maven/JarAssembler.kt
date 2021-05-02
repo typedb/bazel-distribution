@@ -54,7 +54,11 @@ class JarAssembler : Callable<Unit> {
                         }
                         entryNames.add(entry.name)
                         BufferedInputStream(jarZip.getInputStream(entry)).use { inputStream ->
-                            val newEntry = ZipEntry(prefix + entry.name)
+                            var name = entry.name
+                            if (!name.startsWith(prefix)) {
+                                name = prefix + name;
+                            }
+                            val newEntry = ZipEntry(name)
                             out.putNextEntry(newEntry)
                             inputStream.copyTo(out, 1024)
                         }
