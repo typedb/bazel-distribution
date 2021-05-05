@@ -38,7 +38,7 @@ def assemble_aws(name,
     generated_config_target_name = name + "__do_not_reference_config"
     generate_json_config(
         name = generated_config_target_name,
-        template = "@vaticle_bazel_distribution//aws:packer.template.json",
+        template = "@graknlabs_bazel_distribution//aws:packer.template.json",
         substitutions = {
             "{ami_name}": ami_name,
             "{install}": install_fn,

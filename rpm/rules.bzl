@@ -117,7 +117,7 @@ def assemble_rpm(name,
         modified_spec_target_name = name + "__spec_do_not_reference"
         modified_spec_filename = name + '.spec'
         args = [
-            "$(location @vaticle_bazel_distribution//rpm:generate_spec_file)",
+            "$(location @graknlabs_bazel_distribution//rpm:generate_spec_file)",
             "--output", "$(location {})".format(modified_spec_filename),
             "--spec_file", "$(location {})".format(spec_file),
             "--workspace_refs", "$(location {})".format(workspace_refs),
@@ -127,7 +127,7 @@ def assemble_rpm(name,
             srcs = [spec_file, workspace_refs],
             outs = [modified_spec_filename],
             cmd = " ".join(args),
-            tools = ["@vaticle_bazel_distribution//rpm:generate_spec_file"],
+            tools = ["@graknlabs_bazel_distribution//rpm:generate_spec_file"],
             tags = tags,
         )
         spec_file = modified_spec_target_name

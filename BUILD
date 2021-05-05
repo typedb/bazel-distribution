@@ -39,7 +39,7 @@ bzl_library(
         "@rules_pkg//:path.bzl",
         "@rules_pkg//:rpm.bzl",
         "@bazel_tools//tools:bzl_srcs",
-        "@vaticle_bazel_distribution_pip//:requirements.bzl",
+        "@graknlabs_bazel_distribution_pip//:requirements.bzl",
         "@rules_python//python:whl.bzl",
     ],
 )

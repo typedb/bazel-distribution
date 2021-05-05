@@ -20,7 +20,7 @@
 exports_files(["replace_imports.py", "requirements.txt"])
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@vaticle_bazel_distribution_pip//:requirements.bzl", vaticle_bazel_distribution_requirement = "requirement")
+load("@graknlabs_bazel_distribution_pip//:requirements.bzl", graknlabs_bazel_distribution_requirement = "requirement")
 
 
 bzl_library(
@@ -35,7 +35,7 @@ py_binary(
     name = "assemble",
     srcs = ["assemble.py"],
     deps = [
-        vaticle_bazel_distribution_requirement("setuptools")
+        graknlabs_bazel_distribution_requirement("setuptools")
     ],
     visibility = ["//visibility:public"]
 )

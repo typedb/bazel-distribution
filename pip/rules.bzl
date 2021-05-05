@@ -17,7 +17,7 @@
 # under the License.
 #
 
-load("@vaticle_bazel_distribution_pip//:requirements.bzl", vaticle_bazel_distribution_requirement = "requirement")
+load("@graknlabs_bazel_distribution_pip//:requirements.bzl", graknlabs_bazel_distribution_requirement = "requirement")
 
 
 def _python_repackage_impl(ctx):
@@ -301,22 +301,22 @@ deploy_pip = rule(
         ),
         "_deps": attr.label_list(
             default = [
-                vaticle_bazel_distribution_requirement("twine"),
-                vaticle_bazel_distribution_requirement("setuptools"),
-                vaticle_bazel_distribution_requirement("wheel"),
-                vaticle_bazel_distribution_requirement("requests"),
-                vaticle_bazel_distribution_requirement("urllib3"),
-                vaticle_bazel_distribution_requirement("chardet"),
-                vaticle_bazel_distribution_requirement("certifi"),
-                vaticle_bazel_distribution_requirement("idna"),
-                vaticle_bazel_distribution_requirement("tqdm"),
-                vaticle_bazel_distribution_requirement("requests_toolbelt"),
-                vaticle_bazel_distribution_requirement("pkginfo"),
-                vaticle_bazel_distribution_requirement("readme_renderer"),
-                vaticle_bazel_distribution_requirement("Pygments"),
-                vaticle_bazel_distribution_requirement("docutils"),
-                vaticle_bazel_distribution_requirement("bleach"),
-                vaticle_bazel_distribution_requirement("webencodings")
+                graknlabs_bazel_distribution_requirement("twine"),
+                graknlabs_bazel_distribution_requirement("setuptools"),
+                graknlabs_bazel_distribution_requirement("wheel"),
+                graknlabs_bazel_distribution_requirement("requests"),
+                graknlabs_bazel_distribution_requirement("urllib3"),
+                graknlabs_bazel_distribution_requirement("chardet"),
+                graknlabs_bazel_distribution_requirement("certifi"),
+                graknlabs_bazel_distribution_requirement("idna"),
+                graknlabs_bazel_distribution_requirement("tqdm"),
+                graknlabs_bazel_distribution_requirement("requests_toolbelt"),
+                graknlabs_bazel_distribution_requirement("pkginfo"),
+                graknlabs_bazel_distribution_requirement("readme_renderer"),
+                graknlabs_bazel_distribution_requirement("Pygments"),
+                graknlabs_bazel_distribution_requirement("docutils"),
+                graknlabs_bazel_distribution_requirement("bleach"),
+                graknlabs_bazel_distribution_requirement("webencodings")
             ]
         )
     },

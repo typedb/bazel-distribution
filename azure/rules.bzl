@@ -43,7 +43,7 @@ def assemble_azure(name,
     generated_config_target_name = name + "__do_not_reference_config"
     generate_json_config(
         name = generated_config_target_name,
-        template = "@vaticle_bazel_distribution//azure:packer.template.json",
+        template = "@graknlabs_bazel_distribution//azure:packer.template.json",
         substitutions = {
             "{image_name}": image_name,
             "{resource_group_name}": resource_group_name,

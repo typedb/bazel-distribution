@@ -18,10 +18,10 @@
 #
 
 load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_deb")
-load("@vaticle_bazel_distribution//common:java_deps.bzl", _java_deps = "java_deps")
-load("@vaticle_bazel_distribution//common:tgz2zip.bzl", _tgz2zip = "tgz2zip")
-load("@vaticle_bazel_distribution//common:checksum.bzl", _checksum = "checksum")
-load("@vaticle_bazel_distribution//common:assemble_versioned.bzl", _assemble_versioned = "assemble_versioned")
+load("@graknlabs_bazel_distribution//common:java_deps.bzl", _java_deps = "java_deps")
+load("@graknlabs_bazel_distribution//common:tgz2zip.bzl", _tgz2zip = "tgz2zip")
+load("@graknlabs_bazel_distribution//common:checksum.bzl", _checksum = "checksum")
+load("@graknlabs_bazel_distribution//common:assemble_versioned.bzl", _assemble_versioned = "assemble_versioned")
 
 
 java_deps = _java_deps

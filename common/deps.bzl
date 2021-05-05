@@ -10,7 +10,7 @@ def rules_python():
             # Force rules_python to export the requirements.bzl file in
             # order for stardoc to be able to load it during documentation
             # generation.
-            "@vaticle_bazel_distribution//:bazelbuild_rules_python-export-requirements-bzl-for-stardoc.patch",
+            "@graknlabs_bazel_distribution//:bazelbuild_rules_python-export-requirements-bzl-for-stardoc.patch",
         ],
         patch_args = ["-p1"],
     )
@@ -24,7 +24,7 @@ def rules_pkg():
         ],
         sha256 = "352c090cc3d3f9a6b4e676cf42a6047c16824959b438895a76c2989c6d7c246a",
         patches = [
-            "@vaticle_bazel_distribution//:bazelbuild_rules_pkg-fix-tarfile-format.patch"
+            "@graknlabs_bazel_distribution//:bazelbuild_rules_pkg-fix-tarfile-format.patch"
         ],
         patch_args = ["-p1"],
     )
