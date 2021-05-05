@@ -6,7 +6,6 @@ import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.RuntimeException
-import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -43,11 +42,30 @@ class JarAssembler : Callable<Unit> {
     /**
      * For path "a/b/c.java" inserts "a/" and "a/b/ into `entries`
      */
-    private fun addDirectories(path: Path) {
+    private fun preCreateDirectories(path: Path) {
         for (i in path.nameCount-1 downTo 1) {
             val subPath = path.subpath(0, i).toString() + "/"
             entries[subPath] = ByteArray(0)
         }
+    }
+
+    private fun getFinalPath(entry: ZipEntry, sourceFileBytes: ByteArray): String {
+        return if (entry.name.endsWith(".java")) {
+            // files in source JARs are moved according to their `package` statement
+            val sourceFile = sourceFileBytes.toString(Charset.forName("UTF-8"))
+            val sourceFileName = Paths.get(entry.name).fileName.toString()
+            val sourceFilePackage = javaPackageRegex.find(sourceFile)?.groups?.get(1)?.value ?: throw RuntimeException("could not obtain package of ${entry.name}")
+            "${sourceFilePackage.replace(".", "/")}/$sourceFileName"
+        } else {
+            entry.name
+        }
+    }
+
+    private fun prepareEntry(inputStream: BufferedInputStream, entry: ZipEntry) {
+        val sourceFileBytes = inputStream.readBytes()
+        val resultLocation = getFinalPath(entry, sourceFileBytes)
+        entries[resultLocation] = sourceFileBytes
+        preCreateDirectories(Paths.get(resultLocation))
     }
 
     override fun call() {
@@ -55,7 +73,7 @@ class JarAssembler : Callable<Unit> {
             if (pomFile != null) {
                 val pomPath = "META-INF/maven/${groupId}/${artifactId}/pom.xml"
                 entries[pomPath] = pomFile!!.readBytes()
-                addDirectories(Paths.get(pomPath))
+                preCreateDirectories(Paths.get(pomPath))
             }
             for (jar in jars) {
                 ZipFile(jar).use { jarZip ->
@@ -73,17 +91,7 @@ class JarAssembler : Callable<Unit> {
                         }
                         entryNames.add(entry.name)
                         BufferedInputStream(jarZip.getInputStream(entry)).use { inputStream ->
-                            val sourceFileBytes = inputStream.readBytes()
-                            val sourceFile = sourceFileBytes.toString(Charset.forName("UTF-8"))
-                            var resultLocation = entry.name
-                            // files in source JARs are moved according to their `package` statement
-                            if (entry.name.endsWith(".java")) {
-                                val sourceFileName = Paths.get(entry.name).fileName.toString()
-                                val sourceFilePackage = javaPackageRegex.find(sourceFile)?.groups?.get(1)?.value ?: throw RuntimeException("could not obtain package of ${entry.name}")
-                                resultLocation = "${sourceFilePackage.replace(".", "/")}/$sourceFileName"
-                            }
-                            entries[resultLocation] = sourceFileBytes
-                            addDirectories(Paths.get(resultLocation))
+                            prepareEntry(inputStream, entry)
                         }
                     }
                 }
