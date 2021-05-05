@@ -14,6 +14,7 @@ import java.util.concurrent.Callable
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
+import kotlin.collections.HashMap
 import kotlin.system.exitProcess
 
 
@@ -42,11 +43,13 @@ class JarAssembler : Callable<Unit> {
     /**
      * For path "a/b/c.java" inserts "a/" and "a/b/ into `entries`
      */
-    private fun preCreateDirectories(path: Path) {
+    private fun preCreateDirectories(path: Path): Map<String, ByteArray> {
+        val newEntries = HashMap<String, ByteArray>()
         for (i in path.nameCount-1 downTo 1) {
             val subPath = path.subpath(0, i).toString() + "/"
-            entries[subPath] = ByteArray(0)
+            newEntries[subPath] = ByteArray(0)
         }
+        return newEntries
     }
 
     private fun getFinalPath(entry: ZipEntry, sourceFileBytes: ByteArray): String {
@@ -61,19 +64,12 @@ class JarAssembler : Callable<Unit> {
         }
     }
 
-    private fun prepareEntry(inputStream: BufferedInputStream, entry: ZipEntry) {
-        val sourceFileBytes = inputStream.readBytes()
-        val resultLocation = getFinalPath(entry, sourceFileBytes)
-        entries[resultLocation] = sourceFileBytes
-        preCreateDirectories(Paths.get(resultLocation))
-    }
-
     override fun call() {
         ZipOutputStream(BufferedOutputStream(FileOutputStream(output_file))).use { out ->
             if (pomFile != null) {
                 val pomPath = "META-INF/maven/${groupId}/${artifactId}/pom.xml"
+                entries += preCreateDirectories(Paths.get(pomPath))
                 entries[pomPath] = pomFile!!.readBytes()
-                preCreateDirectories(Paths.get(pomPath))
             }
             for (jar in jars) {
                 ZipFile(jar).use { jarZip ->
@@ -91,7 +87,10 @@ class JarAssembler : Callable<Unit> {
                         }
                         entryNames.add(entry.name)
                         BufferedInputStream(jarZip.getInputStream(entry)).use { inputStream ->
-                            prepareEntry(inputStream, entry)
+                            val sourceFileBytes = inputStream.readBytes()
+                            val resultLocation = getFinalPath(entry, sourceFileBytes)
+                            entries[resultLocation] = sourceFileBytes
+                            preCreateDirectories(Paths.get(resultLocation))
                         }
                     }
                 }
