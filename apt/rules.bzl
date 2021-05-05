@@ -106,7 +106,7 @@ def assemble_apt(name,
             name = version_file
         )
     args = [
-        "$(location @graknlabs_bazel_distribution//apt:generate_depends_file)",
+        "$(location @vaticle_bazel_distribution//apt:generate_depends_file)",
         "--output", "$@",
         "--version_file", "$(location {})".format(version_file),
         "--deps"
@@ -127,7 +127,7 @@ def assemble_apt(name,
         srcs = srcs,
         outs = ["{}.depends".format(name)],
         cmd = " ".join(args),
-        tools = ["@graknlabs_bazel_distribution//apt:generate_depends_file"]
+        tools = ["@vaticle_bazel_distribution//apt:generate_depends_file"]
     )
 
     pkg_deb(
