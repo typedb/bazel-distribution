@@ -264,12 +264,12 @@ assemble_maven = rule(
             doc = "Project source control URL to fill into pom.xml",
         ),
         "_pom_generator": attr.label(
-            default = "@graknlabs_bazel_distribution//maven:pom-generator",
+            default = "@vaticle_bazel_distribution//maven:pom-generator",
             executable = True,
             cfg = "host",
         ),
         "_jar_assembler": attr.label(
-            default = "@graknlabs_bazel_distribution//maven:jar-assembler",
+            default = "@vaticle_bazel_distribution//maven:jar-assembler",
             executable = True,
             cfg = "host",
         ),
@@ -346,7 +346,7 @@ deploy_maven = rule(
         ),
         "_deployment_script": attr.label(
             allow_single_file = True,
-            default = "@graknlabs_bazel_distribution//maven/templates:deploy.py",
+            default = "@vaticle_bazel_distribution//maven/templates:deploy.py",
         ),
     },
     executable = True,
