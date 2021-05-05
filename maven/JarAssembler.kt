@@ -89,8 +89,8 @@ class JarAssembler : Callable<Unit> {
             }
             entries.keys.sorted().forEach {
                 val newEntry = ZipEntry(it)
-                out.write(entries[it]!!)
                 out.putNextEntry(newEntry)
+                out.write(entries[it]!!)
             }
         }
     }
