@@ -20,7 +20,6 @@ import kotlin.system.exitProcess
 
 @Command(name = "jar-assembler", mixinStandardHelpOptions = true)
 class JarAssembler : Callable<Unit> {
-    val javaPackageRegex = Regex("package\\s+([a-zA_Z_][\\.\\w]*);")
 
     @Option(names = ["--output"], required = true)
     lateinit var output_file: File
@@ -55,13 +54,22 @@ class JarAssembler : Callable<Unit> {
     private fun getFinalPath(entry: ZipEntry, sourceFileBytes: ByteArray): String {
         return if (entry.name.endsWith(".java")) {
             // files in source JARs are moved according to their `package` statement
-            val sourceFile = sourceFileBytes.toString(Charset.forName("UTF-8"))
+            val sourceFile = toStringUTF8(sourceFileBytes)
             val sourceFileName = Paths.get(entry.name).fileName.toString()
-            val sourceFilePackage = javaPackageRegex.find(sourceFile)?.groups?.get(1)?.value ?: throw RuntimeException("could not obtain package of ${entry.name}")
+            val sourceFilePackage = getJavaPackage(sourceFile) ?: throw RuntimeException("could not obtain package of ${entry.name}")
             "${sourceFilePackage.replace(".", "/")}/$sourceFileName"
         } else {
             entry.name
         }
+    }
+
+    private fun toStringUTF8(sourceFileBytes: ByteArray): String {
+        return sourceFileBytes.toString(Charset.forName("UTF-8"))
+    }
+
+    private fun getJavaPackage(sourceFile: String): String? {
+        val javaPackageRegex = Regex("package\\s+([a-zA_Z_][\\.\\w]*);")
+        return javaPackageRegex.find(sourceFile)?.groups?.get(1)?.value
     }
 
     override fun call() {
