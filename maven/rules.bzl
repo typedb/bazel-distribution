@@ -100,7 +100,6 @@ def _generate_class_jar(ctx, pom_file):
         inputs = [jar, pom_file] + class_jar_deps,
         outputs = [output_jar],
         arguments = [
-            "--prefix=",  # prefix is deliberately left empty
             "--group-id=" + maven_coordinates.group_id,
             "--artifact-id=" + maven_coordinates.artifact_id,
             "--pom-file=" + pom_file.path,
@@ -138,7 +137,6 @@ def _generate_source_jar(ctx):
         inputs = [srcjar] + source_jar_deps,
         outputs = [output_jar],
         arguments = [
-            "--prefix=" + ctx.attr.source_jar_prefix,
             "--jars=" + ";".join(source_jar_paths),
             "--output=" + output_jar.path,
         ],
@@ -227,10 +225,6 @@ assemble_maven = rule(
                 aggregate_dependency_info,
             ],
             doc = "Java target for subsequent deployment",
-        ),
-        "source_jar_prefix": attr.string(
-            default = "",
-            doc = "Prefix source JAR files with this directory",
         ),
         "version_file": attr.label(
             allow_single_file = True,
