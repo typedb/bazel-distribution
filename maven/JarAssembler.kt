@@ -22,7 +22,7 @@ import kotlin.system.exitProcess
 class JarAssembler : Callable<Unit> {
 
     @Option(names = ["--output"], required = true)
-    lateinit var output_file: File
+    lateinit var outputFile: File
 
     @Option(names = ["--group-id"])
     var groupId = ""
@@ -36,8 +36,47 @@ class JarAssembler : Callable<Unit> {
     @Option(names = ["--jars"], split = ";")
     lateinit var jars: Array<File>
 
+    private val entries = HashMap<String, ByteArray>()
     private val entryNames = mutableSetOf<String>()
-    val entries = HashMap<String, ByteArray>()
+
+    override fun call() {
+        ZipOutputStream(BufferedOutputStream(FileOutputStream(outputFile))).use { out ->
+            if (pomFile != null) {
+                val pomPath = "META-INF/maven/${groupId}/${artifactId}/pom.xml"
+                entries += preCreateDirectories(Paths.get(pomPath))
+                entries[pomPath] = pomFile!!.readBytes()
+            }
+            for (jar in jars) {
+                ZipFile(jar).use { jarZip ->
+                    jarZip.entries().asSequence().forEach { entry ->
+                        if (entryNames.contains(entry.name)) {
+                            throw RuntimeException("duplicate entry in the JAR: ${entry.name}")
+                        }
+                        if (entry.name.contains("META-INF")) {
+                            // pom.xml will be added by us
+                            return@forEach
+                        }
+                        if (entry.isDirectory) {
+                            // needed directories would be added by us
+                            return@forEach
+                        }
+                        entryNames.add(entry.name)
+                        BufferedInputStream(jarZip.getInputStream(entry)).use { inputStream ->
+                            val sourceFileBytes = inputStream.readBytes()
+                            val resultLocation = getFinalPath(entry, sourceFileBytes)
+                            entries += preCreateDirectories(Paths.get(resultLocation))
+                            entries[resultLocation] = sourceFileBytes
+                        }
+                    }
+                }
+            }
+            entries.keys.sorted().forEach {
+                val newEntry = ZipEntry(it)
+                out.putNextEntry(newEntry)
+                out.write(entries[it]!!)
+            }
+        }
+    }
 
     /**
      * For path "a/b/c.java" inserts "a/" and "a/b/ into `entries`
@@ -72,44 +111,6 @@ class JarAssembler : Callable<Unit> {
         return javaPackageRegex.find(sourceFile)?.groups?.get(1)?.value
     }
 
-    override fun call() {
-        ZipOutputStream(BufferedOutputStream(FileOutputStream(output_file))).use { out ->
-            if (pomFile != null) {
-                val pomPath = "META-INF/maven/${groupId}/${artifactId}/pom.xml"
-                entries += preCreateDirectories(Paths.get(pomPath))
-                entries[pomPath] = pomFile!!.readBytes()
-            }
-            for (jar in jars) {
-                ZipFile(jar).use { jarZip ->
-                    jarZip.entries().asSequence().forEach { entry ->
-                        if (entry.name.contains("META-INF")) {
-                            // pom.xml will be added by us
-                            return@forEach
-                        }
-                        if (entryNames.contains(entry.name)) {
-                            throw RuntimeException("duplicate entry in the JAR: ${entry.name}")
-                        }
-                        if (entry.isDirectory) {
-                            // needed directories would be added by us
-                            return@forEach
-                        }
-                        entryNames.add(entry.name)
-                        BufferedInputStream(jarZip.getInputStream(entry)).use { inputStream ->
-                            val sourceFileBytes = inputStream.readBytes()
-                            val resultLocation = getFinalPath(entry, sourceFileBytes)
-                            entries += preCreateDirectories(Paths.get(resultLocation))
-                            entries[resultLocation] = sourceFileBytes
-                        }
-                    }
-                }
-            }
-            entries.keys.sorted().forEach {
-                val newEntry = ZipEntry(it)
-                out.putNextEntry(newEntry)
-                out.write(entries[it]!!)
-            }
-        }
-    }
 }
 
 fun main(args: Array<String>): Unit = exitProcess(CommandLine(JarAssembler()).execute(*args))
