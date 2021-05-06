@@ -97,8 +97,8 @@ class JarAssembler : Callable<Unit> {
                         BufferedInputStream(jarZip.getInputStream(entry)).use { inputStream ->
                             val sourceFileBytes = inputStream.readBytes()
                             val resultLocation = getFinalPath(entry, sourceFileBytes)
+                            entries += preCreateDirectories(Paths.get(resultLocation))
                             entries[resultLocation] = sourceFileBytes
-                            preCreateDirectories(Paths.get(resultLocation))
                         }
                     }
                 }
