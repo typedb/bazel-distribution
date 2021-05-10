@@ -18,17 +18,9 @@ def rules_python():
 def rules_pkg():
     http_archive(
         name = "rules_pkg",
-        urls = [
-            "https://github.com/bazelbuild/rules_pkg/releases/download/0.2.5/rules_pkg-0.2.5.tar.gz",
-            "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.2.5/rules_pkg-0.2.5.tar.gz",
-        ],
-        sha256 = "352c090cc3d3f9a6b4e676cf42a6047c16824959b438895a76c2989c6d7c246a",
-        patches = [
-            "@vaticle_bazel_distribution//:bazelbuild_rules_pkg-fix-tarfile-format.patch"
-        ],
-        patch_args = ["-p1"],
+        url = "https://github.com/bazelbuild/rules_pkg/archive/1b031fdae52a879e3a87f8ed9b083ab99f8a32d0.tar.gz",
+        strip_prefix = "rules_pkg-1b031fdae52a879e3a87f8ed9b083ab99f8a32d0/pkg/"
     )
-
 
 def rules_kotlin():
     http_archive(
