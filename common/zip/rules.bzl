@@ -16,7 +16,7 @@
 #
 
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("@vaticle_bazel_distribution//common:tgz2zip.bzl", "tgz2zip")
+load("@vaticle_bazel_distribution//common/tgz2zip:rules.bzl", "tgz2zip")
 
 def _assemble_archive_prefix_file_impl(ctx):
     version = ctx.var.get('version', '')
