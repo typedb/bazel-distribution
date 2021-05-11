@@ -23,7 +23,6 @@
 import os
 import sys
 import zipfile
-import common
 
 # This ZipFile extends Python's ZipFile and fixes the lost permission issue
 class ZipFile(zipfile.ZipFile):
@@ -46,7 +45,7 @@ target_paths = sys.argv[3:]
 
 version = open(version_path, 'r').read().strip()
 
-with common.ZipFile(output_path, 'w', compression=zipfile.ZIP_STORED) as output:
+with ZipFile(output_path, 'w', compression=zipfile.ZIP_STORED) as output:
     for target in sorted(target_paths):
         if target.endswith('zip') or target.endswith('tar.gz'):
             path_components = os.path.basename(target).split('.')
