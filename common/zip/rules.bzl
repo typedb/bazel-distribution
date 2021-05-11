@@ -43,13 +43,14 @@ assemble_zip_prefix_file = rule(
 )
 
 def assemble_zip(name,
-                 output_filename,
-                 targets,
+                 output_filename = None,
+                 targets = [],
                  additional_files = {},
                  empty_directories = [],
                  permissions = {},
                  append_version = True,
-                 visibility = ["//visibility:private"]):
+                 visibility = ["//visibility:private"],
+                 tags = []):
     """Assemble distribution archive (.zip)
 
     Args:
@@ -63,6 +64,8 @@ def assemble_zip(name,
         append_version: append version to root folder inside the archive
         visibility: controls whether the target can be used by other packages
     """
+    if output_filename is None:
+        output_filename = name
     pkg_tar(
         name="{}__do_not_reference__targz".format(name),
         deps = targets,
@@ -70,6 +73,7 @@ def assemble_zip(name,
         files = additional_files,
         empty_dirs = empty_directories,
         modes = permissions,
+        tags = tags
     )
 
     assemble_zip_prefix_file(
@@ -83,7 +87,8 @@ def assemble_zip(name,
         tgz = ":{}__do_not_reference__targz".format(name),
         output_filename = output_filename,
         prefix_file = "{}__do_not_reference__prefix_file".format(name),
-        visibility = visibility
+        visibility = visibility,
+        tags = tags
     )
 
 

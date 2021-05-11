@@ -20,14 +20,25 @@
 load("@vaticle_bazel_distribution//common/java_deps:rules.bzl", "java_deps")
 load("@vaticle_bazel_distribution//common/zip:rules.bzl", "assemble_zip")
 
-def assemble_targz(name, targets, additional_files, permissions, output_filename, **kwargs):
+def assemble_targz(name,
+                   output_filename = None,
+                   targets = [],
+                   additional_files = {},
+                   empty_directories = [],
+                   permissions = {},
+                   append_version = True,
+                   visibility = ["//visibility:private"],
+                   tags = []):
   assemble_zip(
       name = name + "__do_not_reference",
+      output_filename = output_filename,
       targets = targets,
       additional_files = additional_files,
+      empty_directories = empty_directories,
       permissions = permissions,
-      output_filename = output_filename,
-      **kwargs
+      append_version = append_version,
+      visibility = visibility,
+      tags = tags
   )
 
   native.genrule(
@@ -35,5 +46,6 @@ def assemble_targz(name, targets, additional_files, permissions, output_filename
       cmd = "unzip -qq $(location :" + name + "__do_not_reference" + ") -d $(location :" + name + "__do_not_reference" + ")-unzipped && tar -czf $$(realpath $(OUTS)) -C $$(dirname $(location :" + name + "__do_not_reference" + "))/$$(basename $(location :" + name + "__do_not_reference" + ")-unzipped) .",
       outs = [ output_filename + ".tar.gz" ],
       srcs = [ name + "__do_not_reference" ],
-      **kwargs
+      visibility = visibility,
+      tags = tags
   )
