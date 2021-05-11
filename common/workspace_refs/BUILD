@@ -1,4 +1,7 @@
 #
+# Copyright (C) 2021 Vaticle
+#
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,49 +20,10 @@
 # under the License.
 #
 
-exports_files(["archiver.py", "common.py"])
-
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 bzl_library(
     name = "lib",
-    srcs = [
-        "assemble_versioned.bzl",
-        "checksum.bzl",
-        "generate_json_config.bzl",
-        "java_deps.bzl",
-        "rules.bzl",
-        "tgz2zip.bzl",
-    ],
-    deps = [
-        "//common/workspace_refs:lib",
-        "//common/targz:lib",
-        "//common/zip:lib"
-    ],
-    visibility = ["//visibility:public"]
-)
-
-py_binary(
-    name = "java_deps",
-    srcs = ["java_deps.py"],
-    visibility = ["//visibility:public"]
-)
-
-py_binary(
-    name = "tgz2zip",
-    srcs = ["tgz2zip.py"],
-    visibility = ["//visibility:public"]
-)
-
-py_library(
-    name = "common",
-    srcs = ["common.py"],
-    visibility = ["//visibility:public"]
-)
-
-py_binary(
-    name = "assemble-versioned",
-    srcs = ["assemble-versioned.py"],
-    deps = [":common"],
+    srcs = [ "rules.bzl" ],
     visibility = ["//visibility:public"]
 )
