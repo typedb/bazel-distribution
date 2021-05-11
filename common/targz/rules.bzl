@@ -45,7 +45,7 @@ def assemble_targz(name,
 
   native.genrule(
       name = name,
-      cmd = "unzip -qq $(location :" + name + "__do_not_reference" + ") -d $(location :" + name + "__do_not_reference" + ")-unzipped && tar -czf $$(realpath $(OUTS)) -C $$(dirname $(location :" + name + "__do_not_reference" + "))/$$(basename $(location :" + name + "__do_not_reference" + ")-unzipped) .",
+      cmd = "unzip -qq $(location :" + name + "__do_not_reference" + ") -d $(location :" + name + "__do_not_reference" + ")-unzipped && tar -czf $(OUTS) -C $$(dirname $(location :" + name + "__do_not_reference" + "))/$$(basename $(location :" + name + "__do_not_reference" + ")-unzipped) .",
       outs = [ output_filename + ".tar.gz" ],
       srcs = [ name + "__do_not_reference" ],
       visibility = visibility,
