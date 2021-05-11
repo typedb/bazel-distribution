@@ -127,7 +127,7 @@ def _assemble_archive_prefix_file_impl(ctx):
     )
 
 
-_assemble_zip_prefix_file = rule(
+assemble_zip_prefix_file = rule(
     attrs = {
         "append_version": attr.bool(default=True),
         "prefix": attr.string()
@@ -168,7 +168,7 @@ def assemble_zip(name,
         modes = permissions,
     )
 
-    _assemble_zip_prefix_file(
+    assemble_zip_prefix_file(
         name = "{}__do_not_reference__prefix_file".format(name),
         prefix = "./" + output_filename,
         append_version = append_version

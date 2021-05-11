@@ -16,7 +16,7 @@
 #
 
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("@vaticle_bazel_distribution//common:rules.bzl", "_assemble_zip_prefix_file", "tgz2zip")
+load("@vaticle_bazel_distribution//common:rules.bzl", "assemble_zip_prefix_file", "tgz2zip")
 
 def assemble_zip(name,
                  output_filename,
@@ -48,7 +48,7 @@ def assemble_zip(name,
         modes = permissions,
     )
 
-    _assemble_zip_prefix_file(
+    assemble_zip_prefix_file(
         name = "{}__do_not_reference__prefix_file".format(name),
         prefix = "./" + output_filename,
         append_version = append_version
