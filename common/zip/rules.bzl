@@ -16,7 +16,31 @@
 #
 
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("@vaticle_bazel_distribution//common:rules.bzl", "assemble_zip_prefix_file", "tgz2zip")
+load("@vaticle_bazel_distribution//common:tgz2zip.bzl", "tgz2zip")
+
+def _assemble_archive_prefix_file_impl(ctx):
+    version = ctx.var.get('version', '')
+
+    prefix = ctx.attr.prefix
+    if prefix and version and ctx.attr.append_version:
+        prefix = '{}-{}'.format(prefix, version)
+
+    ctx.actions.run_shell(
+        inputs = [],
+        outputs = [ctx.outputs.prefix_file],
+        command = "echo {} > {}".format(prefix, ctx.outputs.prefix_file.path)
+    )
+
+assemble_zip_prefix_file = rule(
+    attrs = {
+        "append_version": attr.bool(default=True),
+        "prefix": attr.string()
+    },
+    outputs = {
+        "prefix_file": "%{name}.prefix"
+    },
+    implementation = _assemble_archive_prefix_file_impl
+)
 
 def assemble_zip(name,
                  output_filename,

@@ -31,6 +31,10 @@ bzl_library(
         "rules.bzl",
         "tgz2zip.bzl",
     ],
+    deps = [
+        "//common/targz:lib",
+        "//common/zip:lib"
+    ],
     visibility = ["//visibility:public"]
 )
 
