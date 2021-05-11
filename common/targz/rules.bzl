@@ -29,6 +29,8 @@ def assemble_targz(name,
                    append_version = True,
                    visibility = ["//visibility:private"],
                    tags = []):
+  if output_filename == None:
+      output_filename = name
   assemble_zip(
       name = name + "__do_not_reference",
       output_filename = output_filename,

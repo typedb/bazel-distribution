@@ -64,7 +64,7 @@ def assemble_zip(name,
         append_version: append version to root folder inside the archive
         visibility: controls whether the target can be used by other packages
     """
-    if output_filename is None:
+    if output_filename == None:
         output_filename = name
     pkg_tar(
         name="{}__do_not_reference__targz".format(name),
