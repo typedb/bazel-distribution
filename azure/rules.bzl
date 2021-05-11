@@ -18,7 +18,7 @@
 #
 
 load("//packer:rules.bzl", "assemble_packer")
-load("//common:generate_json_config/rules.bzl", "generate_json_config")
+load("//common/generate_json_config:rules.bzl", "generate_json_config")
 
 def assemble_azure(name,
                    image_name,

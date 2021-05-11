@@ -17,7 +17,7 @@
 # under the License.
 #
 
-load("@vaticle_bazel_distribution//common:java_deps/rules.bzl", "java_deps")
+load("@vaticle_bazel_distribution//common/java_deps:rules.bzl", "java_deps")
 load("@vaticle_bazel_distribution//common/zip:rules.bzl", "assemble_zip")
 
 def assemble_targz(name, targets, additional_files, permissions, output_filename, **kwargs):

@@ -33,16 +33,16 @@ assemble_azure = _
 load("//brew:rules.bzl", _ = "deploy_brew")
 deploy_brew = _
 
-load("//common:assemble_versioned/rules.bzl", _ = "assemble_versioned")
+load("//common/assemble_versioned:rules.bzl", _ = "assemble_versioned")
 assemble_versioned = _
 
 load("//common/checksum:rules.bzl", _ = "checksum")
 checksum = _
 
-load("//common:generate_json_config/rules.bzl", _ = "generate_json_config")
+load("//common/generate_json_config:rules.bzl", _ = "generate_json_config")
 generate_json_config = _
 
-load("//common:java_deps/rules.bzl",
+load("//common/java_deps:rules.bzl",
     _MAVEN_COORDINATES_PREFIX = "MAVEN_COORDINATES_PREFIX",
     _JarToMavenCoordinatesMapping = "JarToMavenCoordinatesMapping",
     _TransitiveJarToMavenCoordinatesMapping = "TransitiveJarToMavenCoordinatesMapping",

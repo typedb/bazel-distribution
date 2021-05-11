@@ -77,16 +77,16 @@ stardoc(
         # From: //brew:rules.bzl
         "deploy_brew",
 
-        # From: //common:assemble_versioned/rules.bzl
+        # From: //common/assemble_versioned:rules.bzl
         "assemble_versioned",
 
         # From: //common/checksum:rules.bzl
         "checksum",
 
-        # From: //common:generate_json_config/rules.bzl
+        # From: //common/generate_json_config:rules.bzl
         "generate_json_config",
 
-        # From: //common:java_deps/rules.bzl
+        # From: //common/java_deps:rules.bzl
         "MAVEN_COORDINATES_PREFIX",
         "JarToMavenCoordinatesMapping",
         "TransitiveJarToMavenCoordinatesMapping",
