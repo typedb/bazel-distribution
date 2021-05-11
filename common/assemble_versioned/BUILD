@@ -31,6 +31,5 @@ bzl_library(
 py_binary(
     name = "assemble-versioned",
     srcs = ["assemble-versioned.py"],
-    deps = ["//common"],
     visibility = ["//visibility:public"]
 )

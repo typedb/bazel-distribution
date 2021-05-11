@@ -36,9 +36,3 @@ bzl_library(
     ],
     visibility = ["//visibility:public"]
 )
-
-py_library(
-    name = "common",
-    srcs = ["common.py"],
-    visibility = ["//visibility:public"]
-)
