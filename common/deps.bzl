@@ -19,7 +19,11 @@ def rules_pkg():
     http_archive(
         name = "rules_pkg",
         url = "https://github.com/bazelbuild/rules_pkg/archive/1b031fdae52a879e3a87f8ed9b083ab99f8a32d0.tar.gz",
-        strip_prefix = "rules_pkg-1b031fdae52a879e3a87f8ed9b083ab99f8a32d0/pkg/"
+        strip_prefix = "rules_pkg-1b031fdae52a879e3a87f8ed9b083ab99f8a32d0/pkg/",
+        patches = [
+            "@vaticle_bazel_distribution//:bazelbuild_rules_pkg-fix-bzl-library-visibility.patch",
+        ],
+        patch_args = ["-p1"],
     )
 
 def rules_kotlin():

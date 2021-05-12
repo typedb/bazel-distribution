@@ -1,0 +1,20 @@
+---
+ distro/BUILD | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/distro/BUILD b/distro/BUILD
+index 7b3d861..6260c9a 100644
+--- a/distro/BUILD
++++ b/distro/BUILD
+@@ -106,7 +106,7 @@ bzl_library(
+         "//:rpm.bzl",
+         "//:version.bzl",
+     ],
+-    visibility = ["//visibility:private"],
++    visibility = ["//visibility:public"],
+ )
+ 
+ stardoc(
+-- 
+2.30.2
+
