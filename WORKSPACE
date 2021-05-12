@@ -57,10 +57,10 @@ rules_pkg_dependencies()
 
 # Load @io_bazel_stardoc
 git_repository(
-    name = "bazel_stardoc",
+    name = "io_bazel_stardoc",
     remote = "https://github.com/bazelbuild/stardoc",
-    commit = "d93ee5347e2d9c225ad315094507e018364d5a67",
+    commit = "87dc99cfe1baa9255c607ac0229bfd33a65367f5",
 )
-load("@bazel_stardoc//:setup.bzl", "stardoc_repositories")
+load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
 stardoc_repositories()
 

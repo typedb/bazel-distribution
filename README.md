@@ -433,17 +433,17 @@ Assemble package for installation with APT
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
 | <a id="assemble_apt-name"></a>name |  A unique name for this target.   |  none |
-| <a id="assemble_apt-package_name"></a>package_name |  Package name for built .deb package https://www.debian.org/doc/debian-policy/ch-controlfields#package   |  none |
-| <a id="assemble_apt-maintainer"></a>maintainer |  The package maintainer's name and email address. The name must come first, then the email address inside angle brackets &lt;&gt; (in RFC822 format)   |  none |
-| <a id="assemble_apt-description"></a>description |  description of the built package https://www.debian.org/doc/debian-policy/ch-controlfields#description   |  none |
-| <a id="assemble_apt-version_file"></a>version_file |  File containing version number of a package. Alternatively, pass --define version=VERSION to Bazel invocation. Specifying commit SHA will result in prepending '0.0.0' to it to comply with Debian rules. Not specifying version at all defaults to '0.0.0' https://www.debian.org/doc/debian-policy/ch-controlfields#version   |  <code>None</code> |
+| <a id="assemble_apt-package_name"></a>package_name |  Package name for built .deb package     https://www.debian.org/doc/debian-policy/ch-controlfields#package   |  none |
+| <a id="assemble_apt-maintainer"></a>maintainer |  The package maintainer's name and email address.     The name must come first, then the email address     inside angle brackets &lt;&gt; (in RFC822 format)   |  none |
+| <a id="assemble_apt-description"></a>description |  description of the built package     https://www.debian.org/doc/debian-policy/ch-controlfields#description   |  none |
+| <a id="assemble_apt-version_file"></a>version_file |  File containing version number of a package.     Alternatively, pass --define version=VERSION to Bazel invocation.     Specifying commit SHA will result in prepending '0.0.0' to it to comply with Debian rules.     Not specifying version at all defaults to '0.0.0'     https://www.debian.org/doc/debian-policy/ch-controlfields#version   |  <code>None</code> |
 | <a id="assemble_apt-installation_dir"></a>installation_dir |  directory into which .deb package is unpacked at installation   |  <code>None</code> |
 | <a id="assemble_apt-workspace_refs"></a>workspace_refs |  JSON file with other Bazel workspace references   |  <code>None</code> |
 | <a id="assemble_apt-archives"></a>archives |  Bazel labels of archives that go into .deb package   |  <code>[]</code> |
 | <a id="assemble_apt-empty_dirs"></a>empty_dirs |  list of empty directories created at package installation   |  <code>[]</code> |
-| <a id="assemble_apt-files"></a>files |  mapping between Bazel labels of archives that go into .deb package and their resulting location on .deb package installation   |  <code>{}</code> |
-| <a id="assemble_apt-depends"></a>depends |  list of Debian packages this package depends on https://www.debian.org/doc/debian-policy/ch-relationships.htm   |  <code>[]</code> |
-| <a id="assemble_apt-symlinks"></a>symlinks |  mapping between source and target of symbolic links created at installation   |  <code>{}</code> |
+| <a id="assemble_apt-files"></a>files |  mapping between Bazel labels of archives that go into .deb package     and their resulting location on .deb package installation   |  <code>{}</code> |
+| <a id="assemble_apt-depends"></a>depends |  list of Debian packages this package depends on     https://www.debian.org/doc/debian-policy/ch-relationships.htm   |  <code>[]</code> |
+| <a id="assemble_apt-symlinks"></a>symlinks |  mapping between source and target of symbolic links     created at installation   |  <code>{}</code> |
 | <a id="assemble_apt-permissions"></a>permissions |  mapping between paths and UNIX permissions   |  <code>{}</code> |
 
 
@@ -562,14 +562,14 @@ Assemble package for installation with RPM
 | <a id="assemble_rpm-name"></a>name |  A unique name for this target.   |  none |
 | <a id="assemble_rpm-package_name"></a>package_name |  Package name for built .rpm package   |  none |
 | <a id="assemble_rpm-spec_file"></a>spec_file |  The RPM spec file to use   |  none |
-| <a id="assemble_rpm-version_file"></a>version_file |  File containing version number of a package. Alternatively, pass --define version=VERSION to Bazel invocation. Not specifying version defaults to '0.0.0'   |  <code>None</code> |
+| <a id="assemble_rpm-version_file"></a>version_file |  File containing version number of a package.     Alternatively, pass --define version=VERSION to Bazel invocation.     Not specifying version defaults to '0.0.0'   |  <code>None</code> |
 | <a id="assemble_rpm-workspace_refs"></a>workspace_refs |  JSON file with other Bazel workspace references   |  <code>None</code> |
 | <a id="assemble_rpm-installation_dir"></a>installation_dir |  directory into which .rpm package is unpacked at installation   |  <code>None</code> |
 | <a id="assemble_rpm-archives"></a>archives |  Bazel labels of archives that go into .rpm package   |  <code>[]</code> |
 | <a id="assemble_rpm-empty_dirs"></a>empty_dirs |  list of empty directories created at package installation   |  <code>[]</code> |
-| <a id="assemble_rpm-files"></a>files |  mapping between Bazel labels of archives that go into .rpm package and their resulting location on .rpm package installation   |  <code>{}</code> |
+| <a id="assemble_rpm-files"></a>files |  mapping between Bazel labels of archives that go into .rpm package     and their resulting location on .rpm package installation   |  <code>{}</code> |
 | <a id="assemble_rpm-permissions"></a>permissions |  mapping between paths and UNIX permissions   |  <code>{}</code> |
-| <a id="assemble_rpm-symlinks"></a>symlinks |  mapping between source and target of symbolic links created at installation   |  <code>{}</code> |
+| <a id="assemble_rpm-symlinks"></a>symlinks |  mapping between source and target of symbolic links             created at installation   |  <code>{}</code> |
 | <a id="assemble_rpm-tags"></a>tags |  additional tags passed to all wrapped rules   |  <code>[]</code> |
 
 
@@ -592,7 +592,7 @@ Assemble distribution archive (.tar.gz)
 | <a id="assemble_targz-name"></a>name |  A unique name for this target.   |  none |
 | <a id="assemble_targz-output_filename"></a>output_filename |  filename of resulting archive   |  <code>None</code> |
 | <a id="assemble_targz-targets"></a>targets |  Bazel labels of archives that go into .tar.gz package   |  <code>[]</code> |
-| <a id="assemble_targz-additional_files"></a>additional_files |  mapping between Bazel labels of files that go into archive and their resulting location in archive   |  <code>{}</code> |
+| <a id="assemble_targz-additional_files"></a>additional_files |  mapping between Bazel labels of files that go into archive     and their resulting location in archive   |  <code>{}</code> |
 | <a id="assemble_targz-empty_directories"></a>empty_directories |  list of empty directories created at archive installation   |  <code>[]</code> |
 | <a id="assemble_targz-permissions"></a>permissions |  mapping between paths and UNIX permissions   |  <code>{}</code> |
 | <a id="assemble_targz-append_version"></a>append_version |  append version to root folder inside the archive   |  <code>True</code> |
@@ -606,7 +606,7 @@ Assemble distribution archive (.tar.gz)
 
 <pre>
 assemble_zip(<a href="#assemble_zip-name">name</a>, <a href="#assemble_zip-output_filename">output_filename</a>, <a href="#assemble_zip-targets">targets</a>, <a href="#assemble_zip-additional_files">additional_files</a>, <a href="#assemble_zip-empty_directories">empty_directories</a>, <a href="#assemble_zip-permissions">permissions</a>,
-             <a href="#assemble_zip-append_version">append_version</a>, <a href="#assemble_zip-visibility">visibility</a>, <a href="#assemble_zip-tags">tags</a>)
+             <a href="#assemble_zip-append_version">append_version</a>, <a href="#assemble_zip-visibility">visibility</a>)
 </pre>
 
 Assemble distribution archive (.zip)
@@ -617,13 +617,12 @@ Assemble distribution archive (.zip)
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
 | <a id="assemble_zip-name"></a>name |  A unique name for this target.   |  none |
-| <a id="assemble_zip-output_filename"></a>output_filename |  filename of resulting archive   |  <code>None</code> |
-| <a id="assemble_zip-targets"></a>targets |  Bazel labels of archives that go into .tar.gz package   |  <code>[]</code> |
-| <a id="assemble_zip-additional_files"></a>additional_files |  mapping between Bazel labels of files that go into archive and their resulting location in archive   |  <code>{}</code> |
+| <a id="assemble_zip-output_filename"></a>output_filename |  filename of resulting archive   |  none |
+| <a id="assemble_zip-targets"></a>targets |  Bazel labels of archives that go into .tar.gz package   |  none |
+| <a id="assemble_zip-additional_files"></a>additional_files |  mapping between Bazel labels of files that go into archive     and their resulting location in archive   |  <code>{}</code> |
 | <a id="assemble_zip-empty_directories"></a>empty_directories |  list of empty directories created at archive installation   |  <code>[]</code> |
 | <a id="assemble_zip-permissions"></a>permissions |  mapping between paths and UNIX permissions   |  <code>{}</code> |
 | <a id="assemble_zip-append_version"></a>append_version |  append version to root folder inside the archive   |  <code>True</code> |
 | <a id="assemble_zip-visibility"></a>visibility |  controls whether the target can be used by other packages   |  <code>["//visibility:private"]</code> |
-| <a id="assemble_zip-tags"></a>tags |  <p align="center"> - </p>   |  <code>[]</code> |
 
 

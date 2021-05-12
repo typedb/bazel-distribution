@@ -17,12 +17,12 @@
 # under the License.
 #
 
-load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
+load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 exports_files([
     "bazelbuild_rules_python-export-requirements-bzl-for-stardoc.patch",
-    "bazelbuild_rules_pkg-fix-bzl-library-visibility.patch",
+    "bazelbuild_rules_pkg-fix-tarfile-format.patch",
 ])
 
 # Stardoc is unable to generate documentation unless it can
@@ -35,15 +35,13 @@ exports_files([
 bzl_library(
     name = "stardoc_hacks",
     srcs = [
-        "@rules_pkg//legacy:rpm.bzl",
-        "@rules_pkg//:rpm_pfg.bzl",
+        "@rules_pkg//:pkg.bzl",
+        "@rules_pkg//:path.bzl",
+        "@rules_pkg//:rpm.bzl",
         "@bazel_tools//tools:bzl_srcs",
         "@vaticle_bazel_distribution_pip//:requirements.bzl",
         "@rules_python//python:whl.bzl",
     ],
-    deps = [
-        "@rules_pkg//distro:rules_pkg_lib",
-    ]
 )
 
 stardoc(
