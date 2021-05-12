@@ -45,9 +45,26 @@ def assemble_targz(name,
 
   native.genrule(
       name = name,
-      cmd = "unzip -qq $(location :" + name + "__do_not_reference" + ") -d $(location :" + name + "__do_not_reference" + ")-unzipped && tar -czf $$(pwd)/$(OUTS) -C $$(dirname $(location :" + name + "__do_not_reference" + "))/$$(basename $(location :" + name + "__do_not_reference" + ")-unzipped) .",
+      cmd = "$(location @vaticle_bazel_distribution//common/targz:repackage) $(location :" + name + "__do_not_reference" + ") $(OUTS)",
       outs = [ output_filename + ".tar.gz" ],
       srcs = [ name + "__do_not_reference" ],
+      tools = ["@vaticle_bazel_distribution//common/targz:repackage"], # genrule is evaluated in the context of the calling repository, therefore the path must stay absolute.
       visibility = visibility,
       tags = tags
   )
+
+
+        name = "{}__do_not_reference__targz_0".format(name),
+        deps = targets,
+        extension = "tar.gz",
+        files = additional_files,
+        empty_dirs = empty_directories,
+        modes = permissions,
+        tags = tags,
+
+        name="{}__do_not_reference__targz".format(name),
+        deps = targets,
+        extension = "tar.gz",
+        files = additional_files,
+        empty_dirs = empty_directories,
+        modes = permissions,
