@@ -58,7 +58,7 @@ tgz2zip = rule(
             allow_single_file = True
         ),
         "_tgz2zip_py": attr.label(
-            default = "//common:tgz2zip",
+            default = "//common/tgz2zip",
             executable = True,
             cfg = "host"
         )

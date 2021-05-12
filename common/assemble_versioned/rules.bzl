@@ -52,7 +52,7 @@ assemble_versioned = rule(
             doc = "File containing version string"
         ),
         "_assemble_versioned_py": attr.label(
-            default = "//common:assemble-versioned",
+            default = "//common/assemble_versioned:assemble-versioned",
             executable = True,
             cfg = "host"
         )
