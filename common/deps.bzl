@@ -18,8 +18,15 @@ def rules_python():
 def rules_pkg():
     http_archive(
         name = "rules_pkg",
-        url = "https://github.com/bazelbuild/rules_pkg/archive/1b031fdae52a879e3a87f8ed9b083ab99f8a32d0.tar.gz",
-        strip_prefix = "rules_pkg-1b031fdae52a879e3a87f8ed9b083ab99f8a32d0/pkg/"
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.4.0/rules_pkg-0.4.0.tar.gz",
+            "https://github.com/bazelbuild/rules_pkg/releases/download/0.4.0/rules_pkg-0.4.0.tar.gz",
+        ],
+        sha256 = "038f1caa773a7e35b3663865ffb003169c6a71dc995e39bf4815792f385d837d",
+        patches = [
+            "@vaticle_bazel_distribution//:bazelbuild_rules_pkg-allow-long-filenames.patch",
+        ],
+        patch_args = ["-p1"],
     )
 
 def rules_kotlin():
