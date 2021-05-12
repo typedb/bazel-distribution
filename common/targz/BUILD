@@ -27,9 +27,3 @@ bzl_library(
     srcs = [ "rules.bzl" ],
     visibility = ["//visibility:public"]
 )
-
-sh_binary(
-    name = "repackage",
-    srcs = [ "repackage.sh" ],
-    visibility = ["//visibility:public"]
-)
