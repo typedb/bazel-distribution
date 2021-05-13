@@ -38,6 +38,8 @@ bzl_library(
         "@rules_pkg//:pkg.bzl",
         "@rules_pkg//:path.bzl",
         "@rules_pkg//:rpm.bzl",
+        "@rules_pkg//:providers.bzl",
+        "@rules_pkg//:private/util.bzl",
         "@bazel_tools//tools:bzl_srcs",
         "@vaticle_bazel_distribution_pip//:requirements.bzl",
         "@rules_python//python:whl.bzl",
