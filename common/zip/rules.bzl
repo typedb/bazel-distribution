@@ -19,39 +19,16 @@ load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@vaticle_bazel_distribution//common/targz:rules.bzl", "assemble_targz")
 load("@vaticle_bazel_distribution//common/tgz2zip:rules.bzl", "tgz2zip")
 
-def _assemble_archive_prefix_file_impl(ctx):
-    version = ctx.var.get('version', '')
-
-    prefix = ctx.attr.prefix
-    if prefix and version and ctx.attr.append_version:
-        prefix = '{}-{}'.format(prefix, version)
-
-    ctx.actions.run_shell(
-        inputs = [],
-        outputs = [ctx.outputs.prefix_file],
-        command = "echo {} > {}".format(prefix, ctx.outputs.prefix_file.path)
-    )
-
-assemble_zip_prefix_file = rule(
-    attrs = {
-        "append_version": attr.bool(default=True),
-        "prefix": attr.string()
-    },
-    outputs = {
-        "prefix_file": "%{name}.prefix"
-    },
-    implementation = _assemble_archive_prefix_file_impl
-)
-
-def assemble_zip(name,
-                 output_filename,
-                 targets = [],
-                 additional_files = {},
-                 empty_directories = [],
-                 permissions = {},
-                 append_version = True,
-                 visibility = ["//visibility:private"],
-                 tags = []):
+def assemble_zip(
+        name,
+        output_filename,
+        targets = [],
+        additional_files = {},
+        empty_directories = [],
+        permissions = {},
+        append_version = True,
+        visibility = ["//visibility:private"],
+        tags = []):
     """Assemble distribution archive (.zip)
 
     Args:
@@ -80,7 +57,5 @@ def assemble_zip(name,
         tgz = ":{}__do_not_reference__targz".format(name),
         output_filename = output_filename,
         visibility = visibility,
-        tags = tags
+        tags = tags,
     )
-
-
