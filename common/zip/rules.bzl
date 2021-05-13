@@ -15,42 +15,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@vaticle_bazel_distribution//common/targz:rules.bzl", "assemble_targz")
 load("@vaticle_bazel_distribution//common/tgz2zip:rules.bzl", "tgz2zip")
 
-def _assemble_archive_prefix_file_impl(ctx):
-    version = ctx.var.get('version', '')
-
-    prefix = ctx.attr.prefix
-    if prefix and version and ctx.attr.append_version:
-        prefix = '{}-{}'.format(prefix, version)
-
-    ctx.actions.run_shell(
-        inputs = [],
-        outputs = [ctx.outputs.prefix_file],
-        command = "echo {} > {}".format(prefix, ctx.outputs.prefix_file.path)
-    )
-
-assemble_zip_prefix_file = rule(
-    attrs = {
-        "append_version": attr.bool(default=True),
-        "prefix": attr.string()
-    },
-    outputs = {
-        "prefix_file": "%{name}.prefix"
-    },
-    implementation = _assemble_archive_prefix_file_impl
-)
-
-def assemble_zip(name,
-                 output_filename = None,
-                 targets = [],
-                 additional_files = {},
-                 empty_directories = [],
-                 permissions = {},
-                 append_version = True,
-                 visibility = ["//visibility:private"],
-                 tags = []):
+def assemble_zip(
+        name,
+        output_filename,
+        targets = [],
+        additional_files = {},
+        empty_directories = [],
+        permissions = {},
+        append_version = True,
+        visibility = ["//visibility:private"],
+        tags = []):
     """Assemble distribution archive (.zip)
 
     Args:
@@ -64,31 +41,20 @@ def assemble_zip(name,
         append_version: append version to root folder inside the archive
         visibility: controls whether the target can be used by other packages
     """
-    if output_filename == None:
-        output_filename = name
-    pkg_tar(
-        name="{}__do_not_reference__targz".format(name),
-        deps = targets,
-        extension = "tar.gz",
-        files = additional_files,
-        empty_dirs = empty_directories,
-        modes = permissions,
-        tags = tags
+    assemble_targz(
+        name = "{}__do_not_reference__targz".format(name),
+        output_filename = output_filename,
+        targets = targets,
+        additional_files = additional_files,
+        empty_directories = empty_directories,
+        permissions = permissions,
+        append_version = append_version,
+        visibility = ["//visibility:private"],
     )
-
-    assemble_zip_prefix_file(
-        name = "{}__do_not_reference__prefix_file".format(name),
-        prefix = "./" + output_filename,
-        append_version = append_version
-    )
-
     tgz2zip(
         name = name,
         tgz = ":{}__do_not_reference__targz".format(name),
         output_filename = output_filename,
-        prefix_file = "{}__do_not_reference__prefix_file".format(name),
         visibility = visibility,
-        tags = tags
+        tags = tags,
     )
-
-

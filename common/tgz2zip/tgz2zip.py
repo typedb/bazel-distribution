@@ -27,12 +27,7 @@ import sys
 import zipfile
 import tarfile
 
-_, tgz_fn, zip_fn, prefix = sys.argv
-
-if prefix.startswith('@'):
-    fn = prefix.replace('@', '')
-    with open(fn) as prefix_file:
-      prefix = prefix_file.read().strip()
+_, tgz_fn, zip_fn = sys.argv
 
 
 with tarfile.open(tgz_fn, mode='r:gz') as tgz:
@@ -40,7 +35,7 @@ with tarfile.open(tgz_fn, mode='r:gz') as tgz:
         for tarinfo in sorted(tgz.getmembers(), key=lambda x: x.name):
             f = ''
             is_dir = tarinfo.isdir()
-            name = os.path.normpath(os.path.join(prefix, tarinfo.name))
+            name = tarinfo.name
             if not is_dir:
                 f = tgz.extractfile(tarinfo).read()
             else:
@@ -54,4 +49,3 @@ with tarfile.open(tgz_fn, mode='r:gz') as tgz:
                 # in macOS's Finder
                 zi.external_attr |= (stat.S_IFREG << 16)
             zip.writestr(zi, f)
-

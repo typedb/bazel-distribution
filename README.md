@@ -342,7 +342,7 @@ Packs Java library alongside with its dependencies into archive
 ## tgz2zip
 
 <pre>
-tgz2zip(<a href="#tgz2zip-name">name</a>, <a href="#tgz2zip-output_filename">output_filename</a>, <a href="#tgz2zip-prefix">prefix</a>, <a href="#tgz2zip-prefix_file">prefix_file</a>, <a href="#tgz2zip-tgz">tgz</a>)
+tgz2zip(<a href="#tgz2zip-name">name</a>, <a href="#tgz2zip-output_filename">output_filename</a>, <a href="#tgz2zip-tgz">tgz</a>)
 </pre>
 
 Converts .tar.gz into .zip
@@ -354,8 +354,6 @@ Converts .tar.gz into .zip
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="tgz2zip-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
 | <a id="tgz2zip-output_filename"></a>output_filename |  Resulting filename   | String | required |  |
-| <a id="tgz2zip-prefix"></a>prefix |  Prefix of files in archive   | String | optional | "" |
-| <a id="tgz2zip-prefix_file"></a>prefix_file |  Prefix of files in archive (as a file)   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="tgz2zip-tgz"></a>tgz |  Input .tar.gz archive   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 
 
@@ -606,7 +604,7 @@ Assemble distribution archive (.tar.gz)
 
 <pre>
 assemble_zip(<a href="#assemble_zip-name">name</a>, <a href="#assemble_zip-output_filename">output_filename</a>, <a href="#assemble_zip-targets">targets</a>, <a href="#assemble_zip-additional_files">additional_files</a>, <a href="#assemble_zip-empty_directories">empty_directories</a>, <a href="#assemble_zip-permissions">permissions</a>,
-             <a href="#assemble_zip-append_version">append_version</a>, <a href="#assemble_zip-visibility">visibility</a>)
+             <a href="#assemble_zip-append_version">append_version</a>, <a href="#assemble_zip-visibility">visibility</a>, <a href="#assemble_zip-tags">tags</a>)
 </pre>
 
 Assemble distribution archive (.zip)
@@ -618,11 +616,12 @@ Assemble distribution archive (.zip)
 | :------------- | :------------- | :------------- |
 | <a id="assemble_zip-name"></a>name |  A unique name for this target.   |  none |
 | <a id="assemble_zip-output_filename"></a>output_filename |  filename of resulting archive   |  none |
-| <a id="assemble_zip-targets"></a>targets |  Bazel labels of archives that go into .tar.gz package   |  none |
+| <a id="assemble_zip-targets"></a>targets |  Bazel labels of archives that go into .tar.gz package   |  <code>[]</code> |
 | <a id="assemble_zip-additional_files"></a>additional_files |  mapping between Bazel labels of files that go into archive     and their resulting location in archive   |  <code>{}</code> |
 | <a id="assemble_zip-empty_directories"></a>empty_directories |  list of empty directories created at archive installation   |  <code>[]</code> |
 | <a id="assemble_zip-permissions"></a>permissions |  mapping between paths and UNIX permissions   |  <code>{}</code> |
 | <a id="assemble_zip-append_version"></a>append_version |  append version to root folder inside the archive   |  <code>True</code> |
 | <a id="assemble_zip-visibility"></a>visibility |  controls whether the target can be used by other packages   |  <code>["//visibility:private"]</code> |
+| <a id="assemble_zip-tags"></a>tags |  <p align="center"> - </p>   |  <code>[]</code> |
 
 
