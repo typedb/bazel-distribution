@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@vaticle_bazel_distribution//common/targz:rules.bzl", "assemble_targz")
 load("@vaticle_bazel_distribution//common/tgz2zip:rules.bzl", "tgz2zip")
 
