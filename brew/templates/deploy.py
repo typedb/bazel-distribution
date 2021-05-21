@@ -59,15 +59,18 @@ def verify_zip_file(fn):
             raise ValueError('Corrupt ZIP found at {}; first bad file is {}'.format(fn, first_bad_file))
 
 
-if not os.getenv('DEPLOY_BREW_TOKEN'):
-    print('Error - $DEPLOY_BREW_TOKEN must be defined')
-    sys.exit(1)
+def verify_environment():
+    for var in ["DEPLOY_BREW_TOKEN", "DEPLOY_BREW_USERNAME", "DEPLOY_BREW_EMAIL"]:
+        if not os.getenv(var):
+            print('Error - ${} must be defined'.format(var))
+            sys.exit(1)
 
 
 if len(sys.argv) != 2:
     print('Error - needs an argument: <snapshot|release>')
     sys.exit(1)
 
+verify_environment()
 
 # configurations #
 git_username = os.getenv('DEPLOY_BREW_USERNAME')
