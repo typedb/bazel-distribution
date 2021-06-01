@@ -11,6 +11,6 @@ requests==2.21.0
 setuptools==38.6.0
 tqdm==4.29.1
 twine==1.12.1
-urllib3==1.24.2
+urllib3==1.26.5
 webencodings==0.5.1
 wheel==0.32.3
