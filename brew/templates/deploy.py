@@ -70,8 +70,8 @@ if len(sys.argv) != 2:
 
 
 # configurations #
-git_username = 'Grabl'
-git_email = 'grabl@grakn.ai'
+git_username = os.getenv('DEPLOY_BREW_USERNAME')
+git_email = os.getenv('DEPLOY_BREW_EMAIL')
 formula_filename = os.path.basename(os.readlink('formula'))
 with open('formula') as formula_file:
     formula_template = formula_file.read()

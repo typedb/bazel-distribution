@@ -38,8 +38,10 @@ bzl_library(
         "@rules_pkg//:pkg.bzl",
         "@rules_pkg//:path.bzl",
         "@rules_pkg//:rpm.bzl",
+        "@rules_pkg//:providers.bzl",
+        "@rules_pkg//:private/util.bzl",
         "@bazel_tools//tools:bzl_srcs",
-        "@graknlabs_bazel_distribution_pip//:requirements.bzl",
+        "@vaticle_bazel_distribution_pip//:requirements.bzl",
         "@rules_python//python:whl.bzl",
     ],
 )
@@ -77,16 +79,16 @@ stardoc(
         # From: //brew:rules.bzl
         "deploy_brew",
 
-        # From: //common:assemble_versioned.bzl
+        # From: //common/assemble_versioned:rules.bzl
         "assemble_versioned",
 
-        # From: //common:checksum.bzl
+        # From: //common/checksum:rules.bzl
         "checksum",
 
-        # From: //common:generate_json_config.bzl
+        # From: //common/generate_json_config:rules.bzl
         "generate_json_config",
 
-        # From: //common:java_deps.bzl
+        # From: //common/java_deps:rules.bzl
         "MAVEN_COORDINATES_PREFIX",
         "JarToMavenCoordinatesMapping",
         "TransitiveJarToMavenCoordinatesMapping",
@@ -96,7 +98,7 @@ stardoc(
         "assemble_targz",
         "assemble_zip",
 
-        # From: //common:tgz2zip.bzl
+        # From: //common/tgz2zip:rules.bzl
         "tgz2zip",
 
         # From: //gcp:rules.bzl

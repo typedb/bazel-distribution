@@ -192,7 +192,7 @@ java_deps = rule(
             default = False,
         ),
         "_java_deps_builder": attr.label(
-            default = "//common:java_deps",
+            default = "//common/java_deps",
             executable = True,
             cfg = "host"
         )

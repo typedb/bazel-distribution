@@ -5,8 +5,8 @@
 ## assemble_maven
 
 <pre>
-assemble_maven(<a href="#assemble_maven-name">name</a>, <a href="#assemble_maven-developers">developers</a>, <a href="#assemble_maven-license">license</a>, <a href="#assemble_maven-package">package</a>, <a href="#assemble_maven-project_description">project_description</a>, <a href="#assemble_maven-project_name">project_name</a>, <a href="#assemble_maven-project_url">project_url</a>,
-               <a href="#assemble_maven-scm_url">scm_url</a>, <a href="#assemble_maven-target">target</a>, <a href="#assemble_maven-version_file">version_file</a>, <a href="#assemble_maven-version_overrides">version_overrides</a>, <a href="#assemble_maven-workspace_refs">workspace_refs</a>)
+assemble_maven(<a href="#assemble_maven-name">name</a>, <a href="#assemble_maven-license">license</a>, <a href="#assemble_maven-project_description">project_description</a>, <a href="#assemble_maven-project_name">project_name</a>, <a href="#assemble_maven-project_url">project_url</a>, <a href="#assemble_maven-scm_url">scm_url</a>, <a href="#assemble_maven-target">target</a>,
+               <a href="#assemble_maven-version_file">version_file</a>, <a href="#assemble_maven-version_overrides">version_overrides</a>, <a href="#assemble_maven-workspace_refs">workspace_refs</a>)
 </pre>
 
 Assemble Java package for subsequent deployment to Maven repo
@@ -17,9 +17,7 @@ Assemble Java package for subsequent deployment to Maven repo
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="assemble_maven-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="assemble_maven-developers"></a>developers |  Project developers to fill into pom.xml   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> List of strings</a> | optional | {} |
 | <a id="assemble_maven-license"></a>license |  Project license to fill into pom.xml   | String | optional | "apache" |
-| <a id="assemble_maven-package"></a>package |  Bazel package of this target. Must match one defined in <code>_maven_packages</code>   | String | optional | "" |
 | <a id="assemble_maven-project_description"></a>project_description |  Project description to fill into pom.xml   | String | optional | "PROJECT_DESCRIPTION" |
 | <a id="assemble_maven-project_name"></a>project_name |  Project name to fill into pom.xml   | String | optional | "PROJECT_NAME" |
 | <a id="assemble_maven-project_url"></a>project_url |  Project URL to fill into pom.xml   | String | optional | "PROJECT_URL" |
@@ -239,7 +237,7 @@ deploy_npm(<a href="#deploy_npm-name">name</a>, <a href="#deploy_npm-release">re
 ## deploy_packer
 
 <pre>
-deploy_packer(<a href="#deploy_packer-name">name</a>, <a href="#deploy_packer-target">target</a>)
+deploy_packer(<a href="#deploy_packer-name">name</a>, <a href="#deploy_packer-overwrite">overwrite</a>, <a href="#deploy_packer-target">target</a>)
 </pre>
 
 Execute Packer to perform deployment
@@ -250,6 +248,7 @@ Execute Packer to perform deployment
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="deploy_packer-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| <a id="deploy_packer-overwrite"></a>overwrite |  Overwrite already-existing image   | Boolean | optional | False |
 | <a id="deploy_packer-target"></a>target |  <code>assemble_packer</code> label to be deployed.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 
 
@@ -343,7 +342,7 @@ Packs Java library alongside with its dependencies into archive
 ## tgz2zip
 
 <pre>
-tgz2zip(<a href="#tgz2zip-name">name</a>, <a href="#tgz2zip-output_filename">output_filename</a>, <a href="#tgz2zip-prefix">prefix</a>, <a href="#tgz2zip-prefix_file">prefix_file</a>, <a href="#tgz2zip-tgz">tgz</a>)
+tgz2zip(<a href="#tgz2zip-name">name</a>, <a href="#tgz2zip-output_filename">output_filename</a>, <a href="#tgz2zip-tgz">tgz</a>)
 </pre>
 
 Converts .tar.gz into .zip
@@ -355,8 +354,6 @@ Converts .tar.gz into .zip
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="tgz2zip-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
 | <a id="tgz2zip-output_filename"></a>output_filename |  Resulting filename   | String | required |  |
-| <a id="tgz2zip-prefix"></a>prefix |  Prefix of files in archive   | String | optional | "" |
-| <a id="tgz2zip-prefix_file"></a>prefix_file |  Prefix of files in archive (as a file)   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="tgz2zip-tgz"></a>tgz |  Input .tar.gz archive   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 
 
@@ -379,25 +376,6 @@ JarToMavenCoordinatesMapping(<a href="#JarToMavenCoordinatesMapping-filename">fi
 | <a id="JarToMavenCoordinatesMapping-maven_coordinates"></a>maven_coordinates |  Maven coordinates of the jar    |
 
 
-<a id="#JavaLibInfo"></a>
-
-## JavaLibInfo
-
-<pre>
-JavaLibInfo(<a href="#JavaLibInfo-target_coordinates">target_coordinates</a>, <a href="#JavaLibInfo-target_deps_coordinates">target_deps_coordinates</a>)
-</pre>
-
-
-
-**FIELDS**
-
-
-| Name  | Description |
-| :------------- | :------------- |
-| <a id="JavaLibInfo-target_coordinates"></a>target_coordinates |  The Maven coordinates for the artifacts that are exported by this target: i.e. the target         itself and its transitively exported targets.    |
-| <a id="JavaLibInfo-target_deps_coordinates"></a>target_deps_coordinates |  The Maven coordinates of the direct dependencies, and the transitively exported targets, of         this target.    |
-
-
 <a id="#MavenDeploymentInfo"></a>
 
 ## MavenDeploymentInfo
@@ -416,25 +394,6 @@ MavenDeploymentInfo(<a href="#MavenDeploymentInfo-jar">jar</a>, <a href="#MavenD
 | <a id="MavenDeploymentInfo-jar"></a>jar |  JAR file to deploy    |
 | <a id="MavenDeploymentInfo-srcjar"></a>srcjar |  JAR file with sources    |
 | <a id="MavenDeploymentInfo-pom"></a>pom |  Accompanying pom.xml file    |
-
-
-<a id="#MavenPomInfo"></a>
-
-## MavenPomInfo
-
-<pre>
-MavenPomInfo(<a href="#MavenPomInfo-direct_pom_deps">direct_pom_deps</a>, <a href="#MavenPomInfo-transitive_pom_deps">transitive_pom_deps</a>)
-</pre>
-
-
-
-**FIELDS**
-
-
-| Name  | Description |
-| :------------- | :------------- |
-| <a id="MavenPomInfo-direct_pom_deps"></a>direct_pom_deps |  Maven coordinates declared directly by a target    |
-| <a id="MavenPomInfo-transitive_pom_deps"></a>transitive_pom_deps |  Maven coordinates for dependencies, transitively collected    |
 
 
 <a id="#TransitiveJarToMavenCoordinatesMapping"></a>
@@ -645,7 +604,7 @@ Assemble distribution archive (.tar.gz)
 
 <pre>
 assemble_zip(<a href="#assemble_zip-name">name</a>, <a href="#assemble_zip-output_filename">output_filename</a>, <a href="#assemble_zip-targets">targets</a>, <a href="#assemble_zip-additional_files">additional_files</a>, <a href="#assemble_zip-empty_directories">empty_directories</a>, <a href="#assemble_zip-permissions">permissions</a>,
-             <a href="#assemble_zip-append_version">append_version</a>, <a href="#assemble_zip-visibility">visibility</a>)
+             <a href="#assemble_zip-append_version">append_version</a>, <a href="#assemble_zip-visibility">visibility</a>, <a href="#assemble_zip-tags">tags</a>)
 </pre>
 
 Assemble distribution archive (.zip)
@@ -657,11 +616,12 @@ Assemble distribution archive (.zip)
 | :------------- | :------------- | :------------- |
 | <a id="assemble_zip-name"></a>name |  A unique name for this target.   |  none |
 | <a id="assemble_zip-output_filename"></a>output_filename |  filename of resulting archive   |  none |
-| <a id="assemble_zip-targets"></a>targets |  Bazel labels of archives that go into .tar.gz package   |  none |
+| <a id="assemble_zip-targets"></a>targets |  Bazel labels of archives that go into .tar.gz package   |  <code>[]</code> |
 | <a id="assemble_zip-additional_files"></a>additional_files |  mapping between Bazel labels of files that go into archive     and their resulting location in archive   |  <code>{}</code> |
 | <a id="assemble_zip-empty_directories"></a>empty_directories |  list of empty directories created at archive installation   |  <code>[]</code> |
 | <a id="assemble_zip-permissions"></a>permissions |  mapping between paths and UNIX permissions   |  <code>{}</code> |
 | <a id="assemble_zip-append_version"></a>append_version |  append version to root folder inside the archive   |  <code>True</code> |
 | <a id="assemble_zip-visibility"></a>visibility |  controls whether the target can be used by other packages   |  <code>["//visibility:private"]</code> |
+| <a id="assemble_zip-tags"></a>tags |  <p align="center"> - </p>   |  <code>[]</code> |
 
 

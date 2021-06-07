@@ -23,38 +23,16 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 bzl_library(
     name = "lib",
-    srcs = [
-        "assemble_versioned.bzl",
-        "checksum.bzl",
-        "generate_json_config.bzl",
-        "java_deps.bzl",
-        "rules.bzl",
-        "tgz2zip.bzl",
+    srcs = [ "rules.bzl" ],
+    deps = [
+        "//common/assemble_versioned:lib",
+        "//common/checksum:lib",
+        "//common/generate_json_config:lib",
+        "//common/java_deps:lib",
+        "//common/targz:lib",
+        "//common/tgz2zip:lib",
+        "//common/workspace_refs:lib",
+        "//common/zip:lib"
     ],
-    visibility = ["//visibility:public"]
-)
-
-py_binary(
-    name = "java_deps",
-    srcs = ["java_deps.py"],
-    visibility = ["//visibility:public"]
-)
-
-py_binary(
-    name = "tgz2zip",
-    srcs = ["tgz2zip.py"],
-    visibility = ["//visibility:public"]
-)
-
-py_library(
-    name = "common",
-    srcs = ["common.py"],
-    visibility = ["//visibility:public"]
-)
-
-py_binary(
-    name = "assemble-versioned",
-    srcs = ["assemble-versioned.py"],
-    deps = [":common"],
     visibility = ["//visibility:public"]
 )

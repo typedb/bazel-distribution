@@ -18,7 +18,7 @@
 #
 
 load("//packer:rules.bzl", "assemble_packer")
-load("//common:generate_json_config.bzl", "generate_json_config")
+load("//common/generate_json_config:rules.bzl", "generate_json_config")
 
 def assemble_aws(name,
                  ami_name,
@@ -38,7 +38,7 @@ def assemble_aws(name,
     generated_config_target_name = name + "__do_not_reference_config"
     generate_json_config(
         name = generated_config_target_name,
-        template = "@graknlabs_bazel_distribution//aws:packer.template.json",
+        template = "@vaticle_bazel_distribution//aws:packer.template.json",
         substitutions = {
             "{ami_name}": ami_name,
             "{install}": install_fn,

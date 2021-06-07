@@ -100,7 +100,6 @@ def _generate_class_jar(ctx, pom_file):
         inputs = [jar, pom_file] + class_jar_deps,
         outputs = [output_jar],
         arguments = [
-            "--prefix=",  # prefix is deliberately left empty
             "--group-id=" + maven_coordinates.group_id,
             "--artifact-id=" + maven_coordinates.artifact_id,
             "--pom-file=" + pom_file.path,
@@ -138,7 +137,6 @@ def _generate_source_jar(ctx):
         inputs = [srcjar] + source_jar_deps,
         outputs = [output_jar],
         arguments = [
-            "--prefix=" + ctx.attr.source_jar_prefix,
             "--jars=" + ";".join(source_jar_paths),
             "--output=" + output_jar.path,
         ],
@@ -228,10 +226,6 @@ assemble_maven = rule(
             ],
             doc = "Java target for subsequent deployment",
         ),
-        "source_jar_prefix": attr.string(
-            default = "",
-            doc = "Prefix source JAR files with this directory",
-        ),
         "version_file": attr.label(
             allow_single_file = True,
             doc = """
@@ -270,12 +264,12 @@ assemble_maven = rule(
             doc = "Project source control URL to fill into pom.xml",
         ),
         "_pom_generator": attr.label(
-            default = "@graknlabs_bazel_distribution//maven:pom-generator",
+            default = "@vaticle_bazel_distribution//maven:pom-generator",
             executable = True,
             cfg = "host",
         ),
         "_jar_assembler": attr.label(
-            default = "@graknlabs_bazel_distribution//maven:jar-assembler",
+            default = "@vaticle_bazel_distribution//maven:jar-assembler",
             executable = True,
             cfg = "host",
         ),
@@ -352,7 +346,7 @@ deploy_maven = rule(
         ),
         "_deployment_script": attr.label(
             allow_single_file = True,
-            default = "@graknlabs_bazel_distribution//maven/templates:deploy.py",
+            default = "@vaticle_bazel_distribution//maven/templates:deploy.py",
         ),
     },
     executable = True,

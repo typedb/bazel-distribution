@@ -1,4 +1,7 @@
 #
+# Copyright (C) 2021 Vaticle
+#
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,31 +20,17 @@
 # under the License.
 #
 
-exports_files(["replace_imports.py", "requirements.txt"])
-
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@vaticle_bazel_distribution_pip//:requirements.bzl", vaticle_bazel_distribution_requirement = "requirement")
-
 
 bzl_library(
     name = "lib",
-    srcs = [
-        "rules.bzl",
-    ],
+    srcs = [ "rules.bzl" ],
     visibility = ["//visibility:public"]
 )
 
 py_binary(
-    name = "assemble",
-    srcs = ["assemble.py"],
-    deps = [
-        vaticle_bazel_distribution_requirement("setuptools")
-    ],
+    name = "java_deps",
+    srcs = ["java_deps.py"],
     visibility = ["//visibility:public"]
 )
 
-py_binary(
-    name = "repackage",
-    srcs = ["repackage.py"],
-    visibility = ["//visibility:public"]
-)

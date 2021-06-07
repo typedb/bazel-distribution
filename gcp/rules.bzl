@@ -18,7 +18,7 @@
 #
 
 load("//packer:rules.bzl", "assemble_packer")
-load("//common:generate_json_config.bzl", "generate_json_config")
+load("//common/generate_json_config:rules.bzl", "generate_json_config")
 
 
 def assemble_gcp(name,
@@ -51,7 +51,7 @@ def assemble_gcp(name,
     generated_config_target_name = name + "__do_not_reference_config"
     generate_json_config(
         name = generated_config_target_name,
-        template = "@graknlabs_bazel_distribution//gcp:packer.template.json",
+        template = "@vaticle_bazel_distribution//gcp:packer.template.json",
         substitutions = {
             "{project_id}": project_id,
             "{zone}": zone,
