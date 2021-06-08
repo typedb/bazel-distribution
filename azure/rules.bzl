@@ -27,14 +27,19 @@ def assemble_azure(name,
                    image_publisher="Canonical",
                    image_offer="0001-com-ubuntu-server-focal",
                    image_sku="20_04-lts",
+                   disk_size_gb=60,
                    files=None):
-    """Assemble files for GCP deployment
+    """Assemble files for Azure deployment
 
     Args:
         name: A unique name for this target.
         image_name: name of deployed image
         resource_group_name: name of the resource group to place image in
         install: Bazel label for install file
+        image_publisher: Publisher of the image used as base
+        image_offer: Offer of the image used as base
+        image_sku: SKU of the image used as base
+        disk_size_gb: Size of the resulting OS disk
         files: Files to include into Azure deployment
     """
     if not files:
@@ -51,6 +56,7 @@ def assemble_azure(name,
             "{image_publisher}": image_publisher,
             "{image_offer}": image_offer,
             "{image_sku}": image_sku,
+            "{disk_size_gb}": str(disk_size_gb),
         }
     )
     files[install] = install_fn

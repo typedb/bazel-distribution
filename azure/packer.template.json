@@ -18,7 +18,8 @@
       "image_offer": "{image_offer}",
       "image_sku": "{image_sku}",
       "build_resource_group_name": "{resource_group_name}",
-      "vm_size": "Standard_B2s"
+      "vm_size": "Standard_B2s",
+      "os_disk_size_gb": "{disk_size_gb}"
     }
   ],
 
