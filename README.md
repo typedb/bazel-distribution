@@ -473,10 +473,10 @@ Assemble files for AWS deployment
 
 <pre>
 assemble_azure(<a href="#assemble_azure-name">name</a>, <a href="#assemble_azure-image_name">image_name</a>, <a href="#assemble_azure-resource_group_name">resource_group_name</a>, <a href="#assemble_azure-install">install</a>, <a href="#assemble_azure-image_publisher">image_publisher</a>, <a href="#assemble_azure-image_offer">image_offer</a>,
-               <a href="#assemble_azure-image_sku">image_sku</a>, <a href="#assemble_azure-files">files</a>)
+               <a href="#assemble_azure-image_sku">image_sku</a>, <a href="#assemble_azure-disk_size_gb">disk_size_gb</a>, <a href="#assemble_azure-files">files</a>)
 </pre>
 
-Assemble files for GCP deployment
+Assemble files for Azure deployment
 
 **PARAMETERS**
 
@@ -487,9 +487,10 @@ Assemble files for GCP deployment
 | <a id="assemble_azure-image_name"></a>image_name |  name of deployed image   |  none |
 | <a id="assemble_azure-resource_group_name"></a>resource_group_name |  name of the resource group to place image in   |  none |
 | <a id="assemble_azure-install"></a>install |  Bazel label for install file   |  none |
-| <a id="assemble_azure-image_publisher"></a>image_publisher |  <p align="center"> - </p>   |  <code>"Canonical"</code> |
-| <a id="assemble_azure-image_offer"></a>image_offer |  <p align="center"> - </p>   |  <code>"0001-com-ubuntu-server-focal"</code> |
-| <a id="assemble_azure-image_sku"></a>image_sku |  <p align="center"> - </p>   |  <code>"20_04-lts"</code> |
+| <a id="assemble_azure-image_publisher"></a>image_publisher |  Publisher of the image used as base   |  <code>"Canonical"</code> |
+| <a id="assemble_azure-image_offer"></a>image_offer |  Offer of the image used as base   |  <code>"0001-com-ubuntu-server-focal"</code> |
+| <a id="assemble_azure-image_sku"></a>image_sku |  SKU of the image used as base   |  <code>"20_04-lts"</code> |
+| <a id="assemble_azure-disk_size_gb"></a>disk_size_gb |  Size of the resulting OS disk   |  <code>60</code> |
 | <a id="assemble_azure-files"></a>files |  Files to include into Azure deployment   |  <code>None</code> |
 
 
