@@ -36,8 +36,6 @@ with tarfile.open(tgz_fn, mode='r:gz') as tgz:
             f = ''
             is_dir = tarinfo.isdir()
             name = os.path.normpath(tarinfo.name)
-            if name == '.':
-                continue
             if not is_dir:
                 f = tgz.extractfile(tarinfo).read()
             else:
