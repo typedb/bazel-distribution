@@ -45,10 +45,11 @@ with open(version_file_location) as version_file:
 for file in [y for x in os.walk(".") for y in glob(os.path.join(x[0], "*.jar"))]:
     print(file)
 
+os.mkdir("tmp")
 for fn, arcfn in sorted(moves.items()):
     print("java_deps.py: Adding file to archive: " + str(fn))
-    copyfile(os.path.join(os.path.realpath("."), fn), arcfn.replace('{pom_version}', version))
-    subprocess.call(["jar", "cMf", distribution_tgz_location, "."])
+    copyfile(fn, os.path.join("tmp", arcfn.replace('{pom_version}', version)))
+    subprocess.call(["jar", "cMf", distribution_tgz_location, "tmp"])
 
 # with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
 #     for file in [y for x in os.walk("external/maven/v1/https/maven.pkg.jetbrains.space/") for y in glob(os.path.join(x[0], "*.jar"))]:
