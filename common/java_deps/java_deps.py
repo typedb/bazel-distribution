@@ -60,6 +60,6 @@ with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
         print(file)
 
     for fn, arcfn in sorted(moves.items()):
-        abspath = os.path.abspath(fn)
+        abspath = "\\\\?\\" + os.path.abspath(fn)
         print("java_deps.py: Adding file to archive: " + str(abspath))
         tgz.add(abspath, arcfn.replace('{pom_version}', version), filter=tarfile_remove_mtime)
