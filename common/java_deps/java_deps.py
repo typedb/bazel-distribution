@@ -51,7 +51,8 @@ for fn, arcfn in sorted(moves.items()):
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     shutil.copyfile(fn, dest_path)
     # os.rename(src=os.path.join("tmp", os.path.basename(fn)), dst=os.path.join("tmp", arcfn.replace('{pom_version}', version)))
-    subprocess.call(["jar", "cMf", distribution_tgz_location, "tmp"])
+
+subprocess.call(["jar", "cMf", distribution_tgz_location, "tmp"])
 
 # with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
 #     for file in [y for x in os.walk("external/maven/v1/https/maven.pkg.jetbrains.space/") for y in glob(os.path.join(x[0], "*.jar"))]:
