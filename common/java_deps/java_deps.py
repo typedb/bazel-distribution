@@ -23,6 +23,7 @@ from __future__ import print_function
 import tarfile
 import subprocess
 import shutil
+import platform
 import json
 
 import sys
@@ -60,6 +61,7 @@ with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
         print(file)
 
     for fn, arcfn in sorted(moves.items()):
-        abspath = "\\\\?\\" + os.path.abspath(fn)
-        print("java_deps.py: Adding file to archive: " + str(abspath))
-        tgz.add(abspath, arcfn.replace('{pom_version}', version), filter=tarfile_remove_mtime)
+        # Maven/Coursier filenames can be extremely long, over Windows' 260 character limit
+        path = "\\\\?\\" + os.path.abspath(fn) if platform.system() == "Windows" else fn
+        print("java_deps.py: Adding file to archive: " + str(path))
+        tgz.add(path, arcfn.replace('{pom_version}', version), filter=tarfile_remove_mtime)
