@@ -52,6 +52,7 @@ for fn, arcfn in sorted(moves.items()):
     shutil.copyfile(fn, dest_path)
     # os.rename(src=os.path.join("tmp", os.path.basename(fn)), dst=os.path.join("tmp", arcfn.replace('{pom_version}', version)))
 
+os.makedirs(os.path.dirname(distribution_tgz_location))
 subprocess.call(["jar", "cMf", distribution_tgz_location, "tmp"])
 
 # with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
