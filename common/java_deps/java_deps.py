@@ -47,7 +47,7 @@ for file in [y for x in os.walk(".") for y in glob(os.path.join(x[0], "*.jar"))]
 
 for fn, arcfn in sorted(moves.items()):
     print("java_deps.py: Adding file to archive: " + str(fn))
-    copyfile(fn, arcfn.replace('{pom_version}', version))
+    copyfile(os.path.join(".", fn), arcfn.replace('{pom_version}', version))
     subprocess.call(["jar", "cMf", distribution_tgz_location, "."])
 
 # with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
