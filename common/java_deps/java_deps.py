@@ -42,7 +42,7 @@ with open(moves_file_location) as moves_file:
 with open(version_file_location) as version_file:
     version = version_file.read().strip()
 
-for file in [y for x in os.walk("external/maven/v1/https/maven.pkg.jetbrains.space/") for y in glob(os.path.join(x[0], "*.jar"))]:
+for file in [y for x in os.walk(".") for y in glob(os.path.join(x[0], "*.jar"))]:
     print(file)
 
 for fn, arcfn in sorted(moves.items()):
