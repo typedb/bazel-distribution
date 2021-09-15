@@ -45,4 +45,5 @@ with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
         print(file)
 
     for fn, arcfn in sorted(moves.items()):
+        print("java_deps.py: Adding file to archive: " + str(fn))
         tgz.add(fn, arcfn.replace('{pom_version}', version), filter=tarfile_remove_mtime)
