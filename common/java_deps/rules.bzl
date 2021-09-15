@@ -199,7 +199,7 @@ java_deps = rule(
     },
     implementation = _java_deps_impl,
     outputs = {
-        "distribution": "%{name}.tgz"
+        "distribution": "%{name}.zip"
     },
     doc = "Packs Java library alongside with its dependencies into archive"
 )
