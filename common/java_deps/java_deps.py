@@ -21,6 +21,8 @@
 
 from __future__ import print_function
 import tarfile
+import subprocess
+from shutil import copyfile
 import json
 
 import sys
@@ -40,10 +42,18 @@ with open(moves_file_location) as moves_file:
 with open(version_file_location) as version_file:
     version = version_file.read().strip()
 
-with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
-    for file in [y for x in os.walk("external/maven/v1/https/maven.pkg.jetbrains.space/") for y in glob(os.path.join(x[0], "*.jar"))]:
-        print(file)
+for file in [y for x in os.walk("external/maven/v1/https/maven.pkg.jetbrains.space/") for y in glob(os.path.join(x[0], "*.jar"))]:
+    print(file)
 
-    for fn, arcfn in sorted(moves.items()):
-        print("java_deps.py: Adding file to archive: " + str(fn))
-        tgz.add(fn, arcfn.replace('{pom_version}', version), filter=tarfile_remove_mtime)
+for fn, arcfn in sorted(moves.items()):
+    print("java_deps.py: Adding file to archive: " + str(fn))
+    copyfile(fn, arcfn.replace('{pom_version}', version))
+    subprocess.call(["jar", "cMf", distribution_tgz_location, "."])
+
+# with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
+#     for file in [y for x in os.walk("external/maven/v1/https/maven.pkg.jetbrains.space/") for y in glob(os.path.join(x[0], "*.jar"))]:
+#         print(file)
+#
+#     for fn, arcfn in sorted(moves.items()):
+#         print("java_deps.py: Adding file to archive: " + str(fn))
+#         tgz.add(fn, arcfn.replace('{pom_version}', version), filter=tarfile_remove_mtime)
