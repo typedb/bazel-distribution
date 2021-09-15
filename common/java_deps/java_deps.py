@@ -45,10 +45,11 @@ with open(version_file_location) as version_file:
 for file in [y for x in os.walk(".") for y in glob(os.path.join(x[0], "*.jar"))]:
     print(file)
 
-os.mkdir("tmp")
 for fn, arcfn in sorted(moves.items()):
     print("java_deps.py: Adding file to archive: " + str(fn))
-    shutil.copyfile(fn, "tmp/" + arcfn.replace('{pom_version}', version))
+    dest_path = "tmp/" + arcfn.replace('{pom_version}', version)
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+    shutil.copyfile(fn, dest_path)
     # os.rename(src=os.path.join("tmp", os.path.basename(fn)), dst=os.path.join("tmp", arcfn.replace('{pom_version}', version)))
     subprocess.call(["jar", "cMf", distribution_tgz_location, "tmp"])
 
