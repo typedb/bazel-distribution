@@ -44,6 +44,7 @@ def _deploy_github_impl(ctx):
             "{archive}": ctx.file.archive.short_path if (ctx.file.archive!=None) else "",
             "{draft}": str(bool(ctx.attr.draft)),
             "{version_file_path}": "C:/users/circleci/typedb-workbase/VERSION" if ctx.attr.windows else "VERSION",
+            "{release_description_path}": "C:/users/circleci/typedb-workbase/RELEASE_TEMPLATE.md" if ctx.attr.windows else "release_description.txt",
             "{ghr_binary_mac}": ctx.files._ghr[0].path,
             "{ghr_binary_linux}": ctx.files._ghr[1].path,
             "{ghr_binary_windows}": "C:/users/circleci/_bazel_circleci/sficz6ot/external/ghr_windows_zip/ghr.exe",
@@ -62,7 +63,7 @@ def _deploy_github_impl(ctx):
 
     if ctx.file.release_description:
         files.append(ctx.file.release_description)
-        symlinks["release_description.txt"] = "C:/users/circleci/typedb-workbase/RELEASE_TEMPLATE.md" if ctx.attr.windows else ctx.file.release_description
+        symlinks["release_description.txt"] = ctx.file.release_description
 
     deploy_script_runner = ctx.actions.declare_file("{}_deploy_runner{}".format(ctx.attr.name, ".bat" if ctx.attr.windows else ""))
 
