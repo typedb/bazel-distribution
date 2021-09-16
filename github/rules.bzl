@@ -41,13 +41,10 @@ def _deploy_github_impl(ctx):
             "{title}": ctx.attr.title or "",
             "{title_append_version}": str(bool(ctx.attr.title_append_version)),
             "{release_description}": str(bool(ctx.file.release_description)),
-            "{archive}": "C:/users/circleci/_bazel_circleci/sficz6ot/execroot/vaticle_typedb_studio/bazel-out/x64_windows-fastbuild/bin/" + ctx.file.archive.short_path if ctx.attr.windows else (ctx.file.archive.short_path if (ctx.file.archive!=None) else ""),
+            "{archive}": ctx.file.archive.short_path if (ctx.file.archive!=None) else "",
             "{draft}": str(bool(ctx.attr.draft)),
-            "{version_file_path}": "C:/users/circleci/typedb-workbase/VERSION" if ctx.attr.windows else "VERSION",
-            "{release_description_path}": "C:/users/circleci/typedb-workbase/RELEASE_TEMPLATE.md" if ctx.attr.windows else "release_description.txt",
             "{ghr_binary_mac}": ctx.files._ghr[0].path,
             "{ghr_binary_linux}": ctx.files._ghr[1].path,
-            "{ghr_binary_windows}": "C:/users/circleci/_bazel_circleci/sficz6ot/external/ghr_windows_zip/ghr.exe",
         }
     )
     files = [
@@ -65,18 +62,8 @@ def _deploy_github_impl(ctx):
         files.append(ctx.file.release_description)
         symlinks["release_description.txt"] = ctx.file.release_description
 
-    deploy_script_runner = ctx.actions.declare_file("{}_deploy_runner{}".format(ctx.attr.name, ".bat" if ctx.attr.windows else ""))
-
-    ctx.actions.write(
-        content = "type MANIFEST && python {}".format("../" + _deploy_script.short_path) if ctx.attr.windows else "python {}".format(_deploy_script.short_path),
-        output = deploy_script_runner,
-        is_executable = True,
-    )
-
-    files.append(_deploy_script)
-
     return DefaultInfo(
-        executable = deploy_script_runner,
+        executable = _deploy_script,
         runfiles = ctx.runfiles(
             files = files,
             symlinks = symlinks
@@ -132,10 +119,7 @@ deploy_github = rule(
         ),
         "_ghr": attr.label_list(
             allow_files = True,
-            default = ["@ghr_osx_zip//:ghr", "@ghr_linux_tar//:ghr", "@ghr_windows_zip//:ghr.exe"],
-        ),
-        "windows": attr.bool(
-            default = False,
+            default = ["@ghr_osx_zip//:ghr", "@ghr_linux_tar//:ghr"]
         ),
     },
     implementation = _deploy_github_impl,
