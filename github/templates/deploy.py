@@ -73,7 +73,7 @@ if args.archive and not os.path.isfile(args.archive):
 
 archive = "{archive}" or args.archive
 
-github_organisation = "alexjpwalker"
+# github_organisation = "alexjpwalker"
 github_repository = "{repository}"
 title = "{title}"
 title_append_version = {title_append_version}
@@ -104,7 +104,7 @@ else:
 try:
     cmd = [
         ghr,
-        '-u', github_organisation,
+        '-u', "vaticle",
         '-r', github_repository,
         '-n', title,
         '-b', open('{release_description_path}').read().replace('{version}', github_tag) if release_description else '',
