@@ -112,6 +112,7 @@ try:
     ]
     cmd += [ '-replace', '-draft', github_tag ] if draft else [ '-replace', github_tag ]
     cmd += [ directory_to_upload ]
+    print(cmd)
     exit_code = sp.call(cmd, env={'GITHUB_TOKEN': github_token})
 finally:
     shutil.rmtree(directory_to_upload)
