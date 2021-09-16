@@ -45,6 +45,7 @@ def _deploy_github_impl(ctx):
             "{draft}": str(bool(ctx.attr.draft)),
             "{ghr_binary_mac}": ctx.files._ghr[0].path,
             "{ghr_binary_linux}": ctx.files._ghr[1].path,
+            "{ghr_binary_windows}": ctx.files._ghr[2].path,
         }
     )
     files = [
@@ -62,8 +63,18 @@ def _deploy_github_impl(ctx):
         files.append(ctx.file.release_description)
         symlinks["release_description.txt"] = ctx.file.release_description
 
+    deploy_script_runner = ctx.actions.declare_file("{}_deploy_runner".format(ctx.attr.name))
+
+    ctx.actions.write(
+        content = "python {}".format(_deploy_script.short_path),
+        output = deploy_script_runner,
+        is_executable = True,
+    )
+
+    files.append(_deploy_script)
+
     return DefaultInfo(
-        executable = _deploy_script,
+        executable = deploy_script_runner,
         runfiles = ctx.runfiles(
             files = files,
             symlinks = symlinks
@@ -119,7 +130,7 @@ deploy_github = rule(
         ),
         "_ghr": attr.label_list(
             allow_files = True,
-            default = ["@ghr_osx_zip//:ghr", "@ghr_linux_tar//:ghr"]
+            default = ["@ghr_osx_zip//:ghr", "@ghr_linux_tar//:ghr", "@ghr_windows_zip//:ghr.exe"],
         ),
     },
     implementation = _deploy_github_impl,

@@ -33,6 +33,7 @@ import zipfile
 GHR_BINARIES = {
     "Darwin": os.path.abspath("{ghr_binary_mac}"),
     "Linux": os.path.abspath("{ghr_binary_linux}"),
+    "Windows": os.path.abspath("{ghr_binary_windows}")
 }
 
 system = platform.system()
@@ -59,8 +60,11 @@ if not os.getenv('DEPLOY_GITHUB_TOKEN'):
     print('Error - $DEPLOY_GITHUB_TOKEN must be defined')
     sys.exit(1)
 
+if not os.getenv('COMMIT_ID'):
+    print('Error - $COMMIT_ID must be defined')
+    sys.exit(1)
+
 parser = argparse.ArgumentParser()
-parser.add_argument('commit_id')
 parser.add_argument('--archive', help="Archive to deploy")
 args = parser.parse_args()
 
@@ -76,7 +80,7 @@ title_append_version = {title_append_version}
 release_description = {release_description}
 draft = {draft}
 github_token = os.getenv('DEPLOY_GITHUB_TOKEN')
-target_commit_id = args.commit_id
+target_commit_id = os.getenv('COMMIT_ID')
 ghr = GHR_BINARIES[system]
 
 with open('VERSION') as version_file:
