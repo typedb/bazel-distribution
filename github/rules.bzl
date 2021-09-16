@@ -63,7 +63,7 @@ def _deploy_github_impl(ctx):
         files.append(ctx.file.release_description)
         symlinks["release_description.txt"] = ctx.file.release_description
 
-    deploy_script_runner = ctx.actions.declare_file("{}_deploy_runner{}".format(ctx.attr.name, ".bat" if ctx.attr._is_windows else ""))
+    deploy_script_runner = ctx.actions.declare_file("{}_deploy_runner{}".format(ctx.attr.name, ".bat" if ctx.attr.windows else ""))
 
     ctx.actions.write(
         content = "python {}".format(_deploy_script.short_path),
@@ -132,11 +132,8 @@ deploy_github = rule(
             allow_files = True,
             default = ["@ghr_osx_zip//:ghr", "@ghr_linux_tar//:ghr", "@ghr_windows_zip//:ghr.exe"],
         ),
-        "_is_windows": attr.bool(
-            default = select({
-                "//github:os_is_windows": True,
-                "//conditions:default": False,
-            })
+        "windows": attr.bool(
+            default = False,
         ),
     },
     implementation = _deploy_github_impl,

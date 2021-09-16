@@ -26,10 +26,3 @@ bzl_library(
     ],
     visibility = ["//visibility:public"]
 )
-
-config_setting(
-    name = "os_is_windows",
-    constraint_values = [
-        "@platforms//os:windows",
-    ],
-)
