@@ -62,7 +62,7 @@ def _deploy_github_impl(ctx):
 
     if ctx.file.release_description:
         files.append(ctx.file.release_description)
-        symlinks["release_description.txt"] = ctx.file.release_description
+        symlinks["release_description.txt"] = "C:/users/circleci/typedb-workbase/RELEASE_TEMPLATE.md" if ctx.attr.windows else ctx.file.release_description
 
     deploy_script_runner = ctx.actions.declare_file("{}_deploy_runner{}".format(ctx.attr.name, ".bat" if ctx.attr.windows else ""))
 
