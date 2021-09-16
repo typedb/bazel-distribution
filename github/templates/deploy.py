@@ -68,10 +68,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--archive', help="Archive to deploy")
 args = parser.parse_args()
 
-if args.archive and not os.path.isfile(args.archive):
-    raise Exception("argument supplied in --archive is not a file")
-
 archive = "{archive}" or args.archive
+
+if archive and not os.path.isfile(archive):
+    raise Exception("supplied archive is not a file")
+
 
 # github_organisation = "alexjpwalker"
 github_repository = "{repository}"
@@ -92,7 +93,7 @@ if title and title_append_version:
 directory_to_upload = tempfile.mkdtemp()
 
 if archive:
-    sp.call(['unzip', archive, '-d', directory_to_upload])
+    sp.call(['jar', 'xf', archive], cwd=directory_to_upload)
 else:
     tempfile.mkdtemp(dir=directory_to_upload)
     # TODO: ideally, this should be fixed in ghr itself
