@@ -41,7 +41,7 @@ def _deploy_github_impl(ctx):
             "{title}": ctx.attr.title or "",
             "{title_append_version}": str(bool(ctx.attr.title_append_version)),
             "{release_description}": str(bool(ctx.file.release_description)),
-            "{archive}": "C:/users/circleci/_bazel_circleci/sficz6ot/execroot/vaticle_typedb_studio/bazel-out/x64_windows-fastbuild/bin/hello-assemble.zip" if ctx.attr.windows else (ctx.file.archive.short_path if (ctx.file.archive!=None) else ""),
+            "{archive}": "C:/users/circleci/_bazel_circleci/sficz6ot/execroot/vaticle_typedb_studio/bazel-out/x64_windows-fastbuild/bin/" + ctx.file.archive.short_path if ctx.attr.windows else (ctx.file.archive.short_path if (ctx.file.archive!=None) else ""),
             "{draft}": str(bool(ctx.attr.draft)),
             "{version_file_path}": "C:/users/circleci/typedb-workbase/VERSION" if ctx.attr.windows else "VERSION",
             "{release_description_path}": "C:/users/circleci/typedb-workbase/RELEASE_TEMPLATE.md" if ctx.attr.windows else "release_description.txt",
