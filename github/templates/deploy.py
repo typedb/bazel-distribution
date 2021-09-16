@@ -68,13 +68,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--archive', help="Archive to deploy")
 args = parser.parse_args()
 
+if args.archive and not os.path.isfile(args.archive):
+    raise Exception("argument supplied in --archive is not a file")
+
 archive = "{archive}" or args.archive
 
-if archive and not os.path.isfile(archive):
-    raise Exception("supplied archive is not a file")
-
-
-# github_organisation = "alexjpwalker"
+github_organisation =  "{organisation}"
 github_repository = "{repository}"
 title = "{title}"
 title_append_version = {title_append_version}
@@ -105,11 +104,11 @@ else:
 try:
     cmd = [
         ghr,
-        '-u', "vaticle",
+        '-u', github_organisation,
         '-r', github_repository,
         '-n', title,
         '-b', open('{release_description_path}').read().replace('{version}', github_tag) if release_description else '',
-        '-c', "bb967cf7e88eec31da81be0a5a69c52c6104413e",
+        '-c', target_commit_id,
     ]
     cmd += [ '-replace', '-draft', github_tag ] if draft else [ '-replace', github_tag ]
     cmd += [ directory_to_upload ]
