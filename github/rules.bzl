@@ -66,7 +66,7 @@ def _deploy_github_impl(ctx):
     deploy_script_runner = ctx.actions.declare_file("{}_deploy_runner{}".format(ctx.attr.name, ".bat" if ctx.attr.windows else ""))
 
     ctx.actions.write(
-        content = "python {}".format(_deploy_script.short_path),
+        content = "dir; python {}".format(_deploy_script.short_path),
         output = deploy_script_runner,
         is_executable = True,
     )
