@@ -104,7 +104,7 @@ else:
 try:
     cmd = [
         ghr,
-        '-u', "alexjpwalker",
+        '-u', "vaticle",
         '-r', github_repository,
         '-n', title,
         '-b', open('{release_description_path}').read().replace('{version}', github_tag) if release_description else '',
