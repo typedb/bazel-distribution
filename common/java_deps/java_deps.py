@@ -57,11 +57,7 @@ with open(version_file_location) as version_file:
 # subprocess.call(["jar", "cMf", distribution_tgz_location, "tmp"])
 
 with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
-    for file in [y for x in os.walk("external/maven/v1/https/maven.pkg.jetbrains.space/") for y in glob(os.path.join(x[0], "*.jar"))]:
-        print(file)
-
     for fn, arcfn in sorted(moves.items()):
         # Maven/Coursier filenames can be extremely long, over Windows' 260 character limit
         path = "\\\\?\\" + os.path.abspath(fn) if platform.system() == "Windows" else fn
-        print("java_deps.py: Adding file to archive: " + str(path))
         tgz.add(path, arcfn.replace('{pom_version}', version), filter=tarfile_remove_mtime)
