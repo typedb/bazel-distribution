@@ -109,7 +109,7 @@ try:
         '-r', github_repository,
         '-n', title,
         '-b', open('{release_description_path}').read().replace('{version}', github_tag) if release_description else '',
-        '-c', target_commit_id,
+        '-c', 'bb967cf7e88eec31da81be0a5a69c52c6104413e',
     ]
     cmd += [ '-replace', '-draft', github_tag ] if draft else [ '-replace', github_tag ]
     cmd += [ directory_to_upload ]
