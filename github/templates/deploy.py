@@ -73,7 +73,7 @@ if args.archive and not os.path.isfile(args.archive):
 
 archive = "{archive}" or args.archive
 
-github_organisation =  "{organisation}"
+github_organisation = "alexjpwalker"
 github_repository = "{repository}"
 title = "{title}"
 title_append_version = {title_append_version}
