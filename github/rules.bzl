@@ -45,7 +45,7 @@ def _deploy_github_impl(ctx):
             "{draft}": str(bool(ctx.attr.draft)),
             "{ghr_binary_mac}": ctx.files._ghr[0].path,
             "{ghr_binary_linux}": ctx.files._ghr[1].path,
-            "{ghr_binary_windows}": ctx.files._ghr[2].path,
+            "{ghr_binary_windows}": "../" + ctx.files._ghr[2].path,
         }
     )
     files = [
