@@ -83,7 +83,7 @@ github_token = os.getenv('DEPLOY_GITHUB_TOKEN')
 target_commit_id = os.getenv('COMMIT_ID')
 ghr = GHR_BINARIES[system]
 
-with open('VERSION') as version_file:
+with open('{version_file_path}') as version_file:
     github_tag = version_file.read().strip()
 
 if title and title_append_version:
