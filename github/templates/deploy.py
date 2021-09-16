@@ -93,7 +93,7 @@ if title and title_append_version:
 directory_to_upload = tempfile.mkdtemp()
 
 if archive:
-    sp.call(['jar', 'xf', archive], cwd=directory_to_upload)
+    sp.call(['unzip', archive, '-d', directory_to_upload])
 else:
     tempfile.mkdtemp(dir=directory_to_upload)
     # TODO: ideally, this should be fixed in ghr itself
@@ -109,7 +109,7 @@ try:
         '-r', github_repository,
         '-n', title,
         '-b', open('{release_description_path}').read().replace('{version}', github_tag) if release_description else '',
-        '-c', 'bb967cf7e88eec31da81be0a5a69c52c6104413e',
+        '-c', "bb967cf7e88eec31da81be0a5a69c52c6104413e",
     ]
     cmd += [ '-replace', '-draft', github_tag ] if draft else [ '-replace', github_tag ]
     cmd += [ directory_to_upload ]
