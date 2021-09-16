@@ -39,8 +39,8 @@ def deps():
 
     http_archive(
         name = "ghr_windows_zip",
-        urls = ["https://github.com/tcnksm/ghr/releases/download/v0.14.0/ghr_v0.14.0_windows_amd64.zip"],
-        sha256 = "1d233aff96482af53a3dc06e09e56675cfd06cc862285c89f121ff60f49cbfdd",
-        strip_prefix = "ghr_v0.14.0_windows_amd64",
+        urls = ["https://github.com/tcnksm/ghr/releases/download/v0.12.2/ghr_v0.12.1_windows_amd64.zip"],
+        sha256 = "47a12017c38ea7d57da6eed319a3cda5ef91dd9c2b1ed4bdfacceb044b7c6c97",
+        strip_prefix = "ghr_v0.12.2_windows_amd64",
         build_file_content = 'exports_files(["ghr.exe"])'
     )
