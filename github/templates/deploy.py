@@ -33,7 +33,6 @@ import zipfile
 GHR_BINARIES = {
     "Darwin": os.path.abspath("{ghr_binary_mac}"),
     "Linux": os.path.abspath("{ghr_binary_linux}"),
-    "Windows": os.path.abspath("{ghr_binary_windows}")
 }
 
 system = platform.system()
@@ -60,11 +59,8 @@ if not os.getenv('DEPLOY_GITHUB_TOKEN'):
     print('Error - $DEPLOY_GITHUB_TOKEN must be defined')
     sys.exit(1)
 
-if not os.getenv('COMMIT_ID'):
-    print('Error - $COMMIT_ID must be defined')
-    sys.exit(1)
-
 parser = argparse.ArgumentParser()
+parser.add_argument('commit_id')
 parser.add_argument('--archive', help="Archive to deploy")
 args = parser.parse_args()
 
@@ -80,10 +76,10 @@ title_append_version = {title_append_version}
 release_description = {release_description}
 draft = {draft}
 github_token = os.getenv('DEPLOY_GITHUB_TOKEN')
-target_commit_id = os.getenv('COMMIT_ID')
+target_commit_id = args.commit_id
 ghr = GHR_BINARIES[system]
 
-with open('{version_file_path}') as version_file:
+with open('VERSION') as version_file:
     github_tag = version_file.read().strip()
 
 if title and title_append_version:
@@ -107,12 +103,11 @@ try:
         '-u', github_organisation,
         '-r', github_repository,
         '-n', title,
-        '-b', open('{release_description_path}').read().replace('{version}', github_tag) if release_description else '',
+        '-b', open('release_description.txt').read().replace('{version}', github_tag) if release_description else '',
         '-c', target_commit_id,
     ]
     cmd += [ '-replace', '-draft', github_tag ] if draft else [ '-replace', github_tag ]
     cmd += [ directory_to_upload ]
-    print(cmd)
     exit_code = sp.call(cmd, env={'GITHUB_TOKEN': github_token})
 finally:
     shutil.rmtree(directory_to_upload)
