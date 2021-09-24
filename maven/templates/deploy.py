@@ -130,12 +130,12 @@ if repo_type == 'release' and len(re.findall(version_release_regex, version)) ==
 filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format(
     coordinates=group_id.text.replace('.', '/'), version=version, artifact=artifact_id.text)
 
-upload(maven_url, username, password, pom_file_path, filename_base + '.pom')
-if should_sign:
-    upload(maven_url, username, password, sign(pom_file_path), filename_base + '.pom.asc')
 upload(maven_url, username, password, jar_path, filename_base + '.jar')
 if should_sign:
     upload(maven_url, username, password, sign(jar_path), filename_base + '.jar.asc')
+upload(maven_url, username, password, pom_file_path, filename_base + '.pom')
+if should_sign:
+    upload(maven_url, username, password, sign(pom_file_path), filename_base + '.pom.asc')
 if os.path.exists(srcjar_path):
     upload(maven_url, username, password, srcjar_path, filename_base + '-sources.jar')
     if should_sign:
