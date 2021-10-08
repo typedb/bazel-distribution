@@ -19,7 +19,11 @@
 
 
 def _parse_maven_coordinates(coordinates_string, enforce_version_template=True):
-    group_id, artifact_id, version = coordinates_string.split(":")
+    coordinates = coordinates_string.split(':')
+    # Maven coordinates in the bazel ecosystem can include more than three fields.
+    # The group and artifact IDs are always the first 2 and the version is always the last field.
+    group_id, artifact_id = coordinates[0:2]
+    version = coordinates[-1]
     if enforce_version_template and version != "{pom_version}":
         fail("should assign {pom_version} as Maven version via `tags` attribute")
     return struct(
@@ -27,7 +31,6 @@ def _parse_maven_coordinates(coordinates_string, enforce_version_template=True):
         artifact_id = artifact_id,
         version = version
     )
-
 
 def _generate_version_file(ctx):
     version_file = ctx.file.version_file
