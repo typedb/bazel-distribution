@@ -49,8 +49,8 @@ class PomGenerator : Callable<Unit> {
     @Option(names = ["--target_artifact_id"])
     var targetArtifactId = ""
 
-    @Option(names = ["--target_deps_coordinates"], split = ";")
-    lateinit var dependencyCoordinates: Array<String>
+    @Option(names = ["--target_deps_coordinates"])
+    lateinit var dependencyCoordinates: String
 
     fun getLicenseInfo(license_id: String): Pair<String, String> {
         return when {
@@ -120,7 +120,8 @@ class PomGenerator : Callable<Unit> {
 
     fun dependencies(pom: Document, version: String, workspace_refs: JsonObject): Element {
         val dependenciesElem = pom.createElement("dependencies")
-        for (dep in dependencyCoordinates) {
+        val coordinates = if (dependencyCoordinates.length == 0) emptyArray<String>() else dependencyCoordinates.split(";").toTypedArray()
+        for (dep in coordinates) {
             val depCoordinates = parseMavenCoordinate(dep)
             val dependencyElem = pom.createElement("dependency")
 
