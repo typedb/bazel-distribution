@@ -27,7 +27,6 @@ def deps():
         strip_prefix = "ghr_v0.12.1_darwin_amd64",
         build_file_content = 'exports_files(["ghr"])'
     )
-
     http_archive(
         name = "ghr_linux_tar",
         urls = ["https://github.com/tcnksm/ghr/releases/download/v0.12.1/ghr_v0.12.1_linux_amd64.tar.gz"],
