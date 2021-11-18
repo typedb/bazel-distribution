@@ -20,7 +20,6 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 def deps():
-
     http_archive(
         name = "ghr_osx_zip",
         urls = ["https://github.com/tcnksm/ghr/releases/download/v0.12.1/ghr_v0.12.1_darwin_amd64.zip"],
@@ -35,12 +34,4 @@ def deps():
         sha256 = "471c2eb1aee20dedffd00254f6c445abb5eb7d479bcae32c4210fdcf036b2dce",
         strip_prefix = "ghr_v0.12.1_linux_amd64",
         build_file_content = 'exports_files(["ghr"])'
-    )
-
-    http_archive(
-        name = "ghr_windows_zip",
-        urls = ["https://github.com/tcnksm/ghr/releases/download/v0.12.2/ghr_v0.12.2_windows_amd64.zip"],
-        sha256 = "47a12017c38ea7d57da6eed319a3cda5ef91dd9c2b1ed4bdfacceb044b7c6c97",
-        strip_prefix = "ghr_v0.12.2_windows_amd64",
-        build_file_content = 'exports_files(["ghr.exe"])'
     )

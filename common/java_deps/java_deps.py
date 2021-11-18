@@ -21,14 +21,14 @@
 
 from __future__ import print_function
 import tarfile
-import subprocess
-import shutil
 import platform
 import json
 
 import sys
 import os
-from glob import glob
+
+
+WINDOWS = "windows"
 
 
 def tarfile_remove_mtime(info):
@@ -43,21 +43,7 @@ with open(moves_file_location) as moves_file:
 with open(version_file_location) as version_file:
     version = version_file.read().strip()
 
-# for file in [y for x in os.walk(".") for y in glob(os.path.join(x[0], "*.jar"))]:
-#     print(file)
-#
-# for fn, arcfn in sorted(moves.items()):
-#     print("java_deps.py: Adding file to archive: " + str(fn))
-#     dest_path = "tmp/" + arcfn.replace('{pom_version}', version)
-#     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-#     shutil.copyfile(fn, dest_path)
-#     # os.rename(src=os.path.join("tmp", os.path.basename(fn)), dst=os.path.join("tmp", arcfn.replace('{pom_version}', version)))
-#
-# os.makedirs(os.path.dirname(distribution_tgz_location))
-# subprocess.call(["jar", "cMf", distribution_tgz_location, "tmp"])
-
 with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
     for fn, arcfn in sorted(moves.items()):
-        # Maven/Coursier filenames can be extremely long, over Windows' 260 character limit
-        path = "\\\\?\\" + os.path.abspath(fn) if platform.system() == "Windows" else fn
+        path = "\\\\?\\" + os.path.abspath(fn) if platform.system() == WINDOWS else fn
         tgz.add(path, arcfn.replace('{pom_version}', version), filter=tarfile_remove_mtime)
