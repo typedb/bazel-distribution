@@ -28,25 +28,20 @@ import org.zeroturnaround.exec.ProcessExecutor
 import org.zeroturnaround.exec.ProcessResult
 import picocli.CommandLine
 import java.nio.file.Files
-import kotlin.system.exitProcess
 
-object ApplicationBuilder {
-
-    private fun commandLineArgsOf(args: Array<String>): CommandLineArgs {
-        return CommandLineArgs(properties = args[0])
-    }
-
-    data class CommandLineArgs(val properties: String)
-
-
-}
-
-fun main0(args: Array<String>) {
-    // TODO: sort this shit out
-    exitProcess(CommandLine(JVMPlatformAssembler()).execute(*args))
+fun parseCommandLine(args: Array<String>): Options {
+    val commandLine = CommandLine(CommandLineParams())
+    val parseResult: CommandLine.ParseResult = commandLine.parseArgs(*args)
+    assert(parseResult.asCommandLineList().size == 1)
+    val parameters: CommandLineParams = parseResult.asCommandLineList()[0].getCommand<CommandLineParams>()
+    return Options.of(parameters)
 }
 
 fun main(args: Array<String>) {
+    JVMPlatformAssembler(options = parseCommandLine(args)).assemble()
+}
+
+fun main_old(args: Array<String>) {
 
     val config = parseConfig(args[0])
     val verboseLoggingEnabled = config["verbose"].toBoolean()

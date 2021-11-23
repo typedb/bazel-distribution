@@ -21,7 +21,7 @@ load("@vaticle_bazel_distribution//common:rules.bzl", "assemble_zip", "java_deps
 
 
 def _assemble_zip_to_jvm_platform_impl(ctx):
-    # TODO: currently unreachable - but we should have unsupported OS detection. Maybe just make OS_UNKNOWN var?
+    # TODO: currently unreachable - but we should have unsupported com.vaticle.bazel.distribution.common.OS detection. Maybe just make OS_UNKNOWN var?
     if (ctx.attr.os == "unknown"):
         fail("jvm_application_image is not supported on this operating system")
 
@@ -165,7 +165,7 @@ assemble_zip_to_jvm_platform = rule(
         ),
         "os": attr.string(
             mandatory = True,
-            doc = "The host OS",
+            doc = "The host com.vaticle.bazel.distribution.common.OS",
         ),
         "mac_entitlements": attr.label(
             allow_single_file = True,

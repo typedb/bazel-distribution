@@ -21,16 +21,11 @@
 
 package com.vaticle.bazel.distribution.common.config
 
-import java.io.StringReader
 import java.util.Properties
 
 fun require(key: String, value: String?): String {
     if (value.isNullOrBlank()) throw IllegalStateException("Missing value for required property '$key'")
     return value
-}
-
-fun propertiesOf(value: String): Properties {
-    return Properties().apply { load(StringReader(value)) }
 }
 
 fun Properties.getString(key: String): String? {
