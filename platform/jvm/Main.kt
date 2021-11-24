@@ -226,10 +226,6 @@ fun main_old(args: Array<String>) {
         WINDOWS -> mapOf("PATH" to "${File("wixtoolset").absolutePath};${System.getenv("PATH") ?: ""}")
     }
     runShell(script = jpackageScript, env = env)
-    if (os != MAC) {
-        val distFile = File("dist").listFiles()!![0]
-        distFile.renameTo(File(distFile.path.replace(shortVersion, version)))
-    }
 
     if (os == MAC) {
         if (appleCodeSigningPassword != null) {
@@ -250,9 +246,12 @@ fun main_old(args: Array<String>) {
             "-d", "dist"))
 
         File("dist/$applicationFilename.app").deleteRecursively()
-        val distFile = File("dist").listFiles()!![0]
-        distFile.renameTo(File(distFile.path.replace(shortVersion, version)))
+    }
 
+    val distFile = File("dist").listFiles()!![0]
+    distFile.renameTo(File(distFile.path.replace(shortVersion, version)))
+
+    if (os == MAC) {
         if (appleCodeSigningPassword == null) {
             if (verboseLoggingEnabled) {
                 println("Skipping notarizing step: variable APPLE_CODE_SIGNING_PASSWORD is not set")

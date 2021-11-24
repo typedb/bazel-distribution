@@ -12,7 +12,7 @@ import java.io.File
 class CommandLineParams {
 
     @CommandLine.Option(names = [CONFIG_PATH], required = true)
-    lateinit var configPath: File
+    lateinit var configFile: File
 
     @CommandLine.Option(names = [APPLE_CODE_SIGN])
     var appleCodeSign: Boolean = false
@@ -24,7 +24,7 @@ class CommandLineParams {
     lateinit var appleIDPassword: String
 
     @CommandLine.Option(names = [APPLE_CODE_SIGNING_CERT_PATH])
-    lateinit var appleCodeSigningCertPath: File
+    lateinit var appleCodeSigningCert: File
 
     @CommandLine.Option(names = [APPLE_CODE_SIGNING_CERT_PASSWORD])
     lateinit var appleCodeSigningCertPassword: String

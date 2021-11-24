@@ -20,10 +20,12 @@
 load("@vaticle_bazel_distribution//common:rules.bzl", "assemble_zip", "java_deps")
 
 
+supported_oses = ["Mac", "Linux", "Windows"]
+
+
 def _assemble_zip_to_jvm_platform_impl(ctx):
-    # TODO: currently unreachable - but we should have unsupported com.vaticle.bazel.distribution.common.OS detection. Maybe just make OS_UNKNOWN var?
-    if (ctx.attr.os == "unknown"):
-        fail("jvm_application_image is not supported on this operating system")
+    if (ctx.attr.os not in supported_oses):
+        fail("assemble_jvm_platform is not supported on this operating system")
 
     # TODO: copied from bazel-distribution/pip/rules.bzl
     if not ctx.attr.version_file:
@@ -42,14 +44,14 @@ def _assemble_zip_to_jvm_platform_impl(ctx):
     else:
         version_file = ctx.file.version_file
 
-    step_description = "Building native {} application image".format(ctx.attr.application_name)
+    step_description = "Assembling {} image for {}".format(ctx.attr.image_name, ctx.attr.os)
 
     config = """/
 verbose: {}
 jdkPath: {}
 srcFilename: {}
-applicationName: {}
-applicationFilename: {}
+imageName: {}
+imageFilename: {}
 versionFilePath: {}
 mainJar: {}
 mainClass: {}
@@ -58,8 +60,8 @@ outFilename: {}
     True,
     ctx.file.jdk.path,
     ctx.file.src.path,
-    ctx.attr.application_name,
-    ctx.attr.filename,
+    ctx.attr.image_name,
+    ctx.attr.image_filename,
     version_file.path,
     ctx.attr.main_jar,
     ctx.attr.main_class,
@@ -108,6 +110,11 @@ iconPath: {}
 macEntitlementsPath: {}
 """.format(ctx.file.mac_entitlements.path)
 
+    if ctx.attr.mac_deep_sign_jars_regex:
+        config = config + """/
+appleDeepSignJarsRegex: {}
+""".format(ctx.attr.mac_deep_sign_jars_regex)
+
     if ctx.file.windows_wix_toolset:
         inputs = inputs + [ctx.file.windows_wix_toolset]
         config = config + """/
@@ -134,17 +141,17 @@ assemble_zip_to_jvm_platform = rule(
             allow_single_file = True,
             doc = "The ZIP assembly to pack into a platform-native application",
         ),
-        "application_name": attr.string(
+        "image_name": attr.string(
             mandatory = True,
-            doc = "The application name",
+            doc = "The application image name",
+        ),
+        "image_filename": attr.string(
+            mandatory = True,
+            doc = "The application image filename",
         ),
         "icon": attr.label(
             allow_single_file = True,
             doc = "The application icon",
-        ),
-        "filename": attr.string(
-            mandatory = True,
-            doc = "The filename",
         ),
         "version_file": attr.label(
             mandatory = True,
@@ -165,7 +172,7 @@ assemble_zip_to_jvm_platform = rule(
         ),
         "os": attr.string(
             mandatory = True,
-            doc = "The host com.vaticle.bazel.distribution.common.OS",
+            doc = "The host OS",
         ),
         "mac_entitlements": attr.label(
             allow_single_file = True,
@@ -202,8 +209,8 @@ def native_jdk16():
     })
 
 def assemble_jvm_platform(name,
-                          application_name,
-                          filename,
+                          image_name,
+                          image_filename,
                           version_file,
                           java_deps,
                           main_jar,
@@ -213,6 +220,7 @@ def assemble_jvm_platform(name,
                           additional_files = {},
                           mac_entitlements = None,
                           mac_code_signing_cert = None,
+                          mac_deep_sign_jars_regex = None,
                           windows_wix_toolset = "@wix_toolset_311//file"):
 
     deps_zip_name = "{}-deps-zip".format(name)
@@ -227,23 +235,25 @@ def assemble_jvm_platform(name,
     assemble_zip_to_jvm_platform(
         name = name,
         assemble_zip = ":{}-assemble-zip".format(name),
-        application_name = application_name,
+        image_name = image_name,
+        image_filename = image_filename,
         icon = icon,
-        filename = filename,
         version_file = version_file,
         main_jar = main_jar,
         main_class = main_class,
         jdk = jdk,
         os = select({
-            "@vaticle_dependencies//util/platform:is_mac": "mac",
-            "@vaticle_dependencies//util/platform:is_linux": "linux",
-            "@vaticle_dependencies//util/platform:is_windows": "windows",
+            "@vaticle_dependencies//util/platform:is_mac": "Mac",
+            "@vaticle_dependencies//util/platform:is_linux": "Linux",
+            "@vaticle_dependencies//util/platform:is_windows": "Windows",
         }),
         mac_entitlements = mac_entitlements,
         mac_code_signing_cert = select({
             "//platform/jvm:apple-code-sign": mac_code_signing_cert,
             "//conditions:default": None,
         }),
+        # TODO: in typedb-studio, set this parameter to ".*(io-netty-netty|skiko-jvm-runtime).*"
+        mac_deep_sign_jars_regex = mac_deep_sign_jars_regex,
         windows_wix_toolset = select({
             "@vaticle_dependencies//util/platform:is_windows": windows_wix_toolset,
             "//conditions:default": None,

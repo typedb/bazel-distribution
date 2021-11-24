@@ -28,9 +28,10 @@ import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_CODE_SIGNING_CERT_PATH
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID_PASSWORD
-import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLICATION_FILENAME
-import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLICATION_NAME
+import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_DEEP_SIGN_JARS_REGEX
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.ICON_PATH
+import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.IMAGE_FILENAME
+import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.IMAGE_NAME
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.JDK_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.MAC_ENTITLEMENTS_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.MAIN_CLASS
@@ -44,23 +45,16 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.Properties
 
-data class Options(
-    val verbose: Boolean, val input: Input, val output: Output, val java: Java,
-    val application: Application, val appleCodeSigning: AppleCodeSigning?
-) {
-    val appleCodeSigningEnabled: Boolean = appleCodeSigning != null
-
+data class Options(val verbose: Boolean, val input: Input, val image: Image, val output: Output) {
     companion object {
         fun of(commandLineParams: CommandLineParams): Options {
-            val props = Properties().apply { load(FileInputStream(commandLineParams.configPath)) }
+            val props = Properties().apply { load(FileInputStream(commandLineParams.configFile)) }
 
             return Options(
-                input = Input.of(props),
-                output = Output.of(props),
-                java = Java.of(props),
-                application = Application.of(props),
                 verbose = props.getBoolean(VERBOSE, defaultValue = false),
-                appleCodeSigning = if (commandLineParams.appleCodeSign) AppleCodeSigning.of(commandLineParams) else null
+                input = Input.of(props),
+                image = Image.of(commandLineParams, props),
+                output = Output.of(props)
             )
         }
     }
@@ -81,6 +75,19 @@ data class Options(
         }
     }
 
+    data class Image(val name: String, val filename: String, val java: Java, val appleCodeSigning: AppleCodeSigning?) {
+        val appleCodeSigningEnabled: Boolean = appleCodeSigning != null
+
+        companion object {
+            fun of(commandLineParams: CommandLineParams, props: Properties) = Image(
+                name = props.requireString(IMAGE_NAME),
+                filename = props.requireString(IMAGE_FILENAME),
+                java = Java.of(props),
+                appleCodeSigning = if (commandLineParams.appleCodeSign) AppleCodeSigning.of(commandLineParams, props) else null
+            )
+        }
+    }
+
     data class Output(val filename: String) {
         companion object {
             fun of(props: Properties) = Output(filename = props.requireString(OUTPUT_FILENAME))
@@ -96,19 +103,11 @@ data class Options(
         }
     }
 
-    data class Application(val name: String, val filename: String) {
-        companion object {
-            fun of(props: Properties) = Application(
-                name = props.requireString(APPLICATION_NAME),
-                filename = props.requireString(APPLICATION_FILENAME)
-            )
-        }
-    }
-
-    object Keys {
-        const val APPLICATION_FILENAME = "applicationFilename"
-        const val APPLICATION_NAME = "applicationName"
+    private object Keys {
+        const val APPLE_DEEP_SIGN_JARS_REGEX = "appleDeepSignJarsRegex"
         const val ICON_PATH = "iconPath"
+        const val IMAGE_FILENAME = "imageFilename"
+        const val IMAGE_NAME = "imageName"
         const val JDK_PATH = "jdkPath"
         const val MAC_ENTITLEMENTS_PATH = "macEntitlementsPath"
         const val MAIN_CLASS = "mainClass"
@@ -121,19 +120,23 @@ data class Options(
     }
 
     data class AppleCodeSigning(
-        val appleID: String, val appleIDPassword: String, val certificatePath: File, val certificatePassword: String
+        val appleID: String, val appleIDPassword: String, val cert: File, val certPassword: String,
+        val deepSignJarsRegex: Regex?
     ) {
+        val signNativeLibsInDeps: Boolean = deepSignJarsRegex != null
+
         companion object {
-            fun of(commandLineParams: CommandLineParams) = commandLineParams.run {
+            fun of(commandLineParams: CommandLineParams, props: Properties) = commandLineParams.run {
                 AppleCodeSigning(
                     appleID = require(APPLE_ID, appleID),
                     appleIDPassword = require(APPLE_ID_PASSWORD, appleIDPassword),
-                    certificatePath = require(APPLE_CODE_SIGNING_CERT_PATH, appleCodeSigningCertPath),
-                    certificatePassword = require(APPLE_CODE_SIGNING_CERT_PASSWORD, appleCodeSigningCertPassword)
+                    cert = require(APPLE_CODE_SIGNING_CERT_PATH, appleCodeSigningCert),
+                    certPassword = require(APPLE_CODE_SIGNING_CERT_PASSWORD, appleCodeSigningCertPassword),
+                    deepSignJarsRegex = props.getString(APPLE_DEEP_SIGN_JARS_REGEX)?.let { Regex(it) }
                 )
             }
 
-            private fun <T> require(key: String, value: T): T {
+            private fun <T> require(key: String, value: T?): T {
                 if (value == null || value is String && value.isBlank()) {
                     throw IllegalStateException("'$key' must be set if '${APPLE_CODE_SIGNING_CERT_PATH}' is set")
                 }
@@ -142,7 +145,7 @@ data class Options(
         }
 
         override fun toString(): String {
-            return "Options.AppleCodeSigning: (credentials hidden)"
+            return "Options.AppleCodeSigning: deepSignJarsRegex=$deepSignJarsRegex; (credentials hidden)"
         }
     }
 }
