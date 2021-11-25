@@ -15,6 +15,6 @@ object Logging {
 
     enum class LogLevel {
         DEBUG,
-        ERROR
+        ERROR,
     }
 }

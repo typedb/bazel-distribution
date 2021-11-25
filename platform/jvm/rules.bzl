@@ -17,7 +17,7 @@
 # under the License.
 #
 
-load("@vaticle_bazel_distribution//common:rules.bzl", "assemble_zip", "java_deps")
+load("@vaticle_bazel_distribution//common:rules.bzl", _assemble_zip = "assemble_zip", _java_deps = "java_deps")
 
 
 supported_oses = ["Mac", "Linux", "Windows"]
@@ -44,7 +44,7 @@ def _assemble_zip_to_jvm_platform_impl(ctx):
     else:
         version_file = ctx.file.version_file
 
-    step_description = "Assembling {} image for {}".format(ctx.attr.image_name, ctx.attr.os)
+    progress_message = "Assembling {} image for {}".format(ctx.attr.image_name, ctx.attr.os)
 
     config = """/
 verbose: {}
@@ -59,7 +59,7 @@ outFilename: {}
 """.format(
     True,
     ctx.file.jdk.path,
-    ctx.file.src.path,
+    ctx.file.assemble_zip.path,
     ctx.attr.image_name,
     ctx.attr.image_filename,
     version_file.path,
@@ -67,36 +67,18 @@ outFilename: {}
     ctx.attr.main_class,
     ctx.outputs.distribution_file.path)
 
-    config_private = ""
-
-    if "APPLE_CODE_SIGNING_CERT_PASSWORD" in ctx.var:
-
-        if not ctx.file.mac_entitlements:
-            fail("Parameter mac_entitlements must be set if variable APPLE_CODE_SIGNING_CERT_PASSWORD is set")
+    if "APPLE_CODE_SIGN" in ctx.var:
         if not ctx.file.mac_code_signing_cert:
             fail("Parameter mac_code_signing_cert must be set if variable APPLE_CODE_SIGNING_CERT_PASSWORD is set")
 
-        if "APPLEID" not in ctx.var:
-            fail("Variable APPLEID must be set if variable APPLE_CODE_SIGNING_CERT_PASSWORD is set")
-        if "APPLEID_PASSWORD" not in ctx.var:
-            fail("Variable APPLEID_PASSWORD must be set if variable APPLE_CODE_SIGNING_CERT_PASSWORD is set")
-
         config = config + """/
-appleCodeSigningCertificatePath: {}
+appleCodeSign: True
+appleCodeSigningCertPath: {}
 """.format(ctx.file.mac_code_signing_cert.path)
 
-        config_private = config_private + """/
-appleId: {}
-appleIdPassword: {}
-appleCodeSigningCertificatePassword: {}
-""".format(
-        ctx.var["APPLEID"],
-        ctx.var["APPLEID_PASSWORD"],
-        ctx.var["APPLE_CODE_SIGNING_CERT_PASSWORD"])
+        progress_message = progress_message + " (NOTE: notarization typically takes several minutes to complete)"
 
-        step_description = step_description + " (NOTE: notarization typically takes several minutes to complete)"
-
-    inputs = [ctx.file.jdk, ctx.file.src, version_file]
+    inputs = [ctx.file.jdk, ctx.file.assemble_zip, version_file]
 
     if ctx.file.icon:
         inputs = inputs + [ctx.file.icon]
@@ -110,7 +92,7 @@ iconPath: {}
 macEntitlementsPath: {}
 """.format(ctx.file.mac_entitlements.path)
 
-    if ctx.attr.mac_deep_sign_jars_regex:
+    if hasattr(ctx.attr, "mac_deep_sign_jars_regex"):
         config = config + """/
 appleDeepSignJarsRegex: {}
 """.format(ctx.attr.mac_deep_sign_jars_regex)
@@ -122,19 +104,35 @@ windowsWixToolsetPath: {}
 """.format(ctx.file.windows_wix_toolset.path)
 
     config_file = ctx.actions.declare_file(ctx.attr.name + "__config.properties")
+    ctx.actions.run_shell(
+        inputs = [],
+        outputs = [config_file],
+        command = "echo \"{}\" > {}".format(config, config_file.path)
+    )
+
+    config_path_arg = "--config_path={}".format(config_file.path)
+    if "APPLE_CODE_SIGN" in ctx.var:
+        arguments = [
+            config_path_arg,
+            "--apple_id={}".format(ctx.var["APPLE_ID"]),
+            "--apple_id_password={}".format(ctx.var["APPLE_ID_PASSWORD"]),
+            "--apple_code_signing_cert_password={}".format(ctx.var["APPLE_CODE_SIGNING_CERT_PASSWORD"])
+        ]
+    else:
+        arguments = [config_path_arg]
 
     ctx.actions.run(
-        inputs = inputs,
+        inputs = inputs + [config_file],
         outputs = [ctx.outputs.distribution_file],
-        executable = ctx.executable._jvm_application_image_builder_bin,
-        arguments = [config_file.path] + credentials,
-        progress_message = step_description,
+        executable = ctx.executable._assemble_jvm_platform_bin,
+        arguments = arguments,
+        progress_message = progress_message,
     )
 
     return DefaultInfo(data_runfiles = ctx.runfiles(files=[ctx.outputs.distribution_file]))
 
 
-assemble_zip_to_jvm_platform = rule(
+_assemble_zip_to_jvm_platform = rule(
     attrs = {
         "assemble_zip": attr.label(
             mandatory = True,
@@ -186,8 +184,8 @@ assemble_zip_to_jvm_platform = rule(
             allow_single_file = True,
             doc = "Archive containing the Windows WiX toolset",
         ),
-        "_application_builder_bin": attr.label(
-            default = "//:application-builder-bin",
+        "_assemble_jvm_platform_bin": attr.label(
+            default = "@vaticle_bazel_distribution//platform/jvm:assembler-bin",
             executable = True,
             cfg = "host",
         ),
@@ -223,18 +221,18 @@ def assemble_jvm_platform(name,
                           mac_deep_sign_jars_regex = None,
                           windows_wix_toolset = "@wix_toolset_311//file"):
 
-    deps_zip_name = "{}-deps-zip".format(name)
+    assemble_zip_name = "{}-assemble-zip".format(name)
 
-    assemble_zip(
-        name = deps_zip_name,
+    _assemble_zip(
+        name = assemble_zip_name,
         targets = [java_deps],
         additional_files = additional_files,
-        output_filename = deps_zip_name,
+        output_filename = assemble_zip_name,
     )
 
-    assemble_zip_to_jvm_platform(
+    _assemble_zip_to_jvm_platform(
         name = name,
-        assemble_zip = ":{}-assemble-zip".format(name),
+        assemble_zip = assemble_zip_name,
         image_name = image_name,
         image_filename = image_filename,
         icon = icon,
@@ -249,7 +247,7 @@ def assemble_jvm_platform(name,
         }),
         mac_entitlements = mac_entitlements,
         mac_code_signing_cert = select({
-            "//platform/jvm:apple-code-sign": mac_code_signing_cert,
+            "@vaticle_bazel_distribution//platform/jvm:apple-code-sign": mac_code_signing_cert,
             "//conditions:default": None,
         }),
         # TODO: in typedb-studio, set this parameter to ".*(io-netty-netty|skiko-jvm-runtime).*"

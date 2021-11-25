@@ -6,30 +6,34 @@ import org.zeroturnaround.exec.ProcessResult
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class Shell(private val verbose: Boolean = false) {
+class Shell(private val verbose: Boolean = false, private val printSensitiveData: Boolean = false) {
     fun execute(
         command: List<String>, baseDir: Path = Paths.get("."),
-        env: Map<String, String> = mapOf(), throwOnError: Boolean = true
+        env: Map<String, String> = mapOf(), outputIsSensitive: Boolean = false, throwOnError: Boolean = true
     ): ProcessResult {
-        return execute(Command(*command.map { arg(it) }.toTypedArray()), baseDir, env, throwOnError)
+        return execute(Command(*command.map { arg(it) }.toTypedArray()), baseDir, env, outputIsSensitive, throwOnError)
     }
 
     fun execute(
         command: Command, baseDir: Path = Paths.get("."),
-        env: Map<String, String> = mapOf(), throwOnError: Boolean = true
+        env: Map<String, String> = mapOf(), outputIsSensitive: Boolean = false, throwOnError: Boolean = true
     ): ProcessResult {
         val executor = ProcessExecutor(command.args.map { it.value }).apply {
             readOutput(true)
             redirectError(System.err)
             directory(baseDir.toFile())
             environment(env)
-            if (verbose) redirectOutput(System.out)
+            if (shouldPrintOutput(outputIsSensitive)) redirectOutput(System.out)
             if (throwOnError) exitValueNormal()
         }
 
         return executor.execute().also {
             if (it.exitValue != 0 || verbose) println("Execution of $command finished with exit code '${it.exitValue}'")
         }
+    }
+
+    fun shouldPrintOutput(sensitive: Boolean): Boolean {
+        return verbose && (!sensitive || printSensitiveData)
     }
 
     class Command(vararg args: Argument) {
@@ -47,9 +51,11 @@ class Shell(private val verbose: Boolean = false) {
     }
 
     object Programs {
+        const val CODESIGN = "codesign"
         const val JAR = "jar"
         const val JPACKAGE = "jpackage"
         const val JPACKAGE_EXE = "jpackage.exe"
+        const val OPENSSL = "openssl"
         const val SECURITY = "security"
         const val TAR = "tar"
     }

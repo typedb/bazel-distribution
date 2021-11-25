@@ -19,27 +19,14 @@
  * under the License.
  */
 
-package com.vaticle.bazel.distribution.common.config
+package com.vaticle.bazel.distribution.common.util
 
-import java.util.Properties
+import java.io.File
 
-fun require(key: String, value: String?): String {
-    if (value.isNullOrBlank()) throw IllegalStateException("Missing value for required property '$key'")
-    return value
-}
-
-fun Properties.getString(key: String): String? {
-    return getProperty(key)
-}
-
-fun Properties.requireString(key: String): String {
-    return require(key, getProperty(key))
-}
-
-fun Properties.getBoolean(key: String, defaultValue: Boolean = false): Boolean {
-    return getProperty(key)?.toBoolean() ?: defaultValue
-}
-
-fun Properties.requireBoolean(key: String): Boolean {
-    return require(key, getProperty(key)).toBoolean()
+object FileUtil {
+    fun File.listFilesRecursively(): List<File> {
+        if (isFile) return listOf(this)
+        if (!isDirectory) return emptyList()
+        return listFiles()!!.flatMap { it.listFilesRecursively() }
+    }
 }

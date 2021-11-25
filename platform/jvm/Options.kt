@@ -21,13 +21,14 @@
 
 package com.vaticle.bazel.distribution.platform.jvm
 
-import com.vaticle.bazel.distribution.common.config.getBoolean
-import com.vaticle.bazel.distribution.common.config.getString
-import com.vaticle.bazel.distribution.common.config.requireString
+import com.vaticle.bazel.distribution.common.util.PropertiesUtil.getBoolean
+import com.vaticle.bazel.distribution.common.util.PropertiesUtil.getString
+import com.vaticle.bazel.distribution.common.util.PropertiesUtil.requireString
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_CODE_SIGNING_CERT_PASSWORD
-import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_CODE_SIGNING_CERT_PATH
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID_PASSWORD
+import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_CODE_SIGN
+import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_CODE_SIGNING_CERT_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_DEEP_SIGN_JARS_REGEX
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.ICON_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.IMAGE_FILENAME
@@ -83,7 +84,7 @@ data class Options(val verbose: Boolean, val input: Input, val image: Image, val
                 name = props.requireString(IMAGE_NAME),
                 filename = props.requireString(IMAGE_FILENAME),
                 java = Java.of(props),
-                appleCodeSigning = if (commandLineParams.appleCodeSign) AppleCodeSigning.of(commandLineParams, props) else null
+                appleCodeSigning = if (APPLE_CODE_SIGN in props) AppleCodeSigning.of(commandLineParams, props) else null
             )
         }
     }
@@ -104,6 +105,8 @@ data class Options(val verbose: Boolean, val input: Input, val image: Image, val
     }
 
     private object Keys {
+        const val APPLE_CODE_SIGN = "appleCodeSign"
+        const val APPLE_CODE_SIGNING_CERT_PATH = "appleCodeSigningCertPath"
         const val APPLE_DEEP_SIGN_JARS_REGEX = "appleDeepSignJarsRegex"
         const val ICON_PATH = "iconPath"
         const val IMAGE_FILENAME = "imageFilename"
@@ -130,7 +133,7 @@ data class Options(val verbose: Boolean, val input: Input, val image: Image, val
                 AppleCodeSigning(
                     appleID = require(APPLE_ID, appleID),
                     appleIDPassword = require(APPLE_ID_PASSWORD, appleIDPassword),
-                    cert = require(APPLE_CODE_SIGNING_CERT_PATH, appleCodeSigningCert),
+                    cert = File(props.requireString(APPLE_CODE_SIGNING_CERT_PATH)),
                     certPassword = require(APPLE_CODE_SIGNING_CERT_PASSWORD, appleCodeSigningCertPassword),
                     deepSignJarsRegex = props.getString(APPLE_DEEP_SIGN_JARS_REGEX)?.let { Regex(it) }
                 )

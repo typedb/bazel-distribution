@@ -38,10 +38,10 @@ fun parseCommandLine(args: Array<String>): Options {
 }
 
 fun main(args: Array<String>) {
-    JVMPlatformAssembler(options = parseCommandLine(args)).assemble()
+    JVMPlatformAssembler.assemble(options = parseCommandLine(args))
 }
 
-fun main_old(args: Array<String>) {
+/* fun main_old(args: Array<String>) {
 
     val config = parseConfig(args[0])
     val verboseLoggingEnabled = config["verbose"].toBoolean()
@@ -346,3 +346,4 @@ fun File.listFilesRecursively(): Collection<File> {
     if (!isDirectory) return emptyList()
     return listFiles()!!.flatMap { it.listFilesRecursively() }
 }
+*/
