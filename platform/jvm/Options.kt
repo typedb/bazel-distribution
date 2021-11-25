@@ -27,6 +27,8 @@ import com.vaticle.bazel.distribution.common.util.PropertiesUtil.requireString
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_CODE_SIGNING_CERT_PASSWORD
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID_PASSWORD
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.logger
+import com.vaticle.bazel.distribution.platform.jvm.Logging.Logger
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_CODE_SIGN
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_CODE_SIGNING_CERT_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_DEEP_SIGN_JARS_REGEX
@@ -50,9 +52,18 @@ data class Options(val verbose: Boolean, val input: Input, val image: Image, val
     companion object {
         fun of(commandLineParams: CommandLineParams): Options {
             val props = Properties().apply { load(FileInputStream(commandLineParams.configFile)) }
+            val verbose = props.getBoolean(VERBOSE, defaultValue = false)
+            logger = Logger(logLevel = if (verbose) Logging.LogLevel.DEBUG else Logging.LogLevel.ERROR)
+
+            if (verbose) {
+                logger.debug { "" }
+                logger.debug { "Parsed properties: " }
+                props.forEach { (key, value) -> logger.debug { "$key=$value" } }
+                logger.debug { "" }
+            }
 
             return Options(
-                verbose = props.getBoolean(VERBOSE, defaultValue = false),
+                verbose = verbose,
                 input = Input.of(props),
                 image = Image.of(commandLineParams, props),
                 output = Output.of(props)
@@ -84,7 +95,7 @@ data class Options(val verbose: Boolean, val input: Input, val image: Image, val
                 name = props.requireString(IMAGE_NAME),
                 filename = props.requireString(IMAGE_FILENAME),
                 java = Java.of(props),
-                appleCodeSigning = if (APPLE_CODE_SIGN in props) AppleCodeSigning.of(commandLineParams, props) else null
+                appleCodeSigning = if (APPLE_CODE_SIGN in props.keys) AppleCodeSigning.of(commandLineParams, props) else null
             )
         }
     }

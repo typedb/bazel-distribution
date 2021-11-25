@@ -49,7 +49,6 @@ object JVMPlatformAssembler {
 
     fun assemble(options: Options) {
         verbose = options.verbose
-        logger = Logger(logLevel = if (verbose) DEBUG else ERROR)
         shell = Shell(verbose)
         val inputFiles = InputFiles(shell = shell, options = options.input).apply { extractAll() }
         PlatformImageBuilder.of(shell, logger, inputFiles, options.image).build()

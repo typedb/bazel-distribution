@@ -46,7 +46,7 @@ def _assemble_zip_to_jvm_platform_impl(ctx):
 
     progress_message = "Assembling {} image for {}".format(ctx.attr.image_name, ctx.attr.os)
 
-    config = """/
+    config = """
 verbose: {}
 jdkPath: {}
 srcFilename: {}
@@ -80,7 +80,7 @@ outFilename: {}
         if "APPLE_CODE_SIGNING_CERT_PASSWORD" not in ctx.var:
             fail("Variable APPLE_CODE_SIGNING_CERT_PASSWORD must be set if variable APPLE_CODE_SIGN is set")
 
-        config = config + """/
+        config = config + """
 appleCodeSign: True
 appleCodeSigningCertPath: {}
 """.format(ctx.file.mac_code_signing_cert.path)
@@ -91,24 +91,24 @@ appleCodeSigningCertPath: {}
 
     if ctx.file.icon:
         inputs = inputs + [ctx.file.icon]
-        config = config + """/
+        config = config + """
 iconPath: {}
 """.format(ctx.file.icon.path)
 
     if ctx.file.mac_entitlements:
         inputs = inputs + [ctx.file.mac_entitlements]
-        config = config + """/
+        config = config + """
 macEntitlementsPath: {}
 """.format(ctx.file.mac_entitlements.path)
 
     if hasattr(ctx.attr, "mac_deep_sign_jars_regex"):
-        config = config + """/
+        config = config + """
 appleDeepSignJarsRegex: {}
 """.format(ctx.attr.mac_deep_sign_jars_regex)
 
     if ctx.file.windows_wix_toolset:
         inputs = inputs + [ctx.file.windows_wix_toolset]
-        config = config + """/
+        config = config + """
 windowsWixToolsetPath: {}
 """.format(ctx.file.windows_wix_toolset.path)
 
