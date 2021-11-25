@@ -19,6 +19,8 @@
  * under the License.
  */
 
+package com.vaticle.bazeldistribution.crates
+
 import com.google.api.client.http.*
 import com.google.api.client.http.javanet.NetHttpTransport
 import picocli.CommandLine

@@ -45,7 +45,7 @@ kt_jvm_library(
 
 java_binary(
     name = "crate-assembler",
-    main_class = "CrateAssemblerKt",
+    main_class = "com.vaticle.bazeldistribution.crates.CrateAssemblerKt",
     visibility = ["//visibility:public"],
     runtime_deps = [
         ":crate-assembler-lib",
@@ -66,7 +66,7 @@ kt_jvm_library(
 
 java_binary(
     name = "crate-deployer",
-    main_class = "CrateDeployerKt",
+    main_class = "com.vaticle.bazeldistribution.crates.CrateDeployerKt",
     visibility = ["//visibility:public"],
     runtime_deps = [
         ":crate-deployer-lib",

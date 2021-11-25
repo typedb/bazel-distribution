@@ -19,6 +19,8 @@
  * under the License.
  */
 
+package com.vaticle.bazeldistribution.crates
+
 import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonArray
 import com.eclipsesource.json.JsonObject
