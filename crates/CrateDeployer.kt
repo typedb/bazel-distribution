@@ -79,11 +79,9 @@ class CrateDeployer : Callable<Unit> {
         val metadataJsonContent = metadataJson.readBytes()
         val crateContent = crate.readBytes()
         /*
-         * Cargo sends a single-part body containing both metadata in JSON
+         * Cargo repository expects a single-part body containing both metadata in JSON
          * and the actual crate in a tarball. Each part is prefixed with a
-         * 32-bit little-endian length identifier. Split off the JSON and
-         * turn the tarball into a Blob as the former needs to be parsed
-         * before mapping onto an Asset while the latter is simply stored.
+         * 32-bit little-endian length identifier.
          */
         val payload = ByteBuffer.allocate(4 + metadataJsonContent.size + 4 + crateContent.size)
             .order(ByteOrder.LITTLE_ENDIAN)
