@@ -40,7 +40,6 @@ def _generate_version_file(ctx):
     return version_file
 
 def _assemble_crate_impl(ctx):
-    print(ctx.attr.target[CrateInfo])
     version_file = _generate_version_file(ctx)
     args = [
         "--srcs", ";".join([x.path for x in ctx.attr.target[CrateInfo].srcs.to_list()]),
