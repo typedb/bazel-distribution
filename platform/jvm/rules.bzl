@@ -68,8 +68,17 @@ outFilename: {}
     ctx.outputs.distribution_file.path)
 
     if "APPLE_CODE_SIGN" in ctx.var:
+        if not ctx.file.mac_entitlements:
+            fail("Parameter mac_entitlements must be set if variable APPLE_CODE_SIGN is set")
         if not ctx.file.mac_code_signing_cert:
-            fail("Parameter mac_code_signing_cert must be set if variable APPLE_CODE_SIGNING_CERT_PASSWORD is set")
+            fail("Parameter mac_code_signing_cert must be set if variable APPLE_CODE_SIGN is set")
+
+        if "APPLE_ID" not in ctx.var:
+            fail("Variable APPLE_ID must be set if variable APPLE_CODE_SIGN is set")
+        if "APPLE_ID_PASSWORD" not in ctx.var:
+            fail("Variable APPLE_ID_PASSWORD must be set if variable APPLE_CODE_SIGN is set")
+        if "APPLE_CODE_SIGNING_CERT_PASSWORD" not in ctx.var:
+            fail("Variable APPLE_CODE_SIGNING_CERT_PASSWORD must be set if variable APPLE_CODE_SIGN is set")
 
         config = config + """/
 appleCodeSign: True
