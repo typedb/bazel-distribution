@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,4 +18,8 @@
 # under the License.
 #
 
-exports_files(["deploy.sh"])
+exec java -jar "$DEPLOYER_PATH" \
+    --crate="$CRATE_PATH" \
+    --metadata-json="$METADATA_JSON_PATH" \
+    --snapshot-repo="$SNAPSHOT_REPO" \
+    --release-repo="$RELEASE_REPO" "$*"

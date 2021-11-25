@@ -138,33 +138,31 @@ assemble_crate = rule(
 )
 
 def _deploy_crate_impl(ctx):
-    deploy_crate_script = ctx.actions.declare_file("deploy.py")
-    deploy_crate_link = "deploy.crate"
-    deploy_metadata_link = "deploy_metadata.json"
+    deploy_crate_script = ctx.actions.declare_file(ctx.attr.name)
 
     files = [
         ctx.attr.target[CrateDeploymentInfo].crate,
         ctx.attr.target[CrateDeploymentInfo].metadata,
+        ctx.file._crate_deployer,
     ]
-    symlinks = {
-        deploy_crate_link: ctx.attr.target[CrateDeploymentInfo].crate,
-        deploy_metadata_link: ctx.attr.target[CrateDeploymentInfo].metadata,
-    }
 
     ctx.actions.expand_template(
-        template = ctx.file._deployment_script,
+        template = ctx.file._crate_deployer_wrapper_template,
         output = deploy_crate_script,
         substitutions = {
-            "$CRATE_PATH": deploy_crate_link,
-            "$METADATA_JSON_PATH": deploy_metadata_link,
-            "{snapshot}": ctx.attr.snapshot,
-            "{release}": ctx.attr.release,
+            "$CRATE_PATH": ctx.attr.target[CrateDeploymentInfo].crate.short_path,
+            "$METADATA_JSON_PATH": ctx.attr.target[CrateDeploymentInfo].metadata.short_path,
+            "$SNAPSHOT_REPO": ctx.attr.snapshot,
+            "$RELEASE_REPO": ctx.attr.release,
+            "$DEPLOYER_PATH": ctx.file._crate_deployer.short_path,
         },
     )
 
     return DefaultInfo(
         executable = deploy_crate_script,
-        runfiles = ctx.runfiles(files = files, symlinks = symlinks),
+        runfiles = ctx.runfiles(
+            files = files,
+        ),
     )
 
 deploy_crate = rule(
@@ -182,10 +180,14 @@ deploy_crate = rule(
             mandatory = True,
             doc = "Release repository to release Crate artifact to",
         ),
-        "_deployment_script": attr.label(
+        "_crate_deployer": attr.label(
             allow_single_file = True,
-            default = "@vaticle_bazel_distribution//crates/templates:deploy.py",
+            default = "@vaticle_bazel_distribution//crates:crate-deployer_deploy.jar"
         ),
+        "_crate_deployer_wrapper_template": attr.label(
+            allow_single_file = True,
+            default = "@vaticle_bazel_distribution//crates/templates:deploy.sh",
+        )
     },
     executable = True,
     implementation = _deploy_crate_impl,

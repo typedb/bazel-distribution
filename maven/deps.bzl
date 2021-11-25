@@ -5,7 +5,8 @@ maven_artifacts = [
   "info.picocli:picocli",
   "org.apache.commons:commons-compress",
   "com.fasterxml.jackson.core:jackson-databind",
-  "com.fasterxml.jackson.dataformat:jackson-dataformat-toml"
+  "com.fasterxml.jackson.dataformat:jackson-dataformat-toml",
+  "com.google.http-client:google-http-client",
 ]
 
 maven_artifacts_with_versions = [
@@ -14,4 +15,5 @@ maven_artifacts_with_versions = [
     "org.apache.commons:commons-compress:1.21",
     "com.fasterxml.jackson.core:jackson-databind:2.13.0",
     "com.fasterxml.jackson.dataformat:jackson-dataformat-toml:2.13.0",
+    "com.google.http-client:google-http-client:1.34.2",
 ]
