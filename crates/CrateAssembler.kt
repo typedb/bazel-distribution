@@ -64,8 +64,10 @@ class CrateAssembler : Callable<Unit> {
     @Option(names = ["--srcs"], split = ";", required = true)
     lateinit var srcs: Array<File>
 
-    @Option(names = ["--deps"], split = ";", required = true)
-    lateinit var deps: Array<String>
+    @Option(names = ["--deps"])
+    lateinit var deps: String
+    private val depsList: Array<String>
+        get() = if (deps.isEmpty()) emptyArray() else deps.split(";").toTypedArray()
 
     @Option(names = ["--output-crate"], required = true)
     lateinit var outputCrateFile: File
@@ -153,7 +155,7 @@ class CrateAssembler : Callable<Unit> {
             set("name", name)
             set("vers", versionFile.readText())
             val depsArray = JsonArray()
-            for (dep in deps) {
+            for (dep in depsList) {
                 val (depName, depVer) = dep.split("=")
                 val obj = JsonObject()
                 obj.set("optional", false)
@@ -206,7 +208,7 @@ class CrateAssembler : Callable<Unit> {
                     description,
                     readmeFile?.toPath()?.fileName?.toString() ?: ""
                 ),
-                deps.associate { it.split("=").let { (dep, ver) -> dep to ver } }
+                depsList.associate { it.split("=").let { (dep, ver) -> dep to ver } }
             )
         )
     }
