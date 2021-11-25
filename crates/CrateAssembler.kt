@@ -61,8 +61,10 @@ data class CargoToml(
 
 @Command(name = "crate-assembler", mixinStandardHelpOptions = true)
 class CrateAssembler : Callable<Unit> {
-    @Option(names = ["--srcs"], split = ";", required = true)
-    lateinit var srcs: Array<File>
+    @Option(names = ["--srcs"])
+    lateinit var srcs: String
+    private val srcsList: Array<File>
+        get() = if (srcs.isEmpty()) emptyArray() else srcs.split(";").map(::File).toTypedArray()
 
     @Option(names = ["--deps"])
     lateinit var deps: String
@@ -122,7 +124,7 @@ class CrateAssembler : Callable<Unit> {
             BufferedOutputStream(fos).use { bos ->
                 GZIPOutputStream(bos).use { gzos ->
                     TarArchiveOutputStream(gzos).use { tarOutputStream ->
-                        srcs.forEach { file ->
+                        srcsList.forEach { file ->
                             val sourceEntry = TarArchiveEntry(
                                 file,
                                 "$prefix/src/" + libraryRoot.relativize(file.toPath().toAbsolutePath()).toString()
