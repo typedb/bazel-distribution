@@ -39,16 +39,6 @@ enum class CrateRepoType {
     Release,
 }
 
-fun httpPut(url: String, token: String, content: ByteArray): HttpResponse {
-    return NetHttpTransport()
-        .createRequestFactory()
-        .buildPutRequest(GenericUrl(url), ByteArrayContent("application/json", content))
-        .setHeaders(
-            HttpHeaders().setAuthorization(token)
-        )
-        .execute()
-}
-
 
 @Command(name = "crate-deployer", mixinStandardHelpOptions = true)
 class CrateDeployer : Callable<Unit> {
@@ -94,6 +84,16 @@ class CrateDeployer : Callable<Unit> {
             .array()
 
         httpPut(repoUrl, token, payload)
+    }
+
+    private fun httpPut(url: String, token: String, content: ByteArray): HttpResponse {
+        return NetHttpTransport()
+            .createRequestFactory()
+            .buildPutRequest(GenericUrl(url), ByteArrayContent("application/json", content))
+            .setHeaders(
+                HttpHeaders().setAuthorization(token)
+            )
+            .execute()
     }
 }
 
