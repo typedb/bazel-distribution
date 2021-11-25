@@ -117,13 +117,17 @@ class CrateAssembler : Callable<Unit> {
     lateinit var versionFile: File
 
     override fun call() {
-        val prefix = "$name-${versionFile.readText()}"
+        writeCrateArchive()
+        writeMetadataFile()
+    }
 
-        val libraryRoot = crateRoot.parent.toAbsolutePath()
+    private fun writeCrateArchive() {
+        val prefix = "$name-${versionFile.readText()}"
         outputCrateFile.outputStream().use { fos ->
             BufferedOutputStream(fos).use { bos ->
                 GZIPOutputStream(bos).use { gzos ->
                     TarArchiveOutputStream(gzos).use { tarOutputStream ->
+                        val libraryRoot = crateRoot.parent.toAbsolutePath()
                         srcsList.forEach { file ->
                             val sourceEntry = TarArchiveEntry(
                                 file,
@@ -145,7 +149,9 @@ class CrateAssembler : Callable<Unit> {
                 }
             }
         }
+    }
 
+    private fun writeMetadataFile() {
         outputMetadataFile.outputStream().use {
             val metadata = constructMetadata()
             it.write(metadata.toString().toByteArray(StandardCharsets.UTF_8))
