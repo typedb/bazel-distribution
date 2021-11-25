@@ -26,51 +26,49 @@ bzl_library(
     srcs = [
         "rules.bzl",
     ],
-    visibility = ["//visibility:public"]
+    visibility = ["//visibility:public"],
 )
-
 
 kt_jvm_library(
     name = "crate-assembler-lib",
-    deps = [
-      "@maven//:com_eclipsesource_minimal_json_minimal_json",
-      "@maven//:info_picocli_picocli",
-      "@maven//:org_apache_commons_commons_compress",
-      "@maven//:com_fasterxml_jackson_core_jackson_databind",
-      "@maven//:com_fasterxml_jackson_dataformat_jackson_dataformat_toml",
-    ],
     srcs = [
-        "CrateAssembler.kt"
-    ]
+        "CrateAssembler.kt",
+    ],
+    deps = [
+        "@maven//:com_eclipsesource_minimal_json_minimal_json",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_fasterxml_jackson_dataformat_jackson_dataformat_toml",
+        "@maven//:info_picocli_picocli",
+        "@maven//:org_apache_commons_commons_compress",
+    ],
 )
 
 java_binary(
     name = "crate-assembler",
-    runtime_deps = [
-        ":crate-assembler-lib"
-    ],
     main_class = "CrateAssemblerKt",
-    visibility = ["//visibility:public"]
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        ":crate-assembler-lib",
+    ],
 )
-
 
 kt_jvm_library(
     name = "crate-deployer-lib",
-    deps = [
-      "@maven//:com_eclipsesource_minimal_json_minimal_json",
-      "@maven//:info_picocli_picocli",
-      "@maven//:com_google_http_client_google_http_client",
-    ],
     srcs = [
-        "CrateDeployer.kt"
-    ]
+        "CrateDeployer.kt",
+    ],
+    deps = [
+        "@maven//:com_eclipsesource_minimal_json_minimal_json",
+        "@maven//:com_google_http_client_google_http_client",
+        "@maven//:info_picocli_picocli",
+    ],
 )
 
 java_binary(
     name = "crate-deployer",
-    runtime_deps = [
-        ":crate-deployer-lib"
-    ],
     main_class = "CrateDeployerKt",
-    visibility = ["//visibility:public"]
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        ":crate-deployer-lib",
+    ],
 )
