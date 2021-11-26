@@ -60,6 +60,10 @@ assemble_zip = _assemble_zip
 load("//common/tgz2zip:rules.bzl", _ = "tgz2zip")
 tgz2zip = _
 
+load("//crates:rules.bzl", _assemble_crate = "assemble_crate", _deploy_crate = "deploy_crate")
+assemble_crate = _assemble_crate
+deploy_crate = _deploy_crate
+
 load("//gcp:rules.bzl", _ = "assemble_gcp")
 assemble_gcp = _
 
