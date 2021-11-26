@@ -75,7 +75,7 @@ class CrateDeployer : Callable<Unit> {
          * and the actual crate in a tarball. Each part is prefixed with a
          * 32-bit little-endian length identifier.
          */
-        val payload = ByteBuffer.allocate(4 + metadataJsonContent.size + 4 + crateContent.size)
+        val payload = ByteBuffer.allocate(Int.SIZE_BYTES + metadataJsonContent.size + Int.SIZE_BYTES + crateContent.size)
             .order(ByteOrder.LITTLE_ENDIAN)
             .putInt(metadataJsonContent.size)
             .put(metadataJsonContent)
