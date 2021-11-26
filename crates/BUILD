@@ -36,8 +36,8 @@ kt_jvm_library(
     ],
     deps = [
         "@maven//:com_eclipsesource_minimal_json_minimal_json",
-        "@maven//:com_fasterxml_jackson_core_jackson_databind",
-        "@maven//:com_fasterxml_jackson_dataformat_jackson_dataformat_toml",
+        "@maven//:com_electronwill_night_config_core",
+        "@maven//:com_electronwill_night_config_toml",
         "@maven//:info_picocli_picocli",
         "@maven//:org_apache_commons_commons_compress",
     ],

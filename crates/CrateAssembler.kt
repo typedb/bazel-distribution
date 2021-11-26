@@ -24,7 +24,8 @@ package com.vaticle.bazeldistribution.crates
 import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonArray
 import com.eclipsesource.json.JsonObject
-import com.fasterxml.jackson.dataformat.toml.TomlMapper
+import com.electronwill.nightconfig.core.Config
+import com.electronwill.nightconfig.toml.TomlWriter
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
 import org.apache.commons.compress.utils.IOUtils
@@ -39,24 +40,6 @@ import java.nio.file.Path
 import java.util.concurrent.Callable
 import java.util.zip.GZIPOutputStream
 import kotlin.system.exitProcess
-
-
-data class CargoTomlPackage(
-    val name: String,
-    val edition: String,
-    val version: String,
-    val authors: List<String>,
-    val homepage: String,
-    val repository: String,
-    val documentation: String,
-    val description: String,
-    val readme: String
-)
-
-data class CargoToml(
-    val `package`: CargoTomlPackage,
-    val dependencies: Map<String, String>
-)
 
 
 @Command(name = "crate-assembler", mixinStandardHelpOptions = true)
@@ -202,23 +185,23 @@ class CrateAssembler : Callable<Unit> {
     }
 
     private fun generateCargoToml(): String {
-        val mapper = TomlMapper()
-        return mapper.writeValueAsString(
-            CargoToml(
-                CargoTomlPackage(
-                    name,
-                    edition,
-                    versionFile.readText(),
-                    authors.filter { it != "" },
-                    homepage,
-                    repository,
-                    documentation,
-                    description,
-                    readmeFile?.toPath()?.fileName?.toString() ?: ""
-                ),
-                depsList.associate { it.split("=").let { (dep, ver) -> dep to ver } }
-            )
-        )
+        val cargoToml = Config.inMemory()
+        cargoToml.createSubConfig().apply {
+            set<String>("name", name)
+            set<String>("edition", edition)
+            set<String>("version", versionFile.readText())
+            set<Array<String>>("authors", authors.filter { it != "" })
+            set<String>("homepage", homepage)
+            set<String>("repository", repository)
+            set<String>("documentation", documentation)
+            set<String>("description", description)
+            set<String>("readme", readmeFile?.toPath()?.fileName?.toString() ?: "")
+            cargoToml.set("package", this)
+        }
+        depsList.associate { it.split("=").let { (dep, ver) -> dep to ver } }.forEach { dep, ver ->
+            cargoToml.set("dependencies.$dep", ver)
+        }
+        return TomlWriter().writeToString(cargoToml.unmodifiable())
     }
 }
 

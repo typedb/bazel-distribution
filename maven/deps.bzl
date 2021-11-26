@@ -18,8 +18,8 @@
 
 maven_artifacts = [
     "com.eclipsesource.minimal-json:minimal-json",
-    "com.fasterxml.jackson.core:jackson-databind",
-    "com.fasterxml.jackson.dataformat:jackson-dataformat-toml",
+    "com.electronwill.night-config:core",
+    "com.electronwill.night-config:toml",
     "com.google.http-client:google-http-client",
     "info.picocli:picocli",
     "org.apache.commons:commons-compress",
@@ -27,8 +27,8 @@ maven_artifacts = [
 
 maven_artifacts_with_versions = [
     "com.eclipsesource.minimal-json:minimal-json:0.9.5",
-    "com.fasterxml.jackson.core:jackson-databind:2.13.0",
-    "com.fasterxml.jackson.dataformat:jackson-dataformat-toml:2.13.0",
+    "com.electronwill.night-config:core:3.6.5",
+    "com.electronwill.night-config:toml:3.6.5",
     "com.google.http-client:google-http-client:1.34.2",
     "info.picocli:picocli:4.3.2",
     "org.apache.commons:commons-compress:1.21",
