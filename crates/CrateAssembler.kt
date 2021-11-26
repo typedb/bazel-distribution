@@ -134,14 +134,36 @@ class CrateAssembler : Callable<Unit> {
         }
     }
 
+    private fun generateCargoToml(): String {
+        val cargoToml = Config.inMemory()
+        cargoToml.createSubConfig().apply {
+            cargoToml.set<Config>("package", this)
+            set<String>("name", name)
+            set<String>("edition", edition)
+            set<String>("version", versionFile.readText())
+            set<Array<String>>("authors", authors.filter { it != "" })
+            set<String>("homepage", homepage)
+            set<String>("repository", repository)
+            set<String>("documentation", documentation)
+            set<String>("description", description)
+            set<String>("readme", readmeFile?.toPath()?.fileName?.toString() ?: "")
+        }
+        cargoToml.createSubConfig().apply {
+            cargoToml.set<Config>("dependencies", this)
+            depsList.associate { it.split("=").let { (dep, ver) -> dep to ver } }.forEach { (dep, ver) ->
+                set<String>(dep, ver)
+            }
+        }
+        return TomlWriter().writeToString(cargoToml.unmodifiable())
+    }
+
     private fun writeMetadataFile() {
         outputMetadataFile.outputStream().use {
-            val metadata = constructMetadata()
-            it.write(metadata.toString().toByteArray(StandardCharsets.UTF_8))
+            it.write(constructMetadata().toByteArray(StandardCharsets.UTF_8))
         }
     }
 
-    private fun constructMetadata(): JsonObject {
+    private fun constructMetadata(): String {
         return JsonObject().apply {
             set("name", name)
             set("vers", versionFile.readText())
@@ -178,30 +200,10 @@ class CrateAssembler : Callable<Unit> {
             set("license_file", Json.NULL)
             set("repository", repository)
             // https://doc.rust-lang.org/cargo/reference/manifest.html#the-badges-section
-            // as docs state all badges should go to README so it's safe to keep it empty
+            // as docs state all badges should go to README, so it's safe to keep it empty
             set("badges", JsonObject())
             set("links", Json.NULL)
-        }
-    }
-
-    private fun generateCargoToml(): String {
-        val cargoToml = Config.inMemory()
-        cargoToml.createSubConfig().apply {
-            set<String>("name", name)
-            set<String>("edition", edition)
-            set<String>("version", versionFile.readText())
-            set<Array<String>>("authors", authors.filter { it != "" })
-            set<String>("homepage", homepage)
-            set<String>("repository", repository)
-            set<String>("documentation", documentation)
-            set<String>("description", description)
-            set<String>("readme", readmeFile?.toPath()?.fileName?.toString() ?: "")
-            cargoToml.set("package", this)
-        }
-        depsList.associate { it.split("=").let { (dep, ver) -> dep to ver } }.forEach { dep, ver ->
-            cargoToml.set("dependencies.$dep", ver)
-        }
-        return TomlWriter().writeToString(cargoToml.unmodifiable())
+        }.toString()
     }
 }
 
