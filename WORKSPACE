@@ -64,3 +64,5 @@ git_repository(
 load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
 stardoc_repositories()
 
+load("//crates:deps.bzl", "rules_rust")
+rules_rust()
