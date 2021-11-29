@@ -44,9 +44,20 @@ def validate_as_url(field_name, field_value):
         fail("URL for field `{}` must begin with http:// or https://".format(field_name))
 
 
+def validate_keywords(keywords):
+    if len(keywords) > 5:
+        fail("Maximum of 5 keywords is supported; {} found".format(len(keywords)))
+    for keyword in keywords:
+        if len(keyword) > 20:
+            fail("Keywords need to be 20 characters maximum; {} is invalid (length = {})".format(
+                keyword, len(keyword)
+                ))
+
+
 def _assemble_crate_impl(ctx):
     validate_as_url('homepage', ctx.attr.homepage)
     validate_as_url('repository', ctx.attr.repository)
+    validate_keywords(ctx.attr.keywords)
     version_file = _generate_version_file(ctx)
     args = [
         "--srcs", ";".join([x.path for x in ctx.attr.target[CrateInfo].srcs.to_list()]),
@@ -128,7 +139,15 @@ assemble_crate = rule(
             doc = """README of the project""",
         ),
         "keywords": attr.string_list(
-            doc = """Project keywords""",
+            doc = """
+            The keywords field is an array of strings that describe this package.
+            This can help when searching for the package on a registry, and you may choose any words that would help someone find this crate.
+
+            Note: crates.io has a maximum of 5 keywords.
+            Each keyword must be ASCII text, start with a letter, and only contain letters, numbers, _ or -, and have at most 20 characters.
+
+            https://doc.rust-lang.org/cargo/reference/manifest.html#the-keywords-field
+            """,
         ),
         "categories": attr.string_list(
             doc = """Project categories""",
