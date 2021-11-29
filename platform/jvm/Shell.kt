@@ -1,6 +1,8 @@
 package com.vaticle.bazel.distribution.platform.jvm
 
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.logger
 import com.vaticle.bazel.distribution.platform.jvm.Shell.Command.Companion.arg
+import org.zeroturnaround.exec.InvalidExitValueException
 import org.zeroturnaround.exec.ProcessExecutor
 import org.zeroturnaround.exec.ProcessResult
 import java.nio.file.Path
@@ -24,11 +26,12 @@ class Shell(private val verbose: Boolean = false, private val printSensitiveData
             directory(baseDir.toFile())
             environment(env)
             if (shouldPrintOutput(outputIsSensitive)) redirectOutput(System.out)
-            if (throwOnError) exitValueNormal()
         }
 
         return executor.execute().also {
-            if (it.exitValue != 0 || verbose) println("Execution of $command finished with exit code '${it.exitValue}'")
+            val message = "Execution of $command finished with exit code '${it.exitValue}'"
+            if (it.exitValue != 0 && throwOnError) throw IllegalStateException(message)
+            else if (verbose) logger.debug { "Execution of $command finished with exit code '${it.exitValue}'" }
         }
     }
 
@@ -38,6 +41,10 @@ class Shell(private val verbose: Boolean = false, private val printSensitiveData
 
     class Command(vararg args: Argument) {
         val args = args.toList()
+
+        override fun toString(): String {
+            return args.toString()
+        }
 
         companion object {
             fun arg(value: String, printable: Boolean = true) = Argument(value, printable)

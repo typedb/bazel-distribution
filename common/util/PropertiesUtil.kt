@@ -29,7 +29,7 @@ object PropertiesUtil {
         return value
     }
 
-    fun Properties.getString(key: String): String? {
+    fun Properties.getStringOrNull(key: String): String? {
         return getProperty(key)
     }
 
@@ -37,7 +37,7 @@ object PropertiesUtil {
         return require(key, getProperty(key))
     }
 
-    fun Properties.getBoolean(key: String, defaultValue: Boolean = false): Boolean {
+    fun Properties.getBooleanOrDefault(key: String, defaultValue: Boolean = false): Boolean {
         return getProperty(key)?.toBoolean() ?: defaultValue
     }
 

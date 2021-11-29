@@ -5,12 +5,14 @@ import com.vaticle.bazel.distribution.common.OS.MAC
 import com.vaticle.bazel.distribution.common.OS.WINDOWS
 import com.vaticle.bazel.distribution.common.util.FileUtil.listFilesRecursively
 import com.vaticle.bazel.distribution.common.util.SystemUtil.currentOS
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.AppleCodeSigner.Security.CN
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.AppleCodeSigner.Security.CREATE_KEYCHAIN
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.AppleCodeSigner.Security.DEFAULT_KEYCHAIN
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.AppleCodeSigner.Security.DELETE_KEYCHAIN
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.AppleCodeSigner.Security.IMPORT
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.AppleCodeSigner.Security.LIST_KEYCHAINS
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.AppleCodeSigner.Security.LOGIN_KEYCHAIN
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.AppleCodeSigner.Security.PKCS12
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.AppleCodeSigner.Security.SET_KEY_PARTITION_LIST
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.AppleCodeSigner.Security.UNLOCK_KEYCHAIN
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.AppleCodeSigner.Security.USER
@@ -19,8 +21,25 @@ import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.AppleCod
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.AppleCodeSigner.VerifySignatureResult.Status.SIGNED
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.InputFiles.Paths.JDK
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.InputFiles.Paths.WIX_TOOLSET
-import com.vaticle.bazel.distribution.platform.jvm.Logging.LogLevel.DEBUG
-import com.vaticle.bazel.distribution.platform.jvm.Logging.LogLevel.ERROR
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.APP_VERSION
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.COPYRIGHT
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.DESCRIPTION
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.DEST
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.ICON
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.INPUT
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.LICENSE_FILE
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.LINUX_APP_CATEGORY
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.LINUX_MENU_GROUP
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.LINUX_SHORTCUT
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.MAIN_CLASS
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.MAIN_JAR
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.NAME
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.TYPE
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.VENDOR
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.VERBOSE
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.WIN_MENU
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.WIN_MENU_GROUP
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.WIN_SHORTCUT
 import com.vaticle.bazel.distribution.platform.jvm.Logging.Logger
 import com.vaticle.bazel.distribution.platform.jvm.Shell.Command.Companion.arg
 import com.vaticle.bazel.distribution.platform.jvm.Shell.Extensions
@@ -35,10 +54,15 @@ import com.vaticle.bazel.distribution.platform.jvm.Shell.Programs.TAR
 import org.zeroturnaround.exec.ProcessResult
 import java.io.File
 import java.io.FileInputStream
+import java.lang.System.getenv
 import java.nio.file.Files
 import java.nio.file.Files.createDirectory
 import java.nio.file.Path
 import java.security.KeyStore
+import java.security.cert.Certificate
+import java.security.cert.X509Certificate
+import javax.naming.ldap.LdapName
+import javax.naming.ldap.Rdn
 import kotlin.properties.Delegates
 
 object JVMPlatformAssembler {
@@ -46,12 +70,13 @@ object JVMPlatformAssembler {
     var verbose by Delegates.notNull<Boolean>()
     lateinit var logger: Logger
     lateinit var shell: Shell
+    private lateinit var inputFiles: InputFiles
 
     fun assemble(options: Options) {
         verbose = options.verbose
         shell = Shell(verbose)
-        val inputFiles = InputFiles(shell = shell, options = options.input).apply { extractAll() }
-        PlatformImageBuilder.of(shell, logger, inputFiles, options.image).build()
+        inputFiles = InputFiles(shell = shell, options = options.input).apply { extractAll() }
+        PlatformImageBuilder.forCurrentOS().build()
         if (currentOS == MAC) MacAppNotarizer().notarize()
         outputToArchive()
         log { "Successfully assembled ${options.image.name} $currentOS image" }
@@ -68,8 +93,11 @@ object JVMPlatformAssembler {
     private class InputFiles(private val shell: Shell, private val options: Options.Input) {
         lateinit var jpackage: File
         val version = File(options.versionFilePath)
-        val srcPath: Path = Path.of("src")
+        val srcDir = File("src")
+        val icon = options.iconPath?.let { File(it) }
+        val license = options.licensePath?.let { File(it) }
         val macEntitlements = options.macEntitlementsPath?.let { File(it) }
+        val wixToolset = options.windowsWiXToolsetPath?.let { File(it) }
 
         private object Paths {
             const val JDK = "jdk"
@@ -110,85 +138,183 @@ object JVMPlatformAssembler {
             val files = File(tempDir).listFiles()
             assert(files!!.size == 1)
             assert(files[0].isDirectory)
-            Files.move(files[0].toPath(), srcPath)
+            Files.move(files[0].toPath(), srcDir.toPath())
         }
     }
 
-    private sealed class PlatformImageBuilder(protected val ctx: Context) {
+    private sealed class PlatformImageBuilder {
+        private lateinit var version: String
+        private val shortVersion: String; get() = version.split("-")[0] // e.g: 2.0.0-alpha5 -> 2.0.0
+        protected val distDir = File("dist")
+
         fun build() {
+            version = readVersionFile()
             beforePack()
             pack()
             afterPack()
+            setImageFilename() // this step should rename the image to applicationFilename
         }
 
-        fun pack() {
-            val version = ctx.inputFiles.version.readLines()[0]
-            TODO()
+        private fun readVersionFile(): String {
+            return inputFiles.version.readLines()[0]
         }
 
         open fun beforePack() {}
 
+        open fun pack() {
+            shell.execute(
+                command = listOf(inputFiles.jpackage.path) + packArgsCommon() + packArgsPlatform(),
+                env = packEnv()
+            )
+        }
+
+        protected open fun packEnv(): Map<String, String> {
+            return mapOf()
+        }
+
+        private fun packArgsCommon(): List<String> {
+            return mutableListOf(
+                inputFiles.jpackage.path,
+                NAME, options.image.name,
+                APP_VERSION, shortVersion,
+                INPUT, inputFiles.srcDir.path,
+                MAIN_JAR, options.launcher.mainJar,
+                MAIN_CLASS, options.launcher.mainClass,
+                DEST, distDir.path
+            ).apply {
+                if (verbose) this += VERBOSE
+                options.image.description?.let { this += listOf(DESCRIPTION, it) }
+                options.image.vendor?.let { this += listOf(VENDOR, it) }
+                options.image.copyright?.let { this += listOf(COPYRIGHT, it) }
+                inputFiles.icon?.let { this += listOf(ICON, it.path) }
+                inputFiles.license?.let { this += listOf(LICENSE_FILE, it.path) }
+            }
+        }
+
+        abstract fun packArgsPlatform(): List<String>
+
+        protected fun licenseArgs(): List<String> {
+            return inputFiles.license?.let { listOf(LICENSE_FILE, it.path) } ?: emptyList()
+        }
+
         open fun afterPack() {}
 
-        class Context(val shell: Shell, val logger: Logger, val inputFiles: InputFiles, val options: Options.Image)
-
         companion object {
-            fun of(shell: Shell, logger: Logger, inputFiles: InputFiles, options: Options.Image): PlatformImageBuilder {
-                val ctx = Context(shell, logger, inputFiles, options)
+            fun forCurrentOS(): PlatformImageBuilder {
                 return when (currentOS) {
-                    WINDOWS -> Windows(ctx)
-                    MAC -> Mac(ctx)
-                    LINUX -> Linux(ctx)
+                    WINDOWS -> Windows()
+                    MAC -> Mac()
+                    LINUX -> Linux()
                 }
             }
         }
 
-        private class Mac(ctx: Context): PlatformImageBuilder(ctx) {
-            val appleCodeSigner: AppleCodeSigner? = when (ctx.options.appleCodeSigningEnabled) {
+        private class Mac: PlatformImageBuilder() {
+            val appleCodeSigner: AppleCodeSigner? = when (options.image.appleCodeSigningEnabled) {
                 true -> AppleCodeSigner(
-                    shell = ctx.shell, macEntitlements = requireNotNull(ctx.inputFiles.macEntitlements),
-                    options = requireNotNull(ctx.options.appleCodeSigning)
+                    shell = shell, macEntitlements = requireNotNull(inputFiles.macEntitlements),
+                    options = requireNotNull(options.image.appleCodeSigning)
                 )
                 false -> null
             }
 
             override fun beforePack() {
-                if (ctx.options.appleCodeSigningEnabled) {
-                    requireNotNull(appleCodeSigner)
-                    appleCodeSigner.setupSigningIdentity()
-                    // Some JARs contain unsigned `.jnilib` and `.dylib` files, which we can extract, sign and repackage
-                    if (ctx.options.appleCodeSigning!!.signNativeLibsInDeps) {
-                        appleCodeSigner.signUnsignedNativeLibs(ctx.inputFiles.srcPath.toFile())
-                    }
+                if (options.image.appleCodeSigningEnabled && options.image.appleCodeSigning!!.signNativeLibsInDeps) {
+                    appleCodeSigner!!.init()
+                    appleCodeSigner.signUnsignedNativeLibs(inputFiles.srcDir)
+                }
+            }
+
+            override fun pack() {
+                super.pack()
+                if (options.image.appleCodeSigningEnabled) {
+                    if (!appleCodeSigner!!.initialised) appleCodeSigner.init()
+                    appleCodeSigner.signAppImage(Path.of(distDir.path, "${options.image.name}.app"))
                 } else {
-                    ctx.logger.debug {
+                    logger.debug {
                         "Apple code signing will not be performed because it disabled in the configuration " +
                                 " (it should only be enabled when distributing an image for use on other machines)"
                     }
                 }
+                TODO()
+            }
+
+            override fun packArgsPlatform(): List<String> {
+                return listOf(TYPE, "--app-image") // license file (if exists) is added later, at the DMG creation stage
             }
         }
 
-        private class Linux(ctx: Context): PlatformImageBuilder(ctx) {
-
+        private class Linux: PlatformImageBuilder() {
+            override fun packArgsPlatform(): List<String> {
+                return mutableListOf(TYPE, "deb").apply {
+                    this += licenseArgs()
+                    if (options.launcher.createShortcut) this += LINUX_SHORTCUT
+                    options.launcher.linux.menuGroup?.let { this += listOf(LINUX_MENU_GROUP, it) }
+                    options.launcher.linux.appCategory?.let { this += listOf(LINUX_APP_CATEGORY, it) }
+                }
+            }
         }
 
-        private class Windows(ctx: Context): PlatformImageBuilder(ctx) {
+        private class Windows: PlatformImageBuilder() {
+            override fun packArgsPlatform(): List<String> {
+                return mutableListOf(TYPE, "exe").apply {
+                    this += licenseArgs()
+                    if (options.launcher.createShortcut) this += WIN_SHORTCUT
+                    options.launcher.windows.menuGroup?.let {
+                        this += listOf(
+                            WIN_MENU,
+                            WIN_MENU_GROUP, it
+                        )
+                    }
+                }
+            }
 
+            override fun packEnv(): Map<String, String> {
+                if (inputFiles.wixToolset == null) {
+                    throw IllegalStateException("The WiX toolset is required to build on Windows, but is not present in the input files!")
+                }
+                val systemPath = getenv("PATH") ?: ""
+                return mapOf("PATH" to "${inputFiles.wixToolset!!.absolutePath};$systemPath")
+            }
+        }
+
+        private object JPackageArgs {
+            const val APP_VERSION = "--app_version"
+            const val COPYRIGHT = "--copyright"
+            const val DESCRIPTION = "--description"
+            const val DEST = "--dest"
+            const val ICON = "--icon"
+            const val INPUT = "--input"
+            const val LICENSE_FILE = "--license_file"
+            const val LINUX_APP_CATEGORY = "--linux_app_category"
+            const val LINUX_MENU_GROUP = "--linux_menu_group"
+            const val LINUX_SHORTCUT = "--linux_shortcut"
+            const val MAIN_CLASS = "--main_class"
+            const val MAIN_JAR = "--main_jar"
+            const val NAME = "--name"
+            const val TYPE = "--type"
+            const val VENDOR = "--vendor"
+            const val VERBOSE = "--verbose"
+            const val WIN_MENU = "--win_menu"
+            const val WIN_MENU_GROUP = "--win_menu_group"
+            const val WIN_SHORTCUT = "--win_shortcut"
         }
     }
 
     private class AppleCodeSigner(private val shell: Shell, private val macEntitlements: File, private val options: Options.AppleCodeSigning) {
+        var initialised: Boolean = false
         lateinit var certSubject: String
 
         // TODO: copy the contents of this SO post into a PR comment at this line: https://stackoverflow.com/a/57912831/2902555
-        fun setupSigningIdentity() {
+        fun init() {
             deleteExistingKeychainIfPresent()
             createKeychain()
-            makeKeychainAccessible()
+            setDefaultKeychain()
+            unlockKeychain()
             importCodeSigningIdentity()
             makeCodeSigningIdentityAccessible()
             certSubject = findCertSubject()
+            initialised = true
         }
 
         private fun deleteExistingKeychainIfPresent() {
@@ -206,9 +332,12 @@ object JVMPlatformAssembler {
             )
         }
 
-        private fun makeKeychainAccessible() {
+        private fun setDefaultKeychain() {
             shell.execute(listOf(SECURITY, DEFAULT_KEYCHAIN, "-s", KEYCHAIN_NAME))
             shell.execute(listOf(SECURITY, LIST_KEYCHAINS, "-d", USER, "-s", LOGIN_KEYCHAIN, KEYCHAIN_NAME))
+        }
+
+        fun unlockKeychain() {
             shell.execute(
                 Shell.Command(
                     arg(SECURITY), arg(UNLOCK_KEYCHAIN),
@@ -242,21 +371,24 @@ object JVMPlatformAssembler {
         }
 
         private fun findCertSubject(): String {
-            val keystore = KeyStore.getInstance("PKCS12")
+            val keystore = KeyStore.getInstance(PKCS12)
             keystore.load(FileInputStream(options.cert.path), options.certPassword.toCharArray())
-            return "banana"
-//            val certContent = shell.execute(
-//                Shell.Command(
-//                    arg(OPENSSL), arg("pkcs12"),
-//                    arg("-in"), arg(options.cert.path),
-//                    arg("-nodes"),
-//                    arg("-passin"), arg("pass:${options.certPassword}", printable = false)
-//                ), outputIsSensitive = true
-//            )
-//            val commonName = PKCS1
+            val keystoreAliases = keystore.aliases().toList()
+            assert(keystoreAliases.size == 1)
+            val cert: Certificate = keystore.getCertificate(keystore.aliases().nextElement())
+            if (cert !is X509Certificate) throw IllegalStateException("Imported cert is not an X509 certificate (type = ${cert.type})")
+            val subject = cert.subjectX500Principal.name
+            val subjectCommonName: Rdn = LdapName(subject).rdns.find { it.type == CN }
+                ?: throw IllegalStateException("Imported X509 cert subject does not specify a common name ($CN)! (subject = $subject)")
+            return subjectCommonName.value.toString()
+        }
+
+        fun signAppImage(rootPath: Path) {
+            TODO()
         }
 
         fun signUnsignedNativeLibs(root: File) {
+            // Some JARs contain unsigned `.jnilib` and `.dylib` files, which we can extract, sign and repackage
             for (jar in root.listFilesRecursively().filter {
                 it.isFile && it.extension == Extensions.JAR && it.name.matches(requireNotNull(options.deepSignJarsRegex))
             }) {
@@ -311,12 +443,14 @@ object JVMPlatformAssembler {
         }
 
         private object Security {
+            const val CN = "CN"
             const val CREATE_KEYCHAIN = "create-keychain"
             const val DEFAULT_KEYCHAIN = "default-keychain"
             const val DELETE_KEYCHAIN = "delete-keychain"
             const val IMPORT = "import"
             const val LIST_KEYCHAINS = "list-keychains"
             const val LOGIN_KEYCHAIN = "login.keychain"
+            const val PKCS12 = "PKCS12"
             const val SET_KEY_PARTITION_LIST = "set-key-partition-list"
             const val UNLOCK_KEYCHAIN = "unlock-keychain"
             const val USER = "user"

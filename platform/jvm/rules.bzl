@@ -23,6 +23,17 @@ load("@vaticle_bazel_distribution//common:rules.bzl", _assemble_zip = "assemble_
 supported_oses = ["Mac", "Linux", "Windows"]
 
 
+def _configure_optional_attr(ctx, config, attr, option):
+    if attr in ctx.attr:
+        config = config + """
+{}: {}
+""".format(option, ctx.attr[attr])
+
+
+def _configure_optional_file(ctx, config, inputs, file, option):
+    if file in ctx.file
+
+
 def _assemble_zip_to_jvm_platform_impl(ctx):
     if (ctx.attr.os not in supported_oses):
         fail("assemble_jvm_platform is not supported on this operating system")
@@ -55,7 +66,8 @@ imageFilename: {}
 versionFilePath: {}
 mainJar: {}
 mainClass: {}
-outFilename: {}
+createShortcut: {}
+outputArchivePath: {}
 """.format(
     True,
     ctx.file.jdk.path,
@@ -65,7 +77,9 @@ outFilename: {}
     version_file.path,
     ctx.attr.main_jar,
     ctx.attr.main_class,
-    ctx.outputs.distribution_file.path)
+    ctx.attr.create_shortcut,
+    ctx.outputs.distribution_file.path
+    )
 
     if "APPLE_CODE_SIGN" in ctx.var:
         if not ctx.file.mac_entitlements:
@@ -89,28 +103,20 @@ appleCodeSigningCertPath: {}
 
     inputs = [ctx.file.jdk, ctx.file.assemble_zip, version_file]
 
-    if ctx.file.icon:
-        inputs = inputs + [ctx.file.icon]
-        config = config + """
-iconPath: {}
-""".format(ctx.file.icon.path)
+    _configure_optional_attr(ctx=ctx, config=config, attr="description", option="description")
+    _configure_optional_attr(ctx=ctx, config=config, attr="vendor", option="vendor")
+    _configure_optional_attr(ctx=ctx, config=config, attr="copyright", option="copyright")
+    _configure_optional_file(ctx=ctx, config=config, inputs=inputs, file="icon", option="iconPath")
+    _configure_optional_file(ctx=ctx, config=config, inputs=inputs, file="license_file", option="licensePath")
 
-    if ctx.file.mac_entitlements:
-        inputs = inputs + [ctx.file.mac_entitlements]
-        config = config + """
-macEntitlementsPath: {}
-""".format(ctx.file.mac_entitlements.path)
+    _configure_optional_attr(ctx=ctx, config=config, attr="linux_app_category", option="linuxAppCategory")
+    _configure_optional_attr(ctx=ctx, config=config, attr="linux_menu_group", option="linuxMenuGroup")
 
-    if hasattr(ctx.attr, "mac_deep_sign_jars_regex"):
-        config = config + """
-appleDeepSignJarsRegex: {}
-""".format(ctx.attr.mac_deep_sign_jars_regex)
+    _configure_optional_file(ctx=ctx, config=config, inputs=inputs, file="mac_entitlements", option="macEntitlementsPath")
+    _configure_optional_attr(ctx=ctx, config=config, attr="mac_deep_sign_jars_regex", option="appleDeepSignJarsRegex")
 
-    if ctx.file.windows_wix_toolset:
-        inputs = inputs + [ctx.file.windows_wix_toolset]
-        config = config + """
-windowsWixToolsetPath: {}
-""".format(ctx.file.windows_wix_toolset.path)
+    _configure_optional_attr(ctx=ctx, config=config, attr="windows_menu_group", option="windowsMenuGroup")
+    _configure_optional_file(ctx=ctx, config=config, inputs=inputs, file="windows_wix_toolset", option="windowsWiXToolsetPath")
 
     config_file = ctx.actions.declare_file(ctx.attr.name + "__config.properties")
     ctx.actions.run_shell(
@@ -156,6 +162,19 @@ _assemble_zip_to_jvm_platform = rule(
             mandatory = True,
             doc = "The application image filename",
         ),
+        "description": attr.string(
+            doc = "The application description",
+        ),
+        "vendor": attr.string(
+            doc = "The application vendor",
+        ),
+        "copyright": attr.string(
+            doc = "The application's copyright text",
+        ),
+        "license_file": attr.label(
+            allow_single_file = True,
+            doc = "The license file",
+        ),
         "icon": attr.label(
             allow_single_file = True,
             doc = "The application icon",
@@ -181,13 +200,29 @@ _assemble_zip_to_jvm_platform = rule(
             mandatory = True,
             doc = "The host OS",
         ),
+        "create_shortcut": attr.bool(
+            mandatory = True,
+            doc = "Whether to create a shortcut for the application (on systems that support desktop shortcuts)",
+        ),
+        "linux_app_category": attr.string(
+            doc = "'Section' value of the DEB control file on Debian-based Linux systems",
+        ),
+        "linux_menu_group": attr.string(
+            doc = "Menu group this application is placed in on Linux, defining the categories under which the application will be classified",
+        ),
         "mac_entitlements": attr.label(
             allow_single_file = True,
-            doc = "The MacOS entitlements.mac.plist file",
+            doc = "The Mac entitlements.mac.plist file",
         ),
         "mac_code_signing_cert": attr.label(
             allow_single_file = True,
-            doc = "The MacOS code signing certificate",
+            doc = "The Mac code signing certificate",
+        ),
+        "mac_deep_sign_jars_regex": attr.string(
+            doc = "On Mac, JARs in the Java deps whose names match this regex will be repackaged with their native libraries signed",
+        ),
+        "windows_menu_group": attr.string(
+            doc = "Start Menu group this application is placed in on Windows. If unset, the application will not be placed in the Start Menu",
         ),
         "windows_wix_toolset": attr.label(
             allow_single_file = True,
@@ -218,6 +253,10 @@ def native_jdk16():
 def assemble_jvm_platform(name,
                           image_name,
                           image_filename,
+                          description,
+                          vendor,
+                          copyright,
+                          license_file,
                           version_file,
                           java_deps,
                           main_jar,
@@ -225,12 +264,16 @@ def assemble_jvm_platform(name,
                           icon = None,
                           jdk = native_jdk16(),
                           additional_files = {},
+                          create_shortcut = True,
+                          linux_app_category = None,
+                          linux_menu_group = None,
                           mac_entitlements = None,
                           mac_code_signing_cert = None,
                           mac_deep_sign_jars_regex = None,
+                          windows_menu_group = None,
                           windows_wix_toolset = "@wix_toolset_311//file"):
 
-    assemble_zip_name = "{}-assemble-zip".format(name)
+    assemble_zip_name = "{}-deps-zip".format(name)
 
     _assemble_zip(
         name = assemble_zip_name,
@@ -244,6 +287,10 @@ def assemble_jvm_platform(name,
         assemble_zip = assemble_zip_name,
         image_name = image_name,
         image_filename = image_filename,
+        description = description,
+        vendor = vendor,
+        copyright = copyright,
+        license_file = license_file,
         icon = icon,
         version_file = version_file,
         main_jar = main_jar,
@@ -254,13 +301,16 @@ def assemble_jvm_platform(name,
             "@vaticle_dependencies//util/platform:is_linux": "Linux",
             "@vaticle_dependencies//util/platform:is_windows": "Windows",
         }),
+        create_shortcut = create_shortcut,
+        linux_app_category = linux_app_category,
+        linux_menu_group = linux_menu_group,
         mac_entitlements = mac_entitlements,
         mac_code_signing_cert = select({
             "@vaticle_bazel_distribution//platform/jvm:apple-code-sign": mac_code_signing_cert,
             "//conditions:default": None,
         }),
-        # TODO: in typedb-studio, set this parameter to ".*(io-netty-netty|skiko-jvm-runtime).*"
         mac_deep_sign_jars_regex = mac_deep_sign_jars_regex,
+        windows_menu_group = windows_menu_group,
         windows_wix_toolset = select({
             "@vaticle_dependencies//util/platform:is_windows": windows_wix_toolset,
             "//conditions:default": None,
