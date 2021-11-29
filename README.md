@@ -20,13 +20,13 @@ assemble_crate(<a href="#assemble_crate-name">name</a>, <a href="#assemble_crate
 | <a id="assemble_crate-authors"></a>authors |  Project authors   | List of strings | optional | [] |
 | <a id="assemble_crate-categories"></a>categories |  Project categories   | List of strings | optional | [] |
 | <a id="assemble_crate-deps"></a>deps |  Maps external Crate dependency to its version   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
-| <a id="assemble_crate-description"></a>description |  Description of the project   | String | optional | "" |
+| <a id="assemble_crate-description"></a>description |  The description is a short blurb about the package. crates.io will display this with your package. This should be plain text (not Markdown).             https://doc.rust-lang.org/cargo/reference/manifest.html#the-description-field   | String | required |  |
 | <a id="assemble_crate-documentation"></a>documentation |  Link to documentation of the project   | String | optional | "" |
-| <a id="assemble_crate-homepage"></a>homepage |  Link to homepage of the project   | String | optional | "" |
-| <a id="assemble_crate-keywords"></a>keywords |  Project keywords   | List of strings | optional | [] |
-| <a id="assemble_crate-license"></a>license |  License of the project   | String | optional | "" |
+| <a id="assemble_crate-homepage"></a>homepage |  Link to homepage of the project   | String | required |  |
+| <a id="assemble_crate-keywords"></a>keywords |  The keywords field is an array of strings that describe this package.             This can help when searching for the package on a registry, and you may choose any words that would help someone find this crate.<br><br>            Note: crates.io has a maximum of 5 keywords.             Each keyword must be ASCII text, start with a letter, and only contain letters, numbers, _ or -, and have at most 20 characters.<br><br>            https://doc.rust-lang.org/cargo/reference/manifest.html#the-keywords-field   | List of strings | optional | [] |
+| <a id="assemble_crate-license"></a>license |  The license field contains the name of the software license that the package is released under.             https://doc.rust-lang.org/cargo/reference/manifest.html#the-license-and-license-file-fields   | String | required |  |
 | <a id="assemble_crate-readme_file"></a>readme_file |  README of the project   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="assemble_crate-repository"></a>repository |  Repository of the project   | String | optional | "" |
+| <a id="assemble_crate-repository"></a>repository |  Repository of the project   | String | required |  |
 | <a id="assemble_crate-target"></a>target |  <code>rust_library</code> label to be included in the package   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="assemble_crate-version_file"></a>version_file |  File containing version string.             Alternatively, pass --define version=VERSION to Bazel invocation.             Not specifying version at all defaults to '0.0.0'   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 
