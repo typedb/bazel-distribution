@@ -21,6 +21,7 @@
 
 package com.vaticle.bazeldistribution.crates
 
+import com.eclipsesource.json.Json
 import com.google.api.client.http.*
 import com.google.api.client.http.javanet.NetHttpTransport
 import picocli.CommandLine
@@ -83,7 +84,16 @@ class CrateDeployer : Callable<Unit> {
             .put(crateContent)
             .array()
 
-        httpPut(repoUrl, token, payload)
+        val response = httpPut(repoUrl, token, payload).parseAsString()
+        if (response.isNotBlank()) {
+            // for invalid uploads, crates.io responds with 200 HTTP OK
+            // but response contains a JSON object with validation errors
+            val responseJson = Json.parse(response).asObject()
+            if (responseJson.get("errors") != null) {
+                println("Could not deploy crate; server responded with '$responseJson'")
+                exitProcess(1)
+            }
+        }
     }
 
     private fun httpPut(url: String, token: String, content: ByteArray): HttpResponse {

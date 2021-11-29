@@ -39,7 +39,14 @@ def _generate_version_file(ctx):
         )
     return version_file
 
+def validate_as_url(field_name, field_value):
+    if not field_value.startswith("http://") and not field_value.startswith("https://"):
+        fail("URL for field `{}` must begin with http:// or https://".format(field_name))
+
+
 def _assemble_crate_impl(ctx):
+    validate_as_url('homepage', ctx.attr.homepage)
+    validate_as_url('repository', ctx.attr.repository)
     version_file = _generate_version_file(ctx)
     args = [
         "--srcs", ";".join([x.path for x in ctx.attr.target[CrateInfo].srcs.to_list()]),
@@ -53,12 +60,15 @@ def _assemble_crate_impl(ctx):
         "--keywords", ";".join(ctx.attr.keywords),
         "--categories", ";".join(ctx.attr.categories),
         "--description", ctx.attr.description,
-        "--documentation", ctx.attr.documentation,
         "--homepage", ctx.attr.homepage,
         "--license", ctx.attr.license,
         "--repository", ctx.attr.repository,
         "--deps", ";".join(["{}={}".format(k, v) for k, v in ctx.attr.deps.items()]),
     ]
+    if ctx.attr.documentation != "":
+        validate_as_url('documentation', ctx.attr.documentation)
+        args.append("--documentation")
+        args.append(ctx.attr.documentation)
     inputs = [version_file]
     if ctx.file.readme_file:
         args.append("--readme-file")
@@ -99,12 +109,17 @@ assemble_crate = rule(
             doc = """Project authors""",
         ),
         "description": attr.string(
-            doc = """Description of the project""",
+            mandatory = True,
+            doc = """
+            The description is a short blurb about the package. crates.io will display this with your package. This should be plain text (not Markdown).
+            https://doc.rust-lang.org/cargo/reference/manifest.html#the-description-field
+            """,
         ),
         "documentation": attr.string(
             doc = """Link to documentation of the project""",
         ),
         "homepage": attr.string(
+            mandatory = True,
             doc = """Link to homepage of the project""",
         ),
         "readme_file": attr.label(
@@ -119,9 +134,14 @@ assemble_crate = rule(
             doc = """Project categories""",
         ),
         "license": attr.string(
-            doc = """License of the project""",
+            mandatory = True,
+            doc = """
+            The license field contains the name of the software license that the package is released under.
+            https://doc.rust-lang.org/cargo/reference/manifest.html#the-license-and-license-file-fields
+            """,
         ),
         "repository": attr.string(
+            mandatory = True,
             doc = """Repository of the project""",
         ),
         "_crate_assembler_tool": attr.label(

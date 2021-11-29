@@ -72,13 +72,13 @@ class CrateAssembler : Callable<Unit> {
     @Option(names = ["--authors"], split = ";")
     lateinit var authors: Array<String>
 
-    @Option(names = ["--description"], required = false)
+    @Option(names = ["--description"], required = true)
     lateinit var description: String
 
     @Option(names = ["--documentation"], required = false)
-    lateinit var documentation: String
+    var documentation: String? = null
 
-    @Option(names = ["--homepage"], required = false)
+    @Option(names = ["--homepage"], required = true)
     lateinit var homepage: String
 
     @Option(names = ["--keywords"], split = ";")
@@ -90,7 +90,7 @@ class CrateAssembler : Callable<Unit> {
     @Option(names = ["--license"], required = false)
     lateinit var license: String
 
-    @Option(names = ["--repository"], required = false)
+    @Option(names = ["--repository"], required = true)
     lateinit var repository: String
 
     @Option(names = ["--readme-file"])
@@ -144,7 +144,9 @@ class CrateAssembler : Callable<Unit> {
             set<Array<String>>("authors", authors.filter { it != "" })
             set<String>("homepage", homepage)
             set<String>("repository", repository)
-            set<String>("documentation", documentation)
+            if (documentation != null) {
+                set<String>("documentation", documentation)
+            }
             set<String>("description", description)
             set<String>("readme", readmeFile?.toPath()?.fileName?.toString() ?: "")
         }
@@ -178,14 +180,16 @@ class CrateAssembler : Callable<Unit> {
                 obj.set("version_req", depVer)
                 obj.set("target", Json.NULL)
                 obj.set("kind", "normal")
-                obj.set("registry", "https://github.com/rust-lang/crates.io-index")
+                obj.set("registry", "")
                 depsArray.add(obj)
             }
             set("deps", depsArray)
             set("features", JsonObject())
             set("authors", JsonArray().apply { authors.filter { it != "" }.forEach { add(it) } })
             set("description", description)
-            set("documentation", documentation)
+            if (documentation != null) {
+                set("documentation", documentation)
+            }
             set("homepage", homepage)
             readmeFile?.let {
                 set("readme", readmeFile?.readText())
