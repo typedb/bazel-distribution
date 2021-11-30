@@ -28,6 +28,7 @@ import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID_PASSWORD
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.logger
+import com.vaticle.bazel.distribution.platform.jvm.Logging.LogLevel
 import com.vaticle.bazel.distribution.platform.jvm.Logging.Logger
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_CODE_SIGN
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_CODE_SIGNING_CERT_PATH
@@ -43,10 +44,12 @@ import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.JDK_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.LICENSE_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.LINUX_APP_CATEGORY
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.LINUX_MENU_GROUP
+import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.MAC_APP_ID
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.MAC_ENTITLEMENTS_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.MAIN_CLASS
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.MAIN_JAR
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.OUTPUT_ARCHIVE_PATH
+import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.LOG_SENSITIVE_DATA
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.SOURCE_FILENAME
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.VERBOSE
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.VERSION_FILE_PATH
@@ -56,12 +59,12 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.Properties
 
-data class Options(val verbose: Boolean, val input: Input, val image: Image, val launcher: Launcher, val output: Output) {
+data class Options(val logging: Logging, val input: Input, val image: Image, val launcher: Launcher, val output: Output) {
     companion object {
         fun of(commandLineParams: CommandLineParams): Options {
             val props = Properties().apply { load(FileInputStream(commandLineParams.configFile)) }
             val verbose = props.getBooleanOrDefault(VERBOSE, defaultValue = false)
-            logger = Logger(logLevel = if (verbose) Logging.LogLevel.DEBUG else Logging.LogLevel.ERROR)
+            logger = Logger(logLevel = if (verbose) LogLevel.DEBUG else LogLevel.ERROR)
 
             if (verbose) {
                 logger.debug { "" }
@@ -71,11 +74,20 @@ data class Options(val verbose: Boolean, val input: Input, val image: Image, val
             }
 
             return Options(
-                verbose = verbose,
+                logging = Logging.of(props),
                 input = Input.of(props),
                 image = Image.of(commandLineParams, props),
                 launcher = Launcher.of(props),
                 output = Output.of(props)
+            )
+        }
+    }
+
+    data class Logging(val verbose: Boolean, val logSensitiveData: Boolean) {
+        companion object {
+            fun of(props: Properties) = Logging(
+                verbose = props.getBooleanOrDefault(VERBOSE, defaultValue = false),
+                logSensitiveData = props.getBooleanOrDefault(LOG_SENSITIVE_DATA, defaultValue = false)
             )
         }
     }
@@ -150,7 +162,7 @@ data class Options(val verbose: Boolean, val input: Input, val image: Image, val
 
     data class AppleCodeSigning(
         val appleID: String, val appleIDPassword: String, val cert: File, val certPassword: String,
-        val deepSignJarsRegex: Regex?
+        val macAppID: String, val deepSignJarsRegex: Regex?
     ) {
         val signNativeLibsInDeps: Boolean = deepSignJarsRegex != null
 
@@ -161,6 +173,7 @@ data class Options(val verbose: Boolean, val input: Input, val image: Image, val
                     appleIDPassword = require(APPLE_ID_PASSWORD, appleIDPassword),
                     cert = File(props.requireString(APPLE_CODE_SIGNING_CERT_PATH)),
                     certPassword = require(APPLE_CODE_SIGNING_CERT_PASSWORD, appleCodeSigningCertPassword),
+                    macAppID = props.requireString(MAC_APP_ID),
                     deepSignJarsRegex = props.getStringOrNull(APPLE_DEEP_SIGN_JARS_REGEX)?.let { Regex(it) }
                 )
             }
@@ -174,7 +187,7 @@ data class Options(val verbose: Boolean, val input: Input, val image: Image, val
         }
 
         override fun toString(): String {
-            return "Options.AppleCodeSigning: deepSignJarsRegex=$deepSignJarsRegex; (credentials hidden)"
+            return "Options.AppleCodeSigning: macAppID=$macAppID, deepSignJarsRegex=$deepSignJarsRegex; (credentials hidden)"
         }
     }
 
@@ -192,6 +205,8 @@ data class Options(val verbose: Boolean, val input: Input, val image: Image, val
         const val LICENSE_PATH = "licensePath"
         const val LINUX_APP_CATEGORY = "linuxAppCategory"
         const val LINUX_MENU_GROUP = "linuxMenuGroup"
+        const val LOG_SENSITIVE_DATA = "logSensitiveData"
+        const val MAC_APP_ID = "macAppID"
         const val MAC_ENTITLEMENTS_PATH = "macEntitlementsPath"
         const val MAIN_CLASS = "mainClass"
         const val MAIN_JAR = "mainJar"

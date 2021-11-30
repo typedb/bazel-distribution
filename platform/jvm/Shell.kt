@@ -2,7 +2,6 @@ package com.vaticle.bazel.distribution.platform.jvm
 
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.logger
 import com.vaticle.bazel.distribution.platform.jvm.Shell.Command.Companion.arg
-import org.zeroturnaround.exec.InvalidExitValueException
 import org.zeroturnaround.exec.ProcessExecutor
 import org.zeroturnaround.exec.ProcessResult
 import java.nio.file.Path
@@ -62,9 +61,9 @@ class Shell(private val verbose: Boolean = false, private val printSensitiveData
         const val JAR = "jar"
         const val JPACKAGE = "jpackage"
         const val JPACKAGE_EXE = "jpackage.exe"
-        const val OPENSSL = "openssl"
         const val SECURITY = "security"
         const val TAR = "tar"
+        const val XCRUN = "xcrun"
     }
 
     object Extensions {
