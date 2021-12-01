@@ -89,7 +89,7 @@ outputArchivePath: {}
     ctx.outputs.distribution_file.path
     )
 
-    if "APPLE_CODE_SIGN" in ctx.var:
+    if "APPLE_CODE_SIGN" in ctx.var and ctx.var["APPLE_CODE_SIGN"].lower() in "yes, true":
         _require_apple_code_signing_file(ctx.file.mac_entitlements, "mac_entitlements")
         _require_apple_code_signing_file(ctx.file.mac_code_signing_cert, "mac_code_signing_cert")
         _require_apple_code_signing_attr(ctx.attr.mac_app_id, "mac_app_id")
@@ -172,7 +172,7 @@ windowsWiXToolsetPath: {}
     )
 
     config_path_arg = "--config_path={}".format(config_file.path)
-    if "APPLE_CODE_SIGN" in ctx.var:
+    if "APPLE_CODE_SIGN" in ctx.var and ctx.var["APPLE_CODE_SIGN"].lower() in "yes, true":
         _require_apple_code_signing_var(ctx, "APPLE_ID")
         _require_apple_code_signing_var(ctx, "APPLE_ID_PASSWORD")
         _require_apple_code_signing_var(ctx, "APPLE_CODE_SIGNING_CERT_PASSWORD")
