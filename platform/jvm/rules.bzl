@@ -23,21 +23,6 @@ load("@vaticle_bazel_distribution//common:rules.bzl", _assemble_zip = "assemble_
 supported_oses = ["Mac", "Linux", "Windows"]
 
 
-def _configure_optional_attr(config, attr, option):
-    if attr:
-        config = config + """
-{}: {}
-""".format(option, attr)
-
-
-def _configure_optional_file(config, inputs, file, option):
-    if file:
-        inputs = inputs + [file]
-        config = config + """
-{}: {}
-""".format(option, file.path)
-
-
 def _require_apple_code_signing_attr(attr, name):
     if not attr:
         fail("Parameter {} must be set if variable APPLE_CODE_SIGN is set".format(attr))
@@ -84,7 +69,8 @@ srcFilename: {}
 imageName: {}
 imageFilename: {}
 versionFilePath: {}
-mainJar: {}
+jarsPath: {}
+mainJarPath: {}
 mainClass: {}
 createShortcut: {}
 outputArchivePath: {}
@@ -96,7 +82,8 @@ outputArchivePath: {}
     ctx.attr.image_name,
     ctx.attr.image_filename,
     version_file.path,
-    ctx.attr.main_jar,
+    ctx.attr.jars_path,
+    ctx.attr.main_jar_path,
     ctx.attr.main_class,
     ctx.attr.create_shortcut,
     ctx.outputs.distribution_file.path
@@ -117,21 +104,65 @@ macAppID: {}
 
     inputs = [ctx.file.jdk, ctx.file.assemble_zip, version_file]
 
-    # TODO: this isn't working - probably because config is unmodified? We need to make these methods work somehow
-    _configure_optional_attr(config=config, attr=ctx.attr.description, option="description")
-    _configure_optional_attr(config=config, attr=ctx.attr.vendor, option="vendor")
-    _configure_optional_attr(config=config, attr=ctx.attr.copyright, option="copyright")
-    _configure_optional_file(config=config, inputs=inputs, file=ctx.file.icon, option="iconPath")
-    _configure_optional_file(config=config, inputs=inputs, file=ctx.file.license_file, option="licensePath")
+    # TODO: refactor into a less repetitive structure, perhaps constructing 'config' in one go using a 'dict'?
+    if ctx.attr.description:
+        config = config + """
+description: {}
+""".format(ctx.attr.description)
 
-    _configure_optional_attr(config=config, attr=ctx.attr.linux_app_category, option="linuxAppCategory")
-    _configure_optional_attr(config=config, attr=ctx.attr.linux_menu_group, option="linuxMenuGroup")
+    if ctx.attr.vendor:
+        config = config + """
+vendor: {}
+""".format(ctx.attr.vendor)
 
-    _configure_optional_file(config=config, inputs=inputs, file=ctx.file.mac_entitlements, option="macEntitlementsPath")
-    _configure_optional_attr(config=config, attr=ctx.attr.mac_deep_sign_jars_regex, option="appleDeepSignJarsRegex")
+    if ctx.attr.copyright:
+        config = config + """
+copyright: {}
+""".format(ctx.attr.copyright)
 
-    _configure_optional_attr(config=config, attr=ctx.attr.windows_menu_group, option="windowsMenuGroup")
-    _configure_optional_file(config=config, inputs=inputs, file=ctx.file.windows_wix_toolset, option="windowsWiXToolsetPath")
+    if ctx.attr.linux_app_category:
+        config = config + """
+linuxAppCategory: {}
+""".format(ctx.attr.linux_app_category)
+
+    if ctx.attr.linux_menu_group:
+        config = config + """
+linuxMenuGroup: {}
+""".format(ctx.attr.linux_menu_group)
+
+    if ctx.attr.mac_deep_sign_jars_regex:
+        config = config + """
+appleDeepSignJarsRegex: {}
+""".format(ctx.attr.mac_deep_sign_jars_regex)
+
+    if ctx.attr.windows_menu_group:
+        config = config + """
+windowsMenuGroup: {}
+""".format(ctx.attr.windows_menu_group)
+
+    if ctx.file.icon:
+        inputs = inputs + [ctx.file.icon]
+        config = config + """
+iconPath: {}
+""".format(ctx.file.icon.path)
+
+    if ctx.file.license_file:
+        inputs = inputs + [ctx.file.license_file]
+        config = config + """
+licensePath: {}
+""".format(ctx.file.license_file.path)
+
+    if ctx.file.mac_entitlements:
+        inputs = inputs + [ctx.file.mac_entitlements]
+        config = config + """
+macEntitlementsPath: {}
+""".format(ctx.file.mac_entitlements.path)
+
+    if ctx.file.windows_wix_toolset:
+        inputs = inputs + [ctx.file.windows_wix_toolset]
+        config = config + """
+windowsWiXToolsetPath: {}
+""".format(ctx.file.windows_wix_toolset.path)
 
     config_file = ctx.actions.declare_file(ctx.attr.name + "__config.properties")
     ctx.actions.run_shell(
@@ -207,13 +238,17 @@ _assemble_zip_to_jvm_platform = rule(
             allow_single_file = True,
             doc = "Archive containing the JDK, which must be at least version 16",
         ),
-        "main_jar": attr.string(
+        "jars_path": attr.string(
             mandatory = True,
-            doc = "The name of the JAR containing the main method",
+            doc = "The location of the JARs to be packed into this image",
+        ),
+        "main_jar_path": attr.string(
+            mandatory = True,
+            doc = "The path of the JAR containing the main function, relative to the jar_path",
         ),
         "main_class": attr.string(
             mandatory = True,
-            doc = "The main class",
+            doc = "The main class name, which must be fully qualified (using the full package address)",
         ),
         "os": attr.string(
             mandatory = True,
@@ -289,7 +324,8 @@ def assemble_jvm_platform(name,
                           license_file,
                           version_file,
                           java_deps,
-                          main_jar,
+                          java_deps_root,
+                          main_jar_path,
                           main_class,
                           icon = None,
                           jdk = native_jdk16(),
@@ -326,7 +362,8 @@ def assemble_jvm_platform(name,
         license_file = license_file,
         icon = icon,
         version_file = version_file,
-        main_jar = main_jar,
+        jars_path = java_deps_root,
+        main_jar_path = main_jar_path,
         main_class = main_class,
         jdk = jdk,
         os = select({

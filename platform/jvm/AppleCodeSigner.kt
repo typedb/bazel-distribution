@@ -10,6 +10,7 @@ import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args
 import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.TIMESTAMP
 import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.VERIFY
 import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Paths.CONTENTS
+import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Paths.MAC_OS
 import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Paths.RUNTIME
 import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Paths.TMP
 import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.CN
@@ -122,9 +123,10 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
         return subjectCommonName.value.toString()
     }
 
-    fun signAppImage(rootPath: Path) {
+    fun signAppImage(rootPath: Path, appName: String) {
         signFile(rootPath.toFile())
         signFile(rootPath.resolve(CONTENTS).resolve(RUNTIME).toFile())
+        signFile(rootPath.resolve(CONTENTS).resolve(MAC_OS).resolve(appName).toFile())
     }
 
     fun signUnsignedNativeLibs(root: File) {
@@ -215,6 +217,7 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
 
     private object Paths {
         const val CONTENTS = "Contents"
+        const val MAC_OS = "MacOS"
         const val RUNTIME = "runtime"
         const val TMP = "tmp"
     }

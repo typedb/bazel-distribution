@@ -51,7 +51,7 @@ class Shell(private val verbose: Boolean = false, private val printSensitiveData
 
         class Argument(val value: String, val printable: Boolean = true) {
             override fun toString(): String {
-                return if (printable) value else "(hidden argument)"
+                return if (printable) value else "(hidden)"
             }
         }
     }

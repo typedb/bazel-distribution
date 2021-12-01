@@ -39,6 +39,7 @@ import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.ICON_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.DESCRIPTION
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.IMAGE_FILENAME
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.IMAGE_NAME
+import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.JARS_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.VENDOR
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.JDK_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.LICENSE_PATH
@@ -47,7 +48,7 @@ import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.LINUX_MENU_GROUP
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.MAC_APP_ID
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.MAC_ENTITLEMENTS_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.MAIN_CLASS
-import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.MAIN_JAR
+import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.MAIN_JAR_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.OUTPUT_ARCHIVE_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.LOG_SENSITIVE_DATA
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.SOURCE_FILENAME
@@ -93,13 +94,14 @@ data class Options(val logging: Logging, val input: Input, val image: Image, val
     }
 
     data class Input(
-        val jdkPath: String, val sourceFilename: String, val versionFilePath: String, val iconPath: String?,
+        val jdkPath: String, val sourceFilename: String, val jarsPath: String, val versionFilePath: String, val iconPath: String?,
         val licensePath: String?, val macEntitlementsPath: String?, val windowsWiXToolsetPath: String?
     ) {
         companion object {
             fun of(props: Properties) = Input(
                 jdkPath = props.requireString(JDK_PATH),
                 sourceFilename = props.requireString(SOURCE_FILENAME),
+                jarsPath = props.requireString(JARS_PATH),
                 versionFilePath = props.requireString(VERSION_FILE_PATH),
                 iconPath = props.getStringOrNull(ICON_PATH),
                 licensePath = props.getStringOrNull(LICENSE_PATH),
@@ -127,10 +129,10 @@ data class Options(val logging: Logging, val input: Input, val image: Image, val
         }
     }
 
-    data class Launcher(val mainJar: String, val mainClass: String, val createShortcut: Boolean, val linux: Linux, val windows: Windows) {
+    data class Launcher(val mainJarPath: String, val mainClass: String, val createShortcut: Boolean, val linux: Linux, val windows: Windows) {
         companion object {
             fun of(props: Properties) = Launcher(
-                mainJar = props.requireString(MAIN_JAR),
+                mainJarPath = props.requireString(MAIN_JAR_PATH),
                 mainClass = props.requireString(MAIN_CLASS),
                 createShortcut = props.getBooleanOrDefault(CREATE_SHORTCUT, defaultValue = false),
                 linux = Linux.of(props),
@@ -201,6 +203,7 @@ data class Options(val logging: Logging, val input: Input, val image: Image, val
         const val ICON_PATH = "iconPath"
         const val IMAGE_FILENAME = "imageFilename"
         const val IMAGE_NAME = "imageName"
+        const val JARS_PATH = "jarsPath"
         const val JDK_PATH = "jdkPath"
         const val LICENSE_PATH = "licensePath"
         const val LINUX_APP_CATEGORY = "linuxAppCategory"
@@ -209,7 +212,7 @@ data class Options(val logging: Logging, val input: Input, val image: Image, val
         const val MAC_APP_ID = "macAppID"
         const val MAC_ENTITLEMENTS_PATH = "macEntitlementsPath"
         const val MAIN_CLASS = "mainClass"
-        const val MAIN_JAR = "mainJar"
+        const val MAIN_JAR_PATH = "mainJarPath"
         const val OUTPUT_ARCHIVE_PATH = "outputArchivePath"
         const val SOURCE_FILENAME = "srcFilename"
         const val VENDOR = "vendor"

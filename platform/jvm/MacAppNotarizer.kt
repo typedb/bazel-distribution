@@ -1,5 +1,7 @@
 package com.vaticle.bazel.distribution.platform.jvm
 
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.logger
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.shell
 import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.ALTOOL
 import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.FILE
 import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.NOTARIZATION_INFO
@@ -18,10 +20,11 @@ import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.StatusPoller.
 import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.StatusPoller.STATUS_MESSAGE_PACKAGE_APPROVED
 import java.nio.file.Path
 
-class MacAppNotarizer(private val options: Options.AppleCodeSigning, private val dmgName: String, private val dmgPath: Path) {
+class MacAppNotarizer(private val options: Options.AppleCodeSigning, private val dmgFilename: String, private val dmgPath: Path) {
     fun notarize() {
-        val requestUUID = parseNotarizeResult(JVMPlatformAssembler.shell.execute(notarizeCommand()).outputString())
-        JVMPlatformAssembler.logger.debug { "Notarization request UUID: $requestUUID" }
+        shell.execute(listOf("ls", "dist"))
+        val requestUUID = parseNotarizeResult(shell.execute(notarizeCommand()).outputString())
+        logger.debug { "Notarization request UUID: $requestUUID" }
         waitForPackageApproval(requestUUID)
         markPackageAsApproved()
     }
@@ -49,20 +52,20 @@ class MacAppNotarizer(private val options: Options.AppleCodeSigning, private val
         while (retries < MAX_RETRIES) {
             Thread.sleep(POLL_INTERVAL_MS)
             val notarizeResult = NotarizationInfoResult.of(
-                JVMPlatformAssembler.shell.execute(notarizationInfoCommand(requestUUID)).outputString()
+                shell.execute(notarizationInfoCommand(requestUUID)).outputString()
             )
             when (notarizeResult.status) {
                 PENDING -> retries++
                 APPROVED -> {
-                    JVMPlatformAssembler.logger.debug { "$dmgName was APPROVED by the Apple notarization service" }
+                    logger.debug { "$dmgFilename was APPROVED by the Apple notarization service" }
                     return
                 }
                 REJECTED -> {
-                    throw IllegalStateException("$dmgName was REJECTED by the Apple notarization service\n${notarizeResult.rawText}")
+                    throw IllegalStateException("$dmgFilename was REJECTED by the Apple notarization service\n${notarizeResult.rawText}")
                 }
             }
         }
-        throw IllegalStateException("Timed out while waiting for $dmgName to be scanned by the Apple notarization service; the bundle is still in PENDING status (RequestUUID = $requestUUID)")
+        throw IllegalStateException("Timed out while waiting for $dmgFilename to be scanned by the Apple notarization service; the bundle is still in PENDING status (RequestUUID = $requestUUID)")
     }
 
     private fun notarizationInfoCommand(requestUUID: String): Shell.Command {
@@ -75,7 +78,7 @@ class MacAppNotarizer(private val options: Options.AppleCodeSigning, private val
     }
 
     private fun markPackageAsApproved() {
-        JVMPlatformAssembler.shell.execute(listOf(Shell.Programs.XCRUN, STAPLER, STAPLE, dmgPath.toString()))
+        shell.execute(listOf(Shell.Programs.XCRUN, STAPLER, STAPLE, dmgPath.toString()))
     }
 
     private data class NotarizationInfoResult(val status: Status, val rawText: String) {

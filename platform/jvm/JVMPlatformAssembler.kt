@@ -60,7 +60,7 @@ object JVMPlatformAssembler {
 
     private fun outputToArchive() {
         shell.execute(
-            command = listOf(JAR, "cMf", Path.of("..", options.output.archivePath, ".").toString()),
+            command = listOf(JAR, "cMf", Path.of("..", options.output.archivePath).toString(), "."),
             baseDir = distDir.toPath()
         )
     }
@@ -114,11 +114,12 @@ object JVMPlatformAssembler {
             assert(files!!.size == 1)
             assert(files[0].isDirectory)
             Files.move(files[0].toPath(), srcDir.toPath())
+            File(tempDir).deleteRecursively()
         }
     }
 
     private sealed class PlatformImageBuilder {
-        private lateinit var version: String
+        protected lateinit var version: String
         protected val shortVersion: String; get() = version.split("-")[0] // e.g: 2.0.0-alpha5 -> 2.0.0
 
         fun build() {
@@ -157,11 +158,10 @@ object JVMPlatformAssembler {
 
         private fun packArgsCommon(): List<String> {
             return mutableListOf(
-                inputFiles.jpackage.path,
                 NAME, options.image.name,
                 APP_VERSION, shortVersion,
                 INPUT, inputFiles.srcDir.path,
-                MAIN_JAR, options.launcher.mainJar,
+                MAIN_JAR, Path.of(options.input.jarsPath, options.launcher.mainJarPath).toString(),
                 MAIN_CLASS, options.launcher.mainClass,
                 DEST, distDir.path
             ).apply {
@@ -170,7 +170,6 @@ object JVMPlatformAssembler {
                 options.image.vendor?.let { this += listOf(VENDOR, it) }
                 options.image.copyright?.let { this += listOf(COPYRIGHT, it) }
                 inputFiles.icon?.let { this += listOf(ICON, it.path) }
-                inputFiles.license?.let { this += listOf(LICENSE_FILE, it.path) }
             }
         }
 
@@ -201,8 +200,6 @@ object JVMPlatformAssembler {
                 false -> null
             }
             val appImagePath: Path; get() = Path.of(distDir.path, "${options.image.name}.app")
-            val dmgFilename: String; get() = "${options.image.name}-$shortVersion.dmg"
-            val dmgPath: Path; get() = Path.of(distDir.path, dmgFilename)
 
             override fun beforePack() {
                 if (options.image.appleCodeSigningEnabled && options.image.appleCodeSigning!!.signNativeLibsInDeps) {
@@ -224,18 +221,25 @@ object JVMPlatformAssembler {
             override fun afterPack() {
                 when (val codeSigningOptions = options.image.appleCodeSigning) {
                     null -> logger.debug { "Skipping notarizing step: Apple code signing is not enabled" }
-                    else -> MacAppNotarizer(codeSigningOptions, dmgFilename, dmgPath).notarize()
+                    else -> {
+                        val dmgFilename = "${options.image.filename}-$version.dmg"
+                        MacAppNotarizer(
+                            options = codeSigningOptions,
+                            dmgFilename = dmgFilename,
+                            dmgPath = Path.of(distDir.path, dmgFilename)
+                        ).notarize()
+                    }
                 }
             }
 
             override fun packArgsPlatform(): List<String> {
-                return listOf(TYPE, "--app-image") // license file (if exists) is added later, at the DMG creation stage
+                return listOf(TYPE, "app-image") // license file (if exists) is added later, at the DMG creation stage
             }
 
             private fun signAppImageIfSigningEnabled() {
                 if (options.image.appleCodeSigningEnabled) {
                     if (!appleCodeSigner!!.initialised) appleCodeSigner.init()
-                    appleCodeSigner.signAppImage(appImagePath)
+                    appleCodeSigner.signAppImage(appImagePath, options.image.name)
                 } else {
                     logger.debug {
                         "Apple code signing will not be performed because it disabled in the configuration " +
@@ -246,7 +250,7 @@ object JVMPlatformAssembler {
 
             private fun signDMGIfSigningEnabled() {
                 if (options.image.appleCodeSigningEnabled) {
-                    appleCodeSigner!!.signFile(dmgPath.toFile())
+                    appleCodeSigner!!.signFile(Path.of(distDir.path, "${options.image.name}-$shortVersion.dmg").toFile())
                 }
             }
 
@@ -260,10 +264,10 @@ object JVMPlatformAssembler {
                         APP_IMAGE, appImagePath.toString(),
                         DEST, distDir.path
                     ).apply {
+                        this += licenseArgs()
                         options.image.description?.let { this += listOf(DESCRIPTION, it) }
                         options.image.vendor?.let { this += listOf(VENDOR, it) }
                         options.image.copyright?.let { this += listOf(COPYRIGHT, it) }
-                        inputFiles.license?.let { this += listOf(LICENSE_FILE, it.path) }
                     }
                 )
                 // Delete the app image (.app), so the output directory is left with just the DMG
@@ -310,26 +314,26 @@ object JVMPlatformAssembler {
         }
 
         private object JPackageArgs {
-            const val APP_IMAGE = "--app_image"
-            const val APP_VERSION = "--app_version"
+            const val APP_IMAGE = "--app-image"
+            const val APP_VERSION = "--app-version"
             const val COPYRIGHT = "--copyright"
             const val DESCRIPTION = "--description"
             const val DEST = "--dest"
             const val ICON = "--icon"
             const val INPUT = "--input"
-            const val LICENSE_FILE = "--license_file"
-            const val LINUX_APP_CATEGORY = "--linux_app_category"
-            const val LINUX_MENU_GROUP = "--linux_menu_group"
-            const val LINUX_SHORTCUT = "--linux_shortcut"
-            const val MAIN_CLASS = "--main_class"
-            const val MAIN_JAR = "--main_jar"
+            const val LICENSE_FILE = "--license-file"
+            const val LINUX_APP_CATEGORY = "--linux-app-category"
+            const val LINUX_MENU_GROUP = "--linux-menu-group"
+            const val LINUX_SHORTCUT = "--linux-shortcut"
+            const val MAIN_CLASS = "--main-class"
+            const val MAIN_JAR = "--main-jar"
             const val NAME = "--name"
             const val TYPE = "--type"
             const val VENDOR = "--vendor"
             const val VERBOSE = "--verbose"
-            const val WIN_MENU = "--win_menu"
-            const val WIN_MENU_GROUP = "--win_menu_group"
-            const val WIN_SHORTCUT = "--win_shortcut"
+            const val WIN_MENU = "--win-menu"
+            const val WIN_MENU_GROUP = "--win-menu-group"
+            const val WIN_SHORTCUT = "--win-shortcut"
         }
     }
 }
