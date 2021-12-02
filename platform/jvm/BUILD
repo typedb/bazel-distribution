@@ -1,3 +1,4 @@
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,12 +17,32 @@
 # under the License.
 #
 
-maven_artifacts_with_versions = [
-    "com.eclipsesource.minimal-json:minimal-json:0.9.5",
-    "com.electronwill.night-config:core:3.6.5",
-    "com.electronwill.night-config:toml:3.6.5",
-    "com.google.http-client:google-http-client:1.34.2",
-    "info.picocli:picocli:4.3.2",
-    "org.zeroturnaround:zt-exec:1.10",
-    "org.apache.commons:commons-compress:1.21",
-]
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
+
+bzl_library(
+    name = "lib",
+    srcs = [
+        "rules.bzl"
+    ],
+    visibility = ["//visibility:public"]
+)
+
+kt_jvm_library(
+    name = "assembler-lib",
+    srcs = glob(["*.kt"]),
+    deps = [
+        "@vaticle_bazel_distribution//common",
+        "@vaticle_bazel_distribution//common/util",
+
+        "@maven//:info_picocli_picocli",
+        "@maven//:org_zeroturnaround_zt_exec",
+    ],
+)
+
+java_binary(
+    name = "assembler-bin",
+    runtime_deps = [":assembler-lib"],
+    main_class = "com.vaticle.bazel.distribution.platform.jvm.MainKt",
+    visibility = ["//visibility:public"],
+)

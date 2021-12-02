@@ -21,9 +21,14 @@
 
 from __future__ import print_function
 import tarfile
+import platform
 import json
 
 import sys
+import os
+
+
+WINDOWS = "windows"
 
 
 def tarfile_remove_mtime(info):
@@ -40,4 +45,5 @@ with open(version_file_location) as version_file:
 
 with tarfile.open(distribution_tgz_location, 'w:gz', dereference=True) as tgz:
     for fn, arcfn in sorted(moves.items()):
-        tgz.add(fn, arcfn.replace('{pom_version}', version), filter=tarfile_remove_mtime)
+        path = "\\\\?\\" + os.path.abspath(fn) if platform.system() == WINDOWS else fn
+        tgz.add(path, arcfn.replace('{pom_version}', version), filter=tarfile_remove_mtime)
