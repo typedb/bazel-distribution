@@ -6,6 +6,7 @@ import com.vaticle.bazel.distribution.common.OS.WINDOWS
 import com.vaticle.bazel.distribution.common.util.FileUtil.listFilesRecursively
 import com.vaticle.bazel.distribution.common.util.SystemUtil.currentOS
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.InputFiles.Paths.JDK
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.InputFiles.Paths.SRC
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.InputFiles.Paths.WIX_TOOLSET
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.APP_IMAGE
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.APP_VERSION
@@ -68,14 +69,15 @@ object JVMPlatformAssembler {
     private class InputFiles(private val shell: Shell, private val options: Options.Input) {
         lateinit var jpackage: File
         val version = File(options.versionFilePath)
-        val srcDir = File("src")
+        val srcDir = File(SRC)
         val icon = options.iconPath?.let { File(it) }
         val license = options.licensePath?.let { File(it) }
         val macEntitlements = options.macEntitlementsPath?.let { File(it) }
-        val wixToolset = options.windowsWiXToolsetPath?.let { File(it) }
+        val wixToolset = if (options.windowsWiXToolsetPath != null) File(WIX_TOOLSET) else null
 
         private object Paths {
             const val JDK = "jdk"
+            const val SRC = "src"
             const val WIX_TOOLSET = "wixtoolset"
         }
 
