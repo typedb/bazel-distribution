@@ -33,7 +33,6 @@ import com.vaticle.bazel.distribution.platform.jvm.Logging.Logger
 import com.vaticle.bazel.distribution.platform.jvm.Shell.Programs.JAR
 import com.vaticle.bazel.distribution.platform.jvm.Shell.Programs.JPACKAGE
 import com.vaticle.bazel.distribution.platform.jvm.Shell.Programs.JPACKAGE_EXE
-import com.vaticle.bazel.distribution.platform.jvm.Shell.Programs.TAR
 import java.io.File
 import java.lang.System.getenv
 import java.nio.file.Files
@@ -57,7 +56,7 @@ object JVMPlatformAssembler {
 
     fun assemble() {
         inputFiles = InputFiles(shell = shell, options = options.input).apply { extractAll() }
-        PlatformImageBuilder.forCurrentOS(options).build()
+        PlatformImageBuilder.forCurrentOS().build()
         outputToArchive()
         logger.debug { "Successfully assembled ${options.image.name} $currentOS image" }
     }
@@ -93,10 +92,7 @@ object JVMPlatformAssembler {
 
         fun extractJDK() {
             createDirectory(Path.of(JDK))
-            when (currentOS) {
-                MAC, LINUX -> shell.execute(listOf(TAR, "-xf", options.jdkPath, "-C", JDK))
-                WINDOWS -> shell.execute(command = listOf(JAR, "xf", Path.of("..", options.jdkPath).toString()), baseDir = Path.of(JDK))
-            }
+            shell.execute(command = listOf(JAR, "xf", Path.of("..", options.jdkPath).toString()), baseDir = Path.of(JDK))
         }
 
         fun extractWiXToolset() {
@@ -149,7 +145,6 @@ object JVMPlatformAssembler {
         }
 
         private fun setPackageFilename() {
-            // TODO: document the reasons behind this method
             distDir.listFiles()!![0].let {
                 it.renameTo(
                     File(it.path.replace(options.image.name, options.image.filename).replace(shortVersion, version))
@@ -187,7 +182,7 @@ object JVMPlatformAssembler {
         protected open fun afterPack() {}
 
         companion object {
-            fun forCurrentOS(options: Options): PlatformImageBuilder {
+            fun forCurrentOS(): PlatformImageBuilder {
                 return when (currentOS) {
                     WINDOWS -> Windows()
                     MAC -> Mac()

@@ -22,7 +22,6 @@ import java.nio.file.Path
 
 class MacAppNotarizer(private val options: Options.AppleCodeSigning, private val dmgFilename: String, private val dmgPath: Path) {
     fun notarize() {
-        shell.execute(listOf("ls", "dist"))
         val requestUUID = parseNotarizeResult(shell.execute(notarizeCommand()).outputString())
         logger.debug { "Notarization request UUID: $requestUUID" }
         waitForPackageApproval(requestUUID)
