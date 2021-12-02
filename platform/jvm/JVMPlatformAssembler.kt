@@ -49,10 +49,13 @@ object JVMPlatformAssembler {
     private lateinit var inputFiles: InputFiles
     private val distDir = File("dist")
 
-    fun assemble(options: Options) {
+    fun init(options: Options) {
         this.options = options
         verbose = options.logging.verbose
         shell = Shell(verbose, options.logging.logSensitiveData)
+    }
+
+    fun assemble() {
         inputFiles = InputFiles(shell = shell, options = options.input).apply { extractAll() }
         PlatformImageBuilder.forCurrentOS(options).build()
         outputToArchive()

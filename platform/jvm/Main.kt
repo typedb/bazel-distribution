@@ -32,5 +32,8 @@ fun parseCommandLine(args: Array<String>): Options {
 }
 
 fun main(args: Array<String>) {
-    JVMPlatformAssembler.assemble(options = parseCommandLine(args))
+    JVMPlatformAssembler.run {
+        init(options = parseCommandLine(args))
+        assemble()
+    }
 }

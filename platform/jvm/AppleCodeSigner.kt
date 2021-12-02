@@ -40,7 +40,6 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
     var initialised: Boolean = false
     lateinit var certSubject: String
 
-    // TODO: copy the contents of this SO post into a PR comment at this line: https://stackoverflow.com/a/57912831/2902555
     fun init() {
         deleteExistingKeychainIfPresent()
         createKeychain()
