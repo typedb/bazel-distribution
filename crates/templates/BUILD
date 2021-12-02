@@ -1,3 +1,4 @@
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,12 +17,4 @@
 # under the License.
 #
 
-maven_artifacts_with_versions = [
-    "com.eclipsesource.minimal-json:minimal-json:0.9.5",
-    "com.electronwill.night-config:core:3.6.5",
-    "com.electronwill.night-config:toml:3.6.5",
-    "com.google.http-client:google-http-client:1.34.2",
-    "info.picocli:picocli:4.3.2",
-    "org.zeroturnaround:zt-exec:1.10",
-    "org.apache.commons:commons-compress:1.21",
-]
+exports_files(["deploy.sh"])

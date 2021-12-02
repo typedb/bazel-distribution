@@ -43,6 +43,7 @@ bzl_library(
         "@bazel_tools//tools:bzl_srcs",
         "@vaticle_bazel_distribution_pip//:requirements.bzl",
         "@rules_python//python:whl.bzl",
+        "@rules_rust//rust:rules",
     ],
 )
 
@@ -56,6 +57,7 @@ stardoc(
         "//azure:lib",
         "//brew:lib",
         "//common:lib",
+        "//crates:lib",
         "//gcp:lib",
         "//github:lib",
         "//maven:lib",
@@ -100,6 +102,10 @@ stardoc(
 
         # From: //common/tgz2zip:rules.bzl
         "tgz2zip",
+
+        # From: //crates:rules.bzl
+        "assemble_crate",
+        "deploy_crate",
 
         # From: //gcp:rules.bzl
         "assemble_gcp",
