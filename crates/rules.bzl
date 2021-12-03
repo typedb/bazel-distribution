@@ -56,9 +56,9 @@ def validate_keywords(keywords):
 
 def _assemble_crate_impl(ctx):
     deps = {}
-    for dependency in ctx.attr.target[RustLibInfo].deps:
-        name = ctx.attr.mapping.get(dependency[RustLibInfo].name, dependency[RustLibInfo].name)
-        deps[name] = dependency[RustLibInfo].version
+    for dependency in ctx.attr.target[CrateInformation].deps:
+        name = ctx.attr.mapping.get(dependency[CrateInformation].name, dependency[CrateInformation].name)
+        deps[name] = dependency[CrateInformation].version
     validate_as_url('homepage', ctx.attr.homepage)
     validate_as_url('repository', ctx.attr.repository)
     validate_keywords(ctx.attr.keywords)
@@ -102,7 +102,7 @@ def _assemble_crate_impl(ctx):
         ),
     ]
 
-RustLibInfo = provider(
+CrateInformation = provider(
     fields = {
         "name": "Crate name",
         "version": "Crate version",
@@ -110,21 +110,21 @@ RustLibInfo = provider(
     },
 )
 
-def _aggregate_dependency_info_impl(target, ctx):
-    return RustLibInfo(
+def _aggregate_crate_information_impl(target, ctx):
+    return CrateInformation(
         name = ctx.rule.attr.name,
         version = ctx.rule.attr.version,
         deps = [target for target in getattr(ctx.rule.attr, "deps", [])]
     )
 
 
-aggregate_dependency_info = aspect(
+aggregate_crate_information = aspect(
     attr_aspects = [
        "deps",
     ],
     doc = "Collects the Crate coordinates of the given rust_library and its direct dependencies",
-    implementation = _aggregate_dependency_info_impl,
-    provides = [RustLibInfo],
+    implementation = _aggregate_crate_information_impl,
+    provides = [CrateInformation],
 )
 
 assemble_crate = rule(
@@ -133,7 +133,7 @@ assemble_crate = rule(
         "target": attr.label(
             mandatory = True,
             doc = "`rust_library` label to be included in the package",
-            aspects = [aggregate_dependency_info]
+            aspects = [aggregate_crate_information]
         ),
         "version_file": attr.label(
             allow_single_file = True,
