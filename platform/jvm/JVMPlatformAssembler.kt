@@ -33,6 +33,7 @@ import com.vaticle.bazel.distribution.platform.jvm.Logging.Logger
 import com.vaticle.bazel.distribution.platform.jvm.Shell.Programs.JAR
 import com.vaticle.bazel.distribution.platform.jvm.Shell.Programs.JPACKAGE
 import com.vaticle.bazel.distribution.platform.jvm.Shell.Programs.JPACKAGE_EXE
+import com.vaticle.bazel.distribution.platform.jvm.Shell.Programs.TAR
 import java.io.File
 import java.lang.System.getenv
 import java.nio.file.Files
@@ -92,7 +93,10 @@ object JVMPlatformAssembler {
 
         fun extractJDK() {
             createDirectory(Path.of(JDK))
-            shell.execute(command = listOf(JAR, "xf", Path.of("..", options.jdkPath).toString()), baseDir = Path.of(JDK))
+            when (currentOS) {
+                MAC, LINUX -> shell.execute(listOf(TAR, "-xf", options.jdkPath, "-C", JDK))
+                WINDOWS -> shell.execute(command = listOf(JAR, "xf", Path.of("..", options.jdkPath).toString()), baseDir = Path.of(JDK))
+            }
         }
 
         fun extractWiXToolset() {
