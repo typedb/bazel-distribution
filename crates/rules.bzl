@@ -59,7 +59,6 @@ def _assemble_crate_impl(ctx):
     for dependency in ctx.attr.target[RustInfo].deps:
         name = ctx.attr.mapping.get(dependency[RustInfo].name, dependency[RustInfo].name)
         deps[name] = dependency[RustInfo].version
-    print(deps)
     validate_as_url('homepage', ctx.attr.homepage)
     validate_as_url('repository', ctx.attr.repository)
     validate_keywords(ctx.attr.keywords)
