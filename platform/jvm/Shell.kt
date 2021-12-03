@@ -62,6 +62,7 @@ class Shell(private val verbose: Boolean = false, private val printSensitiveData
         const val JPACKAGE = "jpackage"
         const val JPACKAGE_EXE = "jpackage.exe"
         const val SECURITY = "security"
+        const val TAR = "tar"
         const val XCRUN = "xcrun"
     }
 
