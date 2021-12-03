@@ -56,9 +56,9 @@ def validate_keywords(keywords):
 
 def _assemble_crate_impl(ctx):
     deps = {}
-    for dependency in ctx.attr.target[RustInfo].deps:
-        name = ctx.attr.mapping.get(dependency[RustInfo].name, dependency[RustInfo].name)
-        deps[name] = dependency[RustInfo].version
+    for dependency in ctx.attr.target[RustLibInfo].deps:
+        name = ctx.attr.mapping.get(dependency[RustLibInfo].name, dependency[RustLibInfo].name)
+        deps[name] = dependency[RustLibInfo].version
     validate_as_url('homepage', ctx.attr.homepage)
     validate_as_url('repository', ctx.attr.repository)
     validate_keywords(ctx.attr.keywords)
@@ -102,7 +102,7 @@ def _assemble_crate_impl(ctx):
         ),
     ]
 
-RustInfo = provider(
+RustLibInfo = provider(
     fields = {
         "name": "Crate name",
         "version": "Crate version",
@@ -111,7 +111,7 @@ RustInfo = provider(
 )
 
 def _aggregate_dependency_info_impl(target, ctx):
-    return RustInfo(
+    return RustLibInfo(
         name = ctx.rule.attr.name,
         version = ctx.rule.attr.version,
         deps = [target for target in getattr(ctx.rule.attr, "deps", [])]
@@ -124,7 +124,7 @@ aggregate_dependency_info = aspect(
     ],
     doc = "Collects the Crate coordinates of the given rust_library and its direct dependencies",
     implementation = _aggregate_dependency_info_impl,
-    provides = [RustInfo],
+    provides = [RustLibInfo],
 )
 
 assemble_crate = rule(
