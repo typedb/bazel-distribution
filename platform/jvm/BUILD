@@ -46,3 +46,10 @@ java_binary(
     main_class = "com.vaticle.bazel.distribution.platform.jvm.MainKt",
     visibility = ["//visibility:public"],
 )
+
+config_setting(
+    name = "apple-code-sign",
+    define_values = {
+        "APPLE_CODE_SIGN": "yes"
+    }
+)
