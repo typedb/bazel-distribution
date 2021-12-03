@@ -172,7 +172,7 @@ windowsWiXToolsetPath: {}
     )
 
     config_path_arg = "--config_path={}".format(config_file.path)
-    if "APPLE_CODE_SIGN" in ctx.var and ctx.var["APPLE_CODE_SIGN"].lower() in "yes, true":
+    if "APPLE_CODE_SIGN" in ctx.var and ctx.var["APPLE_CODE_SIGN"] == "yes":
         _require_apple_code_signing_var(ctx, "APPLE_ID")
         _require_apple_code_signing_var(ctx, "APPLE_ID_PASSWORD")
         _require_apple_code_signing_var(ctx, "APPLE_CODE_SIGNING_CERT_PASSWORD")
