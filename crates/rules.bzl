@@ -55,6 +55,11 @@ def validate_keywords(keywords):
 
 
 def _assemble_crate_impl(ctx):
+    deps = {}
+    for dependency in ctx.attr.target[RustInfo].deps:
+        name = ctx.attr.mapping.get(dependency[RustInfo].name, dependency[RustInfo].name)
+        deps[name] = dependency[RustInfo].version
+    print(deps)
     validate_as_url('homepage', ctx.attr.homepage)
     validate_as_url('repository', ctx.attr.repository)
     validate_keywords(ctx.attr.keywords)
@@ -74,7 +79,7 @@ def _assemble_crate_impl(ctx):
         "--homepage", ctx.attr.homepage,
         "--license", ctx.attr.license,
         "--repository", ctx.attr.repository,
-        "--deps", ";".join(["{}={}".format(k, v) for k, v in ctx.attr.deps.items()]),
+        "--deps", ";".join(["{}={}".format(k, v) for k, v in deps.items()]),
     ]
     if ctx.attr.documentation != "":
         validate_as_url('documentation', ctx.attr.documentation)
@@ -98,12 +103,38 @@ def _assemble_crate_impl(ctx):
         ),
     ]
 
+RustInfo = provider(
+    fields = {
+        "name": "Crate name",
+        "version": "Crate version",
+        "deps": "Crate dependencies",
+    },
+)
+
+def _aggregate_dependency_info_impl(target, ctx):
+    return RustInfo(
+        name = ctx.rule.attr.name,
+        version = ctx.rule.attr.version,
+        deps = [target for target in getattr(ctx.rule.attr, "deps", [])]
+    )
+
+
+aggregate_dependency_info = aspect(
+    attr_aspects = [
+       "deps",
+    ],
+    doc = "Collects the Crate coordinates of the given rust_library and its direct dependencies",
+    implementation = _aggregate_dependency_info_impl,
+    provides = [RustInfo],
+)
+
 assemble_crate = rule(
     implementation = _assemble_crate_impl,
     attrs = {
         "target": attr.label(
             mandatory = True,
             doc = "`rust_library` label to be included in the package",
+            aspects = [aggregate_dependency_info]
         ),
         "version_file": attr.label(
             allow_single_file = True,
@@ -112,9 +143,6 @@ assemble_crate = rule(
             Alternatively, pass --define version=VERSION to Bazel invocation.
             Not specifying version at all defaults to '0.0.0'
             """,
-        ),
-        "deps": attr.string_dict(
-            doc = """Maps external Crate dependency to its version""",
         ),
         "authors": attr.string_list(
             doc = """Project authors""",
@@ -162,6 +190,12 @@ assemble_crate = rule(
         "repository": attr.string(
             mandatory = True,
             doc = """Repository of the project""",
+        ),
+        "mapping": attr.string_dict(
+            doc = """
+            Maps Bazel target name to a real crate name, for example:
+            { "antlr_rust": "antlr-rust" }
+            """,
         ),
         "_crate_assembler_tool": attr.label(
             executable = True,

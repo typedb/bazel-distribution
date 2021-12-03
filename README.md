@@ -5,8 +5,8 @@
 ## assemble_crate
 
 <pre>
-assemble_crate(<a href="#assemble_crate-name">name</a>, <a href="#assemble_crate-authors">authors</a>, <a href="#assemble_crate-categories">categories</a>, <a href="#assemble_crate-deps">deps</a>, <a href="#assemble_crate-description">description</a>, <a href="#assemble_crate-documentation">documentation</a>, <a href="#assemble_crate-homepage">homepage</a>, <a href="#assemble_crate-keywords">keywords</a>,
-               <a href="#assemble_crate-license">license</a>, <a href="#assemble_crate-readme_file">readme_file</a>, <a href="#assemble_crate-repository">repository</a>, <a href="#assemble_crate-target">target</a>, <a href="#assemble_crate-version_file">version_file</a>)
+assemble_crate(<a href="#assemble_crate-name">name</a>, <a href="#assemble_crate-authors">authors</a>, <a href="#assemble_crate-categories">categories</a>, <a href="#assemble_crate-description">description</a>, <a href="#assemble_crate-documentation">documentation</a>, <a href="#assemble_crate-homepage">homepage</a>, <a href="#assemble_crate-keywords">keywords</a>, <a href="#assemble_crate-license">license</a>,
+               <a href="#assemble_crate-mapping">mapping</a>, <a href="#assemble_crate-readme_file">readme_file</a>, <a href="#assemble_crate-repository">repository</a>, <a href="#assemble_crate-target">target</a>, <a href="#assemble_crate-version_file">version_file</a>)
 </pre>
 
 
@@ -19,12 +19,12 @@ assemble_crate(<a href="#assemble_crate-name">name</a>, <a href="#assemble_crate
 | <a id="assemble_crate-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
 | <a id="assemble_crate-authors"></a>authors |  Project authors   | List of strings | optional | [] |
 | <a id="assemble_crate-categories"></a>categories |  Project categories   | List of strings | optional | [] |
-| <a id="assemble_crate-deps"></a>deps |  Maps external Crate dependency to its version   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 | <a id="assemble_crate-description"></a>description |  The description is a short blurb about the package. crates.io will display this with your package. This should be plain text (not Markdown).             https://doc.rust-lang.org/cargo/reference/manifest.html#the-description-field   | String | required |  |
 | <a id="assemble_crate-documentation"></a>documentation |  Link to documentation of the project   | String | optional | "" |
 | <a id="assemble_crate-homepage"></a>homepage |  Link to homepage of the project   | String | required |  |
 | <a id="assemble_crate-keywords"></a>keywords |  The keywords field is an array of strings that describe this package.             This can help when searching for the package on a registry, and you may choose any words that would help someone find this crate.<br><br>            Note: crates.io has a maximum of 5 keywords.             Each keyword must be ASCII text, start with a letter, and only contain letters, numbers, _ or -, and have at most 20 characters.<br><br>            https://doc.rust-lang.org/cargo/reference/manifest.html#the-keywords-field   | List of strings | optional | [] |
 | <a id="assemble_crate-license"></a>license |  The license field contains the name of the software license that the package is released under.             https://doc.rust-lang.org/cargo/reference/manifest.html#the-license-and-license-file-fields   | String | required |  |
+| <a id="assemble_crate-mapping"></a>mapping |  Maps Bazel target name to a real crate name, for example:             { "antlr_rust": "antlr-rust" }   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 | <a id="assemble_crate-readme_file"></a>readme_file |  README of the project   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="assemble_crate-repository"></a>repository |  Repository of the project   | String | required |  |
 | <a id="assemble_crate-target"></a>target |  <code>rust_library</code> label to be included in the package   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
