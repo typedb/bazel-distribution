@@ -57,8 +57,7 @@ def validate_keywords(keywords):
 def _assemble_crate_impl(ctx):
     deps = {}
     for dependency in ctx.attr.target[CrateInformation].deps:
-        name = ctx.attr.mapping.get(dependency[CrateInformation].name, dependency[CrateInformation].name)
-        deps[name] = dependency[CrateInformation].version
+        deps[dependency[CrateInformation].name] = dependency[CrateInformation].version
     validate_as_url('homepage', ctx.attr.homepage)
     validate_as_url('repository', ctx.attr.repository)
     validate_keywords(ctx.attr.keywords)
@@ -111,8 +110,12 @@ CrateInformation = provider(
 )
 
 def _aggregate_crate_information_impl(target, ctx):
+    name = ctx.rule.attr.name
+    for tag in ctx.rule.attr.tags:
+        if tag.startswith("crate-name"):
+            name = tag.split("=")[1]
     return CrateInformation(
-        name = ctx.rule.attr.name,
+        name = name,
         version = ctx.rule.attr.version,
         deps = [target for target in getattr(ctx.rule.attr, "deps", [])]
     )
@@ -189,12 +192,6 @@ assemble_crate = rule(
         "repository": attr.string(
             mandatory = True,
             doc = """Repository of the project""",
-        ),
-        "mapping": attr.string_dict(
-            doc = """
-            Maps Bazel target name to a real crate name, for example:
-            { "antlr_rust": "antlr-rust" }
-            """,
         ),
         "_crate_assembler_tool": attr.label(
             executable = True,
