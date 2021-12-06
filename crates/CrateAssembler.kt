@@ -37,6 +37,7 @@ import java.io.ByteArrayInputStream
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.Callable
 import java.util.zip.GZIPOutputStream
 import kotlin.system.exitProcess
@@ -110,7 +111,7 @@ class CrateAssembler : Callable<Unit> {
             BufferedOutputStream(fos).use { bos ->
                 GZIPOutputStream(bos).use { gzos ->
                     TarArchiveOutputStream(gzos).use { tarOutputStream ->
-                        val libraryRoot = crateRoot.parent.toAbsolutePath()
+                        val libraryRoot = crateRoot.toAbsolutePath().parent
                         srcsList.forEach { file ->
                             val sourceEntry = TarArchiveEntry(
                                 file,
