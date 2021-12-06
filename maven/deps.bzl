@@ -16,12 +16,22 @@
 # under the License.
 #
 
+maven_artifacts = [
+    "com.eclipsesource.minimal-json:minimal-json",
+    "com.electronwill.night-config:core",
+    "com.electronwill.night-config:toml",
+    "com.google.http-client:google-http-client",
+    "info.picocli:picocli",
+    "org.apache.commons:commons-compress",
+    "org.zeroturnaround:zt-exec",
+]
+
 maven_artifacts_with_versions = [
     "com.eclipsesource.minimal-json:minimal-json:0.9.5",
     "com.electronwill.night-config:core:3.6.5",
     "com.electronwill.night-config:toml:3.6.5",
     "com.google.http-client:google-http-client:1.34.2",
     "info.picocli:picocli:4.3.2",
-    "org.zeroturnaround:zt-exec:1.10",
     "org.apache.commons:commons-compress:1.21",
+    "org.zeroturnaround:zt-exec:1.10",
 ]
