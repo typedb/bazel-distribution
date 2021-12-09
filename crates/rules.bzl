@@ -68,7 +68,7 @@ def _assemble_crate_impl(ctx):
         "--output-metadata-json", ctx.outputs.metadata_json.path,
         "--root", ctx.attr.target[CrateInfo].root.path,
         "--edition", ctx.attr.target[CrateInfo].edition,
-        "--name", ctx.attr.target[CrateInfo].name,
+        "--name", ctx.attr.target[CrateInformation].name,
         "--version-file", version_file.path,
         "--authors", ";".join(ctx.attr.authors),
         "--keywords", ";".join(ctx.attr.keywords),
