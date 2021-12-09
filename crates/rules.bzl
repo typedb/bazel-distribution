@@ -39,7 +39,7 @@ def _generate_version_file(ctx):
         )
     return version_file
 
-def validate_as_url(field_name, field_value):
+def validate_url(field_name, field_value):
     if not field_value.startswith("http://") and not field_value.startswith("https://"):
         fail("URL for field `{}` must begin with http:// or https://".format(field_name))
 
@@ -58,8 +58,8 @@ def _assemble_crate_impl(ctx):
     deps = {}
     for dependency in ctx.attr.target[CrateSummary].deps:
         deps[dependency[CrateSummary].name] = dependency[CrateSummary].version
-    validate_as_url('homepage', ctx.attr.homepage)
-    validate_as_url('repository', ctx.attr.repository)
+    validate_url('homepage', ctx.attr.homepage)
+    validate_url('repository', ctx.attr.repository)
     validate_keywords(ctx.attr.keywords)
     version_file = _generate_version_file(ctx)
     args = [
@@ -80,7 +80,7 @@ def _assemble_crate_impl(ctx):
         "--deps", ";".join(["{}={}".format(k, v) for k, v in deps.items()]),
     ]
     if ctx.attr.documentation != "":
-        validate_as_url('documentation', ctx.attr.documentation)
+        validate_url('documentation', ctx.attr.documentation)
         args.append("--documentation")
         args.append(ctx.attr.documentation)
     inputs = [version_file]
