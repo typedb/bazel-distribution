@@ -48,7 +48,7 @@ java_binary(
     runtime_deps = [
         ":pom-generator-lib"
     ],
-    main_class = "PomGeneratorKt",
+    main_class = "com.vaticle.bazel.distribution.maven.PomGeneratorKt",
     visibility = ["//visibility:public"]
 )
 
@@ -68,6 +68,6 @@ java_binary(
     runtime_deps = [
         ":jar-assembler-lib"
     ],
-    main_class = "JarAssemblerKt",
+    main_class = "com.vaticle.bazel.distribution.maven.JarAssemblerKt",
     visibility = ["//visibility:public"]
 )
