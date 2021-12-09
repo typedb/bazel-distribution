@@ -56,8 +56,8 @@ def validate_keywords(keywords):
 
 def _assemble_crate_impl(ctx):
     deps = {}
-    for dependency in ctx.attr.target[CrateInformation].deps:
-        deps[dependency[CrateInformation].name] = dependency[CrateInformation].version
+    for dependency in ctx.attr.target[CrateSummary].deps:
+        deps[dependency[CrateSummary].name] = dependency[CrateSummary].version
     validate_as_url('homepage', ctx.attr.homepage)
     validate_as_url('repository', ctx.attr.repository)
     validate_keywords(ctx.attr.keywords)
@@ -68,7 +68,7 @@ def _assemble_crate_impl(ctx):
         "--output-metadata-json", ctx.outputs.metadata_json.path,
         "--root", ctx.attr.target[CrateInfo].root.path,
         "--edition", ctx.attr.target[CrateInfo].edition,
-        "--name", ctx.attr.target[CrateInformation].name,
+        "--name", ctx.attr.target[CrateSummary].name,
         "--version-file", version_file.path,
         "--authors", ";".join(ctx.attr.authors),
         "--keywords", ";".join(ctx.attr.keywords),
@@ -101,7 +101,7 @@ def _assemble_crate_impl(ctx):
         ),
     ]
 
-CrateInformation = provider(
+CrateSummary = provider(
     fields = {
         "name": "Crate name",
         "version": "Crate version",
@@ -114,7 +114,7 @@ def _aggregate_crate_information_impl(target, ctx):
     for tag in ctx.rule.attr.tags:
         if tag.startswith("crate-name"):
             name = tag.split("=")[1]
-    return CrateInformation(
+    return CrateSummary(
         name = name,
         version = ctx.rule.attr.version,
         deps = [target for target in getattr(ctx.rule.attr, "deps", [])]
@@ -127,7 +127,7 @@ aggregate_crate_information = aspect(
     ],
     doc = "Collects the Crate coordinates of the given rust_library and its direct dependencies",
     implementation = _aggregate_crate_information_impl,
-    provides = [CrateInformation],
+    provides = [CrateSummary],
 )
 
 assemble_crate = rule(
@@ -136,7 +136,8 @@ assemble_crate = rule(
         "target": attr.label(
             mandatory = True,
             doc = "`rust_library` label to be included in the package",
-            aspects = [aggregate_crate_information]
+            aspects = [aggregate_crate_information],
+            providers = [CrateInfo, CrateSummary],
         ),
         "version_file": attr.label(
             allow_single_file = True,
