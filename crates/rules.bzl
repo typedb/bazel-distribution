@@ -109,7 +109,7 @@ CrateSummary = provider(
     },
 )
 
-def _aggregate_crate_information_impl(target, ctx):
+def _aggregate_crate_summary_impl(target, ctx):
     name = ctx.rule.attr.name
     for tag in ctx.rule.attr.tags:
         if tag.startswith("crate-name"):
@@ -121,12 +121,12 @@ def _aggregate_crate_information_impl(target, ctx):
     )
 
 
-aggregate_crate_information = aspect(
+aggregate_crate_summary = aspect(
     attr_aspects = [
        "deps",
     ],
     doc = "Collects the Crate coordinates of the given rust_library and its direct dependencies",
-    implementation = _aggregate_crate_information_impl,
+    implementation = _aggregate_crate_summary_impl,
     provides = [CrateSummary],
 )
 
@@ -136,7 +136,7 @@ assemble_crate = rule(
         "target": attr.label(
             mandatory = True,
             doc = "`rust_library` label to be included in the package",
-            aspects = [aggregate_crate_information],
+            aspects = [aggregate_crate_summary],
             providers = [CrateInfo, CrateSummary],
         ),
         "version_file": attr.label(
