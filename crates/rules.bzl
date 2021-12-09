@@ -39,7 +39,7 @@ def _generate_version_file(ctx):
         )
     return version_file
 
-def validate_as_url(field_name, field_value):
+def validate_url(field_name, field_value):
     if not field_value.startswith("http://") and not field_value.startswith("https://"):
         fail("URL for field `{}` must begin with http:// or https://".format(field_name))
 
@@ -55,8 +55,11 @@ def validate_keywords(keywords):
 
 
 def _assemble_crate_impl(ctx):
-    validate_as_url('homepage', ctx.attr.homepage)
-    validate_as_url('repository', ctx.attr.repository)
+    deps = {}
+    for dependency in ctx.attr.target[CrateSummary].deps:
+        deps[dependency[CrateSummary].name] = dependency[CrateSummary].version
+    validate_url('homepage', ctx.attr.homepage)
+    validate_url('repository', ctx.attr.repository)
     validate_keywords(ctx.attr.keywords)
     version_file = _generate_version_file(ctx)
     args = [
@@ -65,7 +68,7 @@ def _assemble_crate_impl(ctx):
         "--output-metadata-json", ctx.outputs.metadata_json.path,
         "--root", ctx.attr.target[CrateInfo].root.path,
         "--edition", ctx.attr.target[CrateInfo].edition,
-        "--name", ctx.attr.target[CrateInfo].name,
+        "--name", ctx.attr.target[CrateSummary].name,
         "--version-file", version_file.path,
         "--authors", ";".join(ctx.attr.authors),
         "--keywords", ";".join(ctx.attr.keywords),
@@ -74,10 +77,10 @@ def _assemble_crate_impl(ctx):
         "--homepage", ctx.attr.homepage,
         "--license", ctx.attr.license,
         "--repository", ctx.attr.repository,
-        "--deps", ";".join(["{}={}".format(k, v) for k, v in ctx.attr.deps.items()]),
+        "--deps", ";".join(["{}={}".format(k, v) for k, v in deps.items()]),
     ]
     if ctx.attr.documentation != "":
-        validate_as_url('documentation', ctx.attr.documentation)
+        validate_url('documentation', ctx.attr.documentation)
         args.append("--documentation")
         args.append(ctx.attr.documentation)
     inputs = [version_file]
@@ -98,12 +101,43 @@ def _assemble_crate_impl(ctx):
         ),
     ]
 
+CrateSummary = provider(
+    fields = {
+        "name": "Crate name",
+        "version": "Crate version",
+        "deps": "Crate dependencies",
+    },
+)
+
+def _aggregate_crate_summary_impl(target, ctx):
+    name = ctx.rule.attr.name
+    for tag in ctx.rule.attr.tags:
+        if tag.startswith("crate-name"):
+            name = tag.split("=")[1]
+    return CrateSummary(
+        name = name,
+        version = ctx.rule.attr.version,
+        deps = [target for target in getattr(ctx.rule.attr, "deps", [])]
+    )
+
+
+aggregate_crate_summary = aspect(
+    attr_aspects = [
+       "deps",
+    ],
+    doc = "Collects the Crate coordinates of the given rust_library and its direct dependencies",
+    implementation = _aggregate_crate_summary_impl,
+    provides = [CrateSummary],
+)
+
 assemble_crate = rule(
     implementation = _assemble_crate_impl,
     attrs = {
         "target": attr.label(
             mandatory = True,
             doc = "`rust_library` label to be included in the package",
+            aspects = [aggregate_crate_summary],
+            providers = [CrateInfo, CrateSummary],
         ),
         "version_file": attr.label(
             allow_single_file = True,
@@ -112,9 +146,6 @@ assemble_crate = rule(
             Alternatively, pass --define version=VERSION to Bazel invocation.
             Not specifying version at all defaults to '0.0.0'
             """,
-        ),
-        "deps": attr.string_dict(
-            doc = """Maps external Crate dependency to its version""",
         ),
         "authors": attr.string_list(
             doc = """Project authors""",
