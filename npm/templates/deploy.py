@@ -42,10 +42,11 @@ npm_repositories = {
 }
 npm_registry = npm_repositories[repo_type]
 
-npm_username, npm_password, npm_email = (
+npm_username, npm_password, npm_email, npm_token = (
     os.getenv('DEPLOY_NPM_USERNAME'),
     os.getenv('DEPLOY_NPM_PASSWORD'),
     os.getenv('DEPLOY_NPM_EMAIL'),
+    os.getenv('DEPLOY_NPM_TOKEN'),
 )
 
 if not npm_username:
@@ -66,19 +67,11 @@ if not npm_email:
         '$DEPLOY_NPM_EMAIL env variable'
     )
 
-expect_input_tmpl = '''spawn npm adduser --registry={registry}
-expect {{
-  "Username:" {{send "{username}\r"; exp_continue}}
-  "Password:" {{send "$env(PASSWORD)\r"; exp_continue}}
-  "Email: (this IS public)" {{send "{email}\r"; exp_continue}}
-}}'''
-
-with tempfile.NamedTemporaryFile('wt', delete=False) as expect_input_file:
-    expect_input_file.write(expect_input_tmpl.format(
-        registry=npm_registry,
-        username=npm_username,
-        email=npm_email,
-    ))
+if repo_type == "release" and not npm_token:
+    print(
+        'token should be passed via '
+        '$DEPLOY_NPM_TOKEN env variable when deploying to a release repo'
+    )
 
 node_path = ':'.join([
     '/usr/bin/',
@@ -89,13 +82,9 @@ node_path = ':'.join([
     os.path.realpath('external/nodejs_windows_amd64/bin/'),
 ])
 
-with open(expect_input_file.name) as expect_input:
-    subprocess.check_call([
-        '/usr/bin/expect',
-    ], stdin=expect_input, env={
-        'PATH': node_path,
-        'PASSWORD': npm_password
-    })
+f = open(".npmrc", "w")
+f.write("//%s:_authToken=%s" % (npm_registry, npm_token))
+f.close()
 
 subprocess.check_call([
     'npm',
