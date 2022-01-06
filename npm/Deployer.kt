@@ -23,11 +23,11 @@ package com.vaticle.bazel.distribution.npm
 
 import com.vaticle.bazel.distribution.common.Logging.Logger
 import com.vaticle.bazel.distribution.common.Logging.LogLevel.DEBUG
-import com.vaticle.bazel.distribution.common.OS.WINDOWS
 import com.vaticle.bazel.distribution.common.OS.MAC
 import com.vaticle.bazel.distribution.common.OS.LINUX
 import com.vaticle.bazel.distribution.common.shell.Shell
 import com.vaticle.bazel.distribution.common.util.SystemUtil.currentOS
+import com.vaticle.bazel.distribution.npm.Deployer.CommandLineParams.Keys.NPM_PATH
 import com.vaticle.bazel.distribution.npm.Deployer.CommandLineParams.Keys.RELEASE_REPO
 import com.vaticle.bazel.distribution.npm.Deployer.CommandLineParams.Keys.SNAPSHOT_REPO
 import com.vaticle.bazel.distribution.npm.Deployer.Env.DEPLOY_NPM_TOKEN
@@ -39,6 +39,7 @@ import java.nio.file.Path
 
 class Deployer(options: Options) {
     private val logger = Logger(logLevel = DEBUG)
+    private val npmPath = options.npmPath
     private val registryURL = options.registryURL
 
     fun deploy() {
@@ -59,12 +60,12 @@ class Deployer(options: Options) {
     }
 
     private fun pathEnv(): String {
-        val paths = when (currentOS) {
-            WINDOWS -> listOf(realPath("external/nodejs_windows_amd64/bin/npm").parent)
-            MAC -> listOf("/usr/bin", "/bin/", realPath("external/nodejs_darwin_amd64/bin/npm").parent)
-            LINUX -> listOf("/usr/bin", "/bin/", realPath("external/nodejs_linux_amd64/bin/npm").parent)
+        val commonPaths = listOf(realPath(npmPath).parent)
+        val otherPaths = when (currentOS) {
+            MAC, LINUX -> listOf("/usr/bin", "/bin/")
+            else -> listOf()
         }
-        return paths.joinToString(":")
+        return (commonPaths + otherPaths).joinToString(":")
     }
 
     private fun realPath(path: String): Path {
@@ -75,7 +76,7 @@ class Deployer(options: Options) {
         }
     }
 
-    data class Options(val registryURL: String) {
+    data class Options(val npmPath: String, val registryURL: String) {
         companion object {
             fun of(commandLineParams: CommandLineParams): Options {
                 if (commandLineParams.params.isEmpty() || commandLineParams.params[0].isBlank()) {
@@ -85,7 +86,7 @@ class Deployer(options: Options) {
                     SNAPSHOT -> commandLineParams.snapshotRepo
                     RELEASE -> commandLineParams.releaseRepo
                 }
-                return Options(registryURL)
+                return Options(commandLineParams.npmPath, registryURL)
             }
         }
 
@@ -105,6 +106,9 @@ class Deployer(options: Options) {
     }
 
     class CommandLineParams {
+        @CommandLine.Option(names = [NPM_PATH], required = true)
+        lateinit var npmPath: String
+
         @CommandLine.Option(names = [SNAPSHOT_REPO], required = true)
         lateinit var snapshotRepo: String
 
@@ -115,6 +119,7 @@ class Deployer(options: Options) {
         lateinit var params: List<String>
 
         object Keys {
+            const val NPM_PATH = "--npm_path"
             const val RELEASE_REPO = "--release_repo"
             const val SNAPSHOT_REPO = "--snapshot_repo"
         }

@@ -91,18 +91,16 @@ def _deploy_npm_impl(ctx):
         output = deploy_npm_script,
         substitutions = {
             "{DEPLOYER_PATH}": ctx.file._npm_deployer.short_path,
+            "{NPM_PATH}": ctx.file._npm.short_path,
             "{SNAPSHOT_REPO}": ctx.attr.snapshot,
             "{RELEASE_REPO}": ctx.attr.release,
         },
     )
 
-    files = [ctx.file.target, ctx.file._npm_deployer]
-    files.extend(ctx.files._npm)
-
     return DefaultInfo(
         executable = deploy_npm_script,
         runfiles = ctx.runfiles(
-            files = files,
+            files = [ctx.file.target, ctx.file._npm_deployer, ctx.file._npm],
             symlinks = {
                 "deploy_npm.tgz": ctx.file.target,
             },
@@ -134,8 +132,8 @@ deploy_npm = rule(
             default = "@vaticle_bazel_distribution//npm/templates:deploy.sh",
         ),
         "_npm": attr.label(
-            default = Label("@nodejs//:npm"),
-            allow_files = True,
+            allow_single_file = True,
+            default = "@nodejs//:npm",
         ),
     },
     executable = True,
