@@ -21,6 +21,7 @@
 
 package com.vaticle.bazel.distribution.npm
 
+import com.vaticle.bazel.distribution.npm.Deployer.Options
 import picocli.CommandLine
 
 fun parseCommandLine(args: Array<String>): Deployer.CommandLineParams {
@@ -31,5 +32,5 @@ fun parseCommandLine(args: Array<String>): Deployer.CommandLineParams {
 }
 
 fun main(args: Array<String>) {
-    Deployer(options = parseCommandLine(args)).deploy()
+    Deployer(Options.of(parseCommandLine(args))).deploy()
 }

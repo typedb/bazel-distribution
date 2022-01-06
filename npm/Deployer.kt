@@ -28,14 +28,16 @@ import com.vaticle.bazel.distribution.common.OS.MAC
 import com.vaticle.bazel.distribution.common.OS.LINUX
 import com.vaticle.bazel.distribution.common.shell.Shell
 import com.vaticle.bazel.distribution.common.util.SystemUtil.currentOS
-import com.vaticle.bazel.distribution.npm.Deployer.CommandLineParams.Keys.REGISTRY_URL
+import com.vaticle.bazel.distribution.npm.Deployer.CommandLineParams.Keys.RELEASE_REPO
+import com.vaticle.bazel.distribution.npm.Deployer.CommandLineParams.Keys.SNAPSHOT_REPO
 import com.vaticle.bazel.distribution.npm.Deployer.Env.DEPLOY_NPM_TOKEN
 import com.vaticle.bazel.distribution.npm.Deployer.Env.PATH
+import com.vaticle.bazel.distribution.npm.Deployer.Options.RepositoryType.*
 import picocli.CommandLine
 import java.nio.file.Files
 import java.nio.file.Path
 
-class Deployer(val options: CommandLineParams) {
+class Deployer(options: Options) {
     private val logger = Logger(logLevel = DEBUG)
     private val registryURL = options.registryURL
 
@@ -63,15 +65,50 @@ class Deployer(val options: CommandLineParams) {
             MAC -> listOf("/usr/bin", "/bin/", Path.of("external/nodejs_darwin_amd64/bin/").toRealPath().toString())
             LINUX -> listOf("/usr/bin", "/bin/", Path.of("external/nodejs_linux_amd64/bin/").toRealPath().toString())
         }
-        return (commonPaths + nativePaths).joinToString(separator = ":")
+        return (commonPaths + nativePaths).joinToString(":")
+    }
+
+    data class Options(val registryURL: String) {
+        companion object {
+            fun of(commandLineParams: CommandLineParams): Options {
+                if (commandLineParams.params.isEmpty()) {
+                    val allRepoTypesString = values().joinToString("|") { it.displayName }
+                    throw IllegalArgumentException("Missing required positional argument: <$allRepoTypesString>")
+                }
+                val registryURL = when (RepositoryType.of(commandLineParams.params[0])) {
+                    SNAPSHOT -> commandLineParams.snapshotRepo
+                    RELEASE -> commandLineParams.releaseRepo
+                }
+                return Options(registryURL)
+            }
+        }
+
+        enum class RepositoryType(val displayName: String) {
+            SNAPSHOT("snapshot"),
+            RELEASE("release");
+
+            companion object {
+                fun of(displayName: String): RepositoryType {
+                    return values().find { it.displayName == displayName }
+                        ?: throw IllegalArgumentException("Invalid repo type: '$displayName'")
+                }
+            }
+        }
     }
 
     class CommandLineParams {
-        @CommandLine.Option(names = [REGISTRY_URL], required = true)
-        lateinit var registryURL: String
+        @CommandLine.Option(names = [SNAPSHOT_REPO], required = true)
+        lateinit var snapshotRepo: String
+
+        @CommandLine.Option(names = [RELEASE_REPO], required = true)
+        lateinit var releaseRepo: String
+
+        @CommandLine.Parameters
+        lateinit var params: List<String>
 
         object Keys {
-            const val REGISTRY_URL = "--registry_url"
+            const val RELEASE_REPO = "--release_repo"
+            const val SNAPSHOT_REPO = "--snapshot_repo"
         }
     }
 

@@ -90,7 +90,7 @@ def _deploy_npm_impl(ctx):
         template = ctx.file._npm_deployer_wrapper_template,
         output = deploy_npm_script,
         substitutions = {
-            "{DEPLOYER_PATH}": ctx.file._crate_deployer.short_path,
+            "{DEPLOYER_PATH}": ctx.file._npm_deployer.short_path,
             "{SNAPSHOT_REPO}": ctx.attr.snapshot,
             "{RELEASE_REPO}": ctx.attr.release,
         },
