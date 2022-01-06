@@ -33,6 +33,7 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     deps = [
         "@vaticle_bazel_distribution//common",
+        "@vaticle_bazel_distribution//common/shell",
         "@vaticle_bazel_distribution//common/util",
 
         "@maven//:info_picocli_picocli",

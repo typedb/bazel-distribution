@@ -19,21 +19,17 @@
  * under the License.
  */
 
-package com.vaticle.bazel.distribution.platform.jvm
+package com.vaticle.bazel.distribution.common
 
-import picocli.CommandLine
+object Logging {
+    class Logger(private val logLevel: LogLevel) {
+        fun debug(message: () -> String) {
+            if (logLevel == LogLevel.DEBUG) println(message())
+        }
+    }
 
-fun parseCommandLine(args: Array<String>): Options {
-    val commandLine = CommandLine(CommandLineParams())
-    val parseResult: CommandLine.ParseResult = commandLine.parseArgs(*args)
-    assert(parseResult.asCommandLineList().size == 1)
-    val parameters: CommandLineParams = parseResult.asCommandLineList()[0].getCommand()
-    return Options.of(parameters)
-}
-
-fun main(args: Array<String>) {
-    JVMPlatformAssembler.run {
-        init(options = parseCommandLine(args))
-        assemble()
+    enum class LogLevel {
+        DEBUG,
+        ERROR,
     }
 }

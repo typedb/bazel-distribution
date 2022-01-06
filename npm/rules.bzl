@@ -83,39 +83,36 @@ assemble_npm = rule(
 )
 
 
-def _deploy_npm(ctx):
+def _deploy_npm_impl(ctx):
+    deploy_npm_script = ctx.actions.declare_file(ctx.attr.name)
+
     ctx.actions.expand_template(
-        template = ctx.file._deployment_script_template,
-        output = ctx.outputs.executable,
+        template = ctx.file._npm_deployer_wrapper_template,
+        output = deploy_npm_script,
         substitutions = {
-            "{snapshot}" : ctx.attr.snapshot,
-            "{release}" : ctx.attr.release,
+            "{DEPLOYER_PATH}": ctx.file._crate_deployer.short_path,
+            "{SNAPSHOT_REPO}": ctx.attr.snapshot,
+            "{RELEASE_REPO}": ctx.attr.release,
         },
-        is_executable = True
     )
 
-    files = [
-        ctx.file.target,
-    ]
-    files.extend(ctx.files._npm)
-
     return DefaultInfo(
-        executable = ctx.outputs.executable,
+        executable = deploy_npm_script,
         runfiles = ctx.runfiles(
-            files = files,
+            files = [ctx.file.target, ctx.file._npm_deployer],
             symlinks = {
                 "deploy_npm.tgz": ctx.file.target,
-            }))
+            },
+        ),
+    )
 
 
 deploy_npm = rule(
-    implementation = _deploy_npm,
-    executable = True,
     attrs = {
         "target": attr.label(
             mandatory = True,
             allow_single_file = True,
-            doc = "`assemble_npm` label to be included in the package",
+            doc = "`assemble_npm` target to be included in the package",
         ),
         "snapshot": attr.string(
             mandatory = True,
@@ -125,13 +122,16 @@ deploy_npm = rule(
             mandatory = True,
             doc = 'Release repository to deploy npm artifact to',
         ),
-        "_deployment_script_template": attr.label(
+        "_npm_deployer": attr.label(
             allow_single_file = True,
-            default = "//npm/templates:deploy.py",
+            default = "@vaticle_bazel_distribution//npm:deployer-bin_deploy.jar"
         ),
-        "_npm": attr.label(
-            default = Label("@nodejs//:npm"),
-            allow_files = True
-        ),
+        "_npm_deployer_wrapper_template": attr.label(
+            allow_single_file = True,
+            default = "@vaticle_bazel_distribution//npm/templates:deploy.sh",
+        )
     },
+    executable = True,
+    implementation = _deploy_npm_impl,
+    doc = "Deploy `assemble_npm` target into npm registry",
 )

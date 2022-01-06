@@ -21,6 +21,8 @@
 
 package com.vaticle.bazel.distribution.platform.jvm
 
+import com.vaticle.bazel.distribution.common.Logging.Logger
+import com.vaticle.bazel.distribution.common.Logging.LogLevel
 import com.vaticle.bazel.distribution.common.util.PropertiesUtil.getBooleanOrDefault
 import com.vaticle.bazel.distribution.common.util.PropertiesUtil.getStringOrNull
 import com.vaticle.bazel.distribution.common.util.PropertiesUtil.requireString
@@ -28,8 +30,6 @@ import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID_PASSWORD
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.logger
-import com.vaticle.bazel.distribution.platform.jvm.Logging.LogLevel
-import com.vaticle.bazel.distribution.platform.jvm.Logging.Logger
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_CODE_SIGN
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_CODE_SIGNING_CERT_PATH
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_DEEP_SIGN_JARS_REGEX

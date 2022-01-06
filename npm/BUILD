@@ -18,6 +18,7 @@
 #
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 
 bzl_library(
     name = "lib",
@@ -30,5 +31,25 @@ bzl_library(
 py_binary(
     name = "assemble",
     srcs = ["assemble.py"],
+    visibility = ["//visibility:public"],
+)
+
+kt_jvm_library(
+    name = "deployer-lib",
+    srcs = glob(["*.kt"]),
+    deps = [
+        "@vaticle_bazel_distribution//common",
+        "@vaticle_bazel_distribution//common/shell",
+        "@vaticle_bazel_distribution//common/util",
+
+        "@maven//:info_picocli_picocli",
+        "@maven//:org_zeroturnaround_zt_exec",
+    ],
+)
+
+java_binary(
+    name = "deployer-bin",
+    runtime_deps = [":deployer-lib"],
+    main_class = "com.vaticle.bazel.distribution.npm.DeployNPMKt",
     visibility = ["//visibility:public"],
 )

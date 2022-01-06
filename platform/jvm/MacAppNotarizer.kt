@@ -1,5 +1,6 @@
 package com.vaticle.bazel.distribution.platform.jvm
 
+import com.vaticle.bazel.distribution.common.shell.Shell
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.logger
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.shell
 import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.ALTOOL
@@ -18,6 +19,7 @@ import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.StatusPoller.
 import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.StatusPoller.MAX_RETRIES
 import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.StatusPoller.POLL_INTERVAL_MS
 import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.StatusPoller.STATUS_MESSAGE_PACKAGE_APPROVED
+import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Programs.XCRUN
 import java.nio.file.Path
 
 class MacAppNotarizer(private val options: Options.AppleCodeSigning, private val dmgFilename: String, private val dmgPath: Path) {
@@ -32,7 +34,7 @@ class MacAppNotarizer(private val options: Options.AppleCodeSigning, private val
         // TODO: xcrun altool --notarize-app is deprecated in Xcode 13: see
         //       https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution/customizing_the_notarization_workflow?preferredLanguage=occ
         return Shell.Command(
-            Shell.Command.arg(Shell.Programs.XCRUN), Shell.Command.arg(ALTOOL), Shell.Command.arg(NOTARIZE_APP),
+            Shell.Command.arg(XCRUN), Shell.Command.arg(ALTOOL), Shell.Command.arg(NOTARIZE_APP),
             Shell.Command.arg(PRIMARY_BUNDLE_ID), Shell.Command.arg(options.macAppID),
             Shell.Command.arg(USERNAME), Shell.Command.arg(options.appleID, printable = false),
             Shell.Command.arg(PASSWORD), Shell.Command.arg(options.appleIDPassword, printable = false),
@@ -69,7 +71,7 @@ class MacAppNotarizer(private val options: Options.AppleCodeSigning, private val
 
     private fun notarizationInfoCommand(requestUUID: String): Shell.Command {
         return Shell.Command(
-            Shell.Command.arg(Shell.Programs.XCRUN), Shell.Command.arg(ALTOOL), Shell.Command.arg(NOTARIZATION_INFO),
+            Shell.Command.arg(XCRUN), Shell.Command.arg(ALTOOL), Shell.Command.arg(NOTARIZATION_INFO),
             Shell.Command.arg(requestUUID),
             Shell.Command.arg(USERNAME), Shell.Command.arg(options.appleID, printable = false),
             Shell.Command.arg(PASSWORD), Shell.Command.arg(options.appleIDPassword, printable = false)
@@ -77,7 +79,7 @@ class MacAppNotarizer(private val options: Options.AppleCodeSigning, private val
     }
 
     private fun markPackageAsApproved() {
-        shell.execute(listOf(Shell.Programs.XCRUN, STAPLER, STAPLE, dmgPath.toString()))
+        shell.execute(listOf(XCRUN, STAPLER, STAPLE, dmgPath.toString()))
     }
 
     private data class NotarizationInfoResult(val status: Status, val rawText: String) {

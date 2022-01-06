@@ -19,21 +19,17 @@
  * under the License.
  */
 
-package com.vaticle.bazel.distribution.platform.jvm
+package com.vaticle.bazel.distribution.npm
 
 import picocli.CommandLine
 
-fun parseCommandLine(args: Array<String>): Options {
-    val commandLine = CommandLine(CommandLineParams())
+fun parseCommandLine(args: Array<String>): Deployer.CommandLineParams {
+    val commandLine = CommandLine(Deployer.CommandLineParams())
     val parseResult: CommandLine.ParseResult = commandLine.parseArgs(*args)
     assert(parseResult.asCommandLineList().size == 1)
-    val parameters: CommandLineParams = parseResult.asCommandLineList()[0].getCommand()
-    return Options.of(parameters)
+    return parseResult.asCommandLineList()[0].getCommand()
 }
 
 fun main(args: Array<String>) {
-    JVMPlatformAssembler.run {
-        init(options = parseCommandLine(args))
-        assemble()
-    }
+    Deployer(options = parseCommandLine(args)).deploy()
 }
