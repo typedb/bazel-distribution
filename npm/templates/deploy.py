@@ -42,36 +42,9 @@ npm_repositories = {
 }
 npm_registry = npm_repositories[repo_type]
 
-npm_username, npm_password, npm_email, npm_token = (
-    os.getenv('DEPLOY_NPM_USERNAME'),
-    os.getenv('DEPLOY_NPM_PASSWORD'),
-    os.getenv('DEPLOY_NPM_EMAIL'),
-    os.getenv('DEPLOY_NPM_TOKEN'),
-)
-
-if not npm_username:
-    raise Exception(
-        'username should be passed via '
-        '$DEPLOY_NPM_USERNAME env variable'
-    )
-
-if not npm_password:
-    raise Exception(
-        'password should be passed via '
-        '$DEPLOY_NPM_PASSWORD env variable'
-    )
-
-if not npm_email:
-    raise Exception(
-        'email should be passed via '
-        '$DEPLOY_NPM_EMAIL env variable'
-    )
-
-if repo_type == "release" and not npm_token:
-    print(
-        'token should be passed via '
-        '$DEPLOY_NPM_TOKEN env variable when deploying to a release repo'
-    )
+npm_token = os.getenv('DEPLOY_NPM_TOKEN')
+if not npm_token:
+    print('token should be passed via $DEPLOY_NPM_TOKEN env variable')
 
 node_path = ':'.join([
     '/usr/bin/',
