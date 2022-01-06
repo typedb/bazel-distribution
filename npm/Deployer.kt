@@ -48,7 +48,7 @@ class Deployer(options: Options) {
 
     private fun configureAuthToken() {
         val npmToken = System.getenv(DEPLOY_NPM_TOKEN)
-        if (npmToken == null) println("token should be passed via \$$DEPLOY_NPM_TOKEN env variable")
+            ?: throw IllegalArgumentException("token should be passed via \$$DEPLOY_NPM_TOKEN env variable")
         Files.writeString(Path.of(".npmrc"), "//$registryURL:_authToken=$npmToken")
     }
 
@@ -59,21 +59,27 @@ class Deployer(options: Options) {
     }
 
     private fun pathEnv(): String {
-        val commonPaths = listOf(Path.of("external/nodejs/bin/nodejs/bin/").toRealPath().toString())
-        val nativePaths = when (currentOS) {
-            WINDOWS -> listOf(Path.of("external/nodejs_windows_amd64/bin/").toRealPath().toString())
-            MAC -> listOf("/usr/bin", "/bin/", Path.of("external/nodejs_darwin_amd64/bin/").toRealPath().toString())
-            LINUX -> listOf("/usr/bin", "/bin/", Path.of("external/nodejs_linux_amd64/bin/").toRealPath().toString())
+        val paths = when (currentOS) {
+            WINDOWS -> listOf(realPath("external/nodejs_windows_amd64/bin/npm").parent)
+            MAC -> listOf("/usr/bin", "/bin/", realPath("external/nodejs_darwin_amd64/bin/npm").parent)
+            LINUX -> listOf("/usr/bin", "/bin/", realPath("external/nodejs_linux_amd64/bin/npm").parent)
         }
-        return (commonPaths + nativePaths).joinToString(":")
+        return paths.joinToString(":")
+    }
+
+    private fun realPath(path: String): Path {
+        val pathObj = Path.of(path)
+        return when (Files.exists(pathObj)) {
+            true -> pathObj.toRealPath()
+            false -> pathObj
+        }
     }
 
     data class Options(val registryURL: String) {
         companion object {
             fun of(commandLineParams: CommandLineParams): Options {
-                if (commandLineParams.params.isEmpty()) {
-                    val allRepoTypesString = values().joinToString("|") { it.displayName }
-                    throw IllegalArgumentException("Missing required positional argument: <$allRepoTypesString>")
+                if (commandLineParams.params.isEmpty() || commandLineParams.params[0].isBlank()) {
+                    throw IllegalArgumentException("Missing required positional argument: <${RepositoryType.allValuesString}>")
                 }
                 val registryURL = when (RepositoryType.of(commandLineParams.params[0])) {
                     SNAPSHOT -> commandLineParams.snapshotRepo
@@ -88,9 +94,11 @@ class Deployer(options: Options) {
             RELEASE("release");
 
             companion object {
+                val allValuesString = values().joinToString("|") { it.displayName }
+
                 fun of(displayName: String): RepositoryType {
                     return values().find { it.displayName == displayName }
-                        ?: throw IllegalArgumentException("Invalid repo type: '$displayName'")
+                        ?: throw IllegalArgumentException("Invalid repo type: '$displayName' (valid values are <$allValuesString>)")
                 }
             }
         }

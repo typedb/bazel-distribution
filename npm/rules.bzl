@@ -96,10 +96,13 @@ def _deploy_npm_impl(ctx):
         },
     )
 
+    files = [ctx.file.target, ctx.file._npm_deployer]
+    files.extend(ctx.files._npm)
+
     return DefaultInfo(
         executable = deploy_npm_script,
         runfiles = ctx.runfiles(
-            files = [ctx.file.target, ctx.file._npm_deployer],
+            files = files,
             symlinks = {
                 "deploy_npm.tgz": ctx.file.target,
             },
@@ -129,7 +132,11 @@ deploy_npm = rule(
         "_npm_deployer_wrapper_template": attr.label(
             allow_single_file = True,
             default = "@vaticle_bazel_distribution//npm/templates:deploy.sh",
-        )
+        ),
+        "_npm": attr.label(
+            default = Label("@nodejs//:npm"),
+            allow_files = True,
+        ),
     },
     executable = True,
     implementation = _deploy_npm_impl,
