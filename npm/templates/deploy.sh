@@ -19,6 +19,6 @@
 #
 
 exec java -jar "{deployer-path}" \
-    --npm_path="{npm-path}" \
-    --snapshot_repo="{snapshot-repo}" \
-    --release_repo="{release-repo}" "$*"
+    --npm-path="{npm-path}" \
+    --snapshot-repo="{snapshot-repo}" \
+    --release-repo="{release-repo}" "$*"
