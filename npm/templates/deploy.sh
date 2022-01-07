@@ -18,7 +18,7 @@
 # under the License.
 #
 
-exec java -jar "{DEPLOYER_PATH}" \
-    --npm_path="{NPM_PATH}" \
-    --snapshot_repo="{SNAPSHOT_REPO}" \
-    --release_repo="{RELEASE_REPO}" "$*"
+exec java -jar "{deployer-path}" \
+    --npm_path="{npm-path}" \
+    --snapshot_repo="{snapshot-repo}" \
+    --release_repo="{release-repo}" "$*"
