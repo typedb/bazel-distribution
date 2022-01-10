@@ -81,8 +81,10 @@ MavenDeploymentInfo = _MavenDeploymentInfo
 assemble_maven = _assemble_maven
 deploy_maven = _deploy_maven
 
-load("//npm:rules.bzl", _assemble_npm = "assemble_npm", _deploy_npm = "deploy_npm")
+load("//npm/assemble:rules.bzl", _assemble_npm = "assemble_npm")
 assemble_npm = _assemble_npm
+
+load("//npm/deploy:rules.bzl", _deploy_npm = "deploy_npm")
 deploy_npm = _deploy_npm
 
 load("//packer:rules.bzl", _assemble_packer = "assemble_packer", _deploy_packer = "deploy_packer")

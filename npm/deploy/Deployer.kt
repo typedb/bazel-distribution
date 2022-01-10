@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.vaticle.bazel.distribution.npm
+package com.vaticle.bazel.distribution.npm.deploy
 
 import com.vaticle.bazel.distribution.common.Logging.Logger
 import com.vaticle.bazel.distribution.common.Logging.LogLevel.DEBUG

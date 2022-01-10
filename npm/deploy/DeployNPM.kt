@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.vaticle.bazel.distribution.npm
+package com.vaticle.bazel.distribution.npm.deploy
 
 fun main(args: Array<String>) {
     Deployer(Options.of(args)).deploy()

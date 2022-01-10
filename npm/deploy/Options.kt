@@ -1,11 +1,11 @@
-package com.vaticle.bazel.distribution.npm
+package com.vaticle.bazel.distribution.npm.deploy
 
-import com.vaticle.bazel.distribution.npm.Options.CommandLineParams.NPM_PATH
-import com.vaticle.bazel.distribution.npm.Options.CommandLineParams.RELEASE_REPO
-import com.vaticle.bazel.distribution.npm.Options.CommandLineParams.SNAPSHOT_REPO
-import com.vaticle.bazel.distribution.npm.Options.Env.DEPLOY_NPM_TOKEN
-import com.vaticle.bazel.distribution.npm.Options.RepositoryType.RELEASE
-import com.vaticle.bazel.distribution.npm.Options.RepositoryType.SNAPSHOT
+import com.vaticle.bazel.distribution.npm.deploy.Options.CommandLineParams.NPM_PATH
+import com.vaticle.bazel.distribution.npm.deploy.Options.CommandLineParams.RELEASE_REPO
+import com.vaticle.bazel.distribution.npm.deploy.Options.CommandLineParams.SNAPSHOT_REPO
+import com.vaticle.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_TOKEN
+import com.vaticle.bazel.distribution.npm.deploy.Options.RepositoryType.RELEASE
+import com.vaticle.bazel.distribution.npm.deploy.Options.RepositoryType.SNAPSHOT
 import picocli.CommandLine
 
 class Options {
