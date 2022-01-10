@@ -67,7 +67,7 @@ assemble_npm = rule(
             """
         ),
         "_assemble_script": attr.label(
-            default = "//npm:assemble",
+            default = "//npm/assemble",
             executable = True,
             cfg = "host"
         ),

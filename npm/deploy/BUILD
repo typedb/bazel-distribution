@@ -20,6 +20,8 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 
+exports_files(["deploy.sh.template"])
+
 bzl_library(
     name = "lib",
     srcs = [
