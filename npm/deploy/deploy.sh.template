@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,8 +18,7 @@
 # under the License.
 #
 
-load("//npm/assemble:rules.bzl", _assemble_npm = "assemble_npm")
-load("//npm/deploy:rules.bzl", _deploy_npm = "deploy_npm")
-
-assemble_npm = _assemble_npm
-deploy_npm = _deploy_npm
+exec java -jar "{deployer-path}" \
+    --npm-path="{npm-path}" \
+    --snapshot-repo="{snapshot-repo}" \
+    --release-repo="{release-repo}" "$*"

@@ -26,9 +26,3 @@ bzl_library(
     ],
     visibility = ["//visibility:public"]
 )
-
-py_binary(
-    name = "assemble",
-    srcs = ["assemble.py"],
-    visibility = ["//visibility:public"],
-)

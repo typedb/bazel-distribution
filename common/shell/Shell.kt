@@ -1,13 +1,13 @@
-package com.vaticle.bazel.distribution.platform.jvm
+package com.vaticle.bazel.distribution.common.shell
 
-import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.logger
-import com.vaticle.bazel.distribution.platform.jvm.Shell.Command.Companion.arg
+import com.vaticle.bazel.distribution.common.shell.Shell.Command.Companion.arg
+import com.vaticle.bazel.distribution.common.Logging.Logger
 import org.zeroturnaround.exec.ProcessExecutor
 import org.zeroturnaround.exec.ProcessResult
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class Shell(private val verbose: Boolean = false, private val printSensitiveData: Boolean = false) {
+class Shell(private val logger: Logger, private val verbose: Boolean = false, private val printSensitiveData: Boolean = false) {
     fun execute(
         command: List<String>, baseDir: Path = Paths.get("."),
         env: Map<String, String> = mapOf(), outputIsSensitive: Boolean = false, throwOnError: Boolean = true
@@ -34,7 +34,7 @@ class Shell(private val verbose: Boolean = false, private val printSensitiveData
         }
     }
 
-    fun shouldPrintOutput(sensitive: Boolean): Boolean {
+    private fun shouldPrintOutput(sensitive: Boolean): Boolean {
         return verbose && (!sensitive || printSensitiveData)
     }
 
@@ -49,26 +49,10 @@ class Shell(private val verbose: Boolean = false, private val printSensitiveData
             fun arg(value: String, printable: Boolean = true) = Argument(value, printable)
         }
 
-        class Argument(val value: String, val printable: Boolean = true) {
+        class Argument(val value: String, private val printable: Boolean = true) {
             override fun toString(): String {
                 return if (printable) value else "(hidden)"
             }
         }
-    }
-
-    object Programs {
-        const val CODESIGN = "codesign"
-        const val JAR = "jar"
-        const val JPACKAGE = "jpackage"
-        const val JPACKAGE_EXE = "jpackage.exe"
-        const val SECURITY = "security"
-        const val TAR = "tar"
-        const val XCRUN = "xcrun"
-    }
-
-    object Extensions {
-        const val DYLIB = "dylib"
-        const val JAR = "jar"
-        const val JNILIB = "jnilib"
     }
 }

@@ -1,5 +1,6 @@
 package com.vaticle.bazel.distribution.platform.jvm
 
+import com.vaticle.bazel.distribution.common.shell.Shell
 import com.vaticle.bazel.distribution.common.util.FileUtil.listFilesRecursively
 import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.ENTITLEMENTS
 import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.FORCE
@@ -25,6 +26,11 @@ import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.SET_
 import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.UNLOCK_KEYCHAIN
 import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.USER
 import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.USR_BIN_CODESIGN
+import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Extensions.DYLIB
+import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Extensions.JAR
+import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Extensions.JNILIB
+import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Programs.CODESIGN
+import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Programs.SECURITY
 import org.zeroturnaround.exec.ProcessResult
 import java.io.File
 import java.io.FileInputStream
@@ -52,14 +58,14 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
     }
 
     private fun deleteExistingKeychainIfPresent() {
-        val keychainListInfo = shell.execute(listOf(Shell.Programs.SECURITY, LIST_KEYCHAINS)).outputString()
-        if (KEYCHAIN_NAME in keychainListInfo) shell.execute(listOf(Shell.Programs.SECURITY, DELETE_KEYCHAIN, KEYCHAIN_NAME))
+        val keychainListInfo = shell.execute(listOf(SECURITY, LIST_KEYCHAINS)).outputString()
+        if (KEYCHAIN_NAME in keychainListInfo) shell.execute(listOf(SECURITY, DELETE_KEYCHAIN, KEYCHAIN_NAME))
     }
 
     private fun createKeychain() {
         shell.execute(
             Shell.Command(
-                Shell.Command.arg(Shell.Programs.SECURITY), Shell.Command.arg(CREATE_KEYCHAIN),
+                Shell.Command.arg(SECURITY), Shell.Command.arg(CREATE_KEYCHAIN),
                 Shell.Command.arg("-p"), Shell.Command.arg(KEYCHAIN_PASSWORD, printable = false),
                 Shell.Command.arg(KEYCHAIN_NAME)
             )
@@ -67,14 +73,14 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
     }
 
     private fun setDefaultKeychain() {
-        shell.execute(listOf(Shell.Programs.SECURITY, DEFAULT_KEYCHAIN, "-s", KEYCHAIN_NAME))
-        shell.execute(listOf(Shell.Programs.SECURITY, LIST_KEYCHAINS, "-d", USER, "-s", LOGIN_KEYCHAIN, KEYCHAIN_NAME))
+        shell.execute(listOf(SECURITY, DEFAULT_KEYCHAIN, "-s", KEYCHAIN_NAME))
+        shell.execute(listOf(SECURITY, LIST_KEYCHAINS, "-d", USER, "-s", LOGIN_KEYCHAIN, KEYCHAIN_NAME))
     }
 
     fun unlockKeychain() {
         shell.execute(
             Shell.Command(
-                Shell.Command.arg(Shell.Programs.SECURITY), Shell.Command.arg(UNLOCK_KEYCHAIN),
+                Shell.Command.arg(SECURITY), Shell.Command.arg(UNLOCK_KEYCHAIN),
                 Shell.Command.arg("-p"), Shell.Command.arg(KEYCHAIN_PASSWORD, printable = false),
                 Shell.Command.arg(KEYCHAIN_NAME)
             )
@@ -84,7 +90,7 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
     private fun importCodeSigningIdentity() {
         shell.execute(
             Shell.Command(
-                Shell.Command.arg(Shell.Programs.SECURITY),
+                Shell.Command.arg(SECURITY),
                 Shell.Command.arg(IMPORT),
                 Shell.Command.arg(options.cert.path),
                 Shell.Command.arg("-k"),
@@ -100,7 +106,7 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
     private fun makeCodeSigningIdentityAccessible() {
         shell.execute(
             Shell.Command(
-                Shell.Command.arg(Shell.Programs.SECURITY), Shell.Command.arg(SET_KEY_PARTITION_LIST),
+                Shell.Command.arg(SECURITY), Shell.Command.arg(SET_KEY_PARTITION_LIST),
                 Shell.Command.arg("-S"), Shell.Command.arg(KEY_PARTITION_LIST),
                 Shell.Command.arg("-s"),
                 Shell.Command.arg("-k"), Shell.Command.arg(KEYCHAIN_PASSWORD, printable = false),
@@ -131,22 +137,19 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
     fun signUnsignedNativeLibs(root: File) {
         // Some JARs contain unsigned `.jnilib` and `.dylib` files, which we can extract, sign and repackage
         for (jar in root.listFilesRecursively().filter {
-            it.isFile && it.extension == Shell.Extensions.JAR && it.name.matches(requireNotNull(options.deepSignJarsRegex))
+            it.isFile && it.extension == JAR && it.name.matches(requireNotNull(options.deepSignJarsRegex))
         }) {
             val tmpPath = Path.of(TMP)
             val tmpDir: File = tmpPath.toFile()
             Files.createDirectory(tmpPath)
-            shell.execute(listOf(Shell.Programs.JAR, "xf", "../${jar.path}"), baseDir = tmpPath).outputString()
+            shell.execute(listOf(ShellArgs.Programs.JAR, "xf", "../${jar.path}"), baseDir = tmpPath).outputString()
 
-            val nativeLibs = tmpDir.listFilesRecursively().filter { it.extension in listOf(
-                Shell.Extensions.JNILIB,
-                Shell.Extensions.DYLIB
-            ) }
+            val nativeLibs = tmpDir.listFilesRecursively().filter { it.extension in listOf(JNILIB, DYLIB) }
             if (nativeLibs.isNotEmpty()) {
                 nativeLibs.forEach { signFile(file = it, skipIfSigned = true) }
                 jar.setWritable(true)
                 jar.delete()
-                shell.execute(listOf(Shell.Programs.JAR, "cMf", "../${jar.path}", "."), baseDir = tmpPath)
+                shell.execute(listOf(ShellArgs.Programs.JAR, "cMf", "../${jar.path}", "."), baseDir = tmpPath)
             }
 
             tmpDir.deleteRecursively()
@@ -156,18 +159,18 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
     fun signFile(file: File, skipIfSigned: Boolean = false) {
         if (skipIfSigned) {
             val verifySignatureResult = VerifySignatureResult(
-                shell.execute(listOf(Shell.Programs.CODESIGN, VERIFY, STRICT, file.path), throwOnError = false)
+                shell.execute(listOf(CODESIGN, VERIFY, STRICT, file.path), throwOnError = false)
             )
             if (verifySignatureResult.status == VerifySignatureResult.Status.SIGNED) return
             else if (verifySignatureResult.status == VerifySignatureResult.Status.ERROR) {
-                throw IllegalStateException("Command '${Shell.Programs.CODESIGN}' failed with exit code " +
+                throw IllegalStateException("Command '${CODESIGN}' failed with exit code " +
                         "${verifySignatureResult.exitValue} and output: ${verifySignatureResult.outputString()}")
             }
         }
 
         file.setWritable(true)
         val signCommand: MutableList<String> = mutableListOf(
-            Shell.Programs.CODESIGN, SIGN, certSubject,
+            CODESIGN, SIGN, certSubject,
             FORCE,
             ENTITLEMENTS, macEntitlements.path,
             OPTIONS, Codesign.RUNTIME,

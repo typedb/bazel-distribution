@@ -20,16 +20,18 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 
+exports_files(["deploy.sh.template"])
+
 bzl_library(
     name = "lib",
     srcs = [
-        "rules.bzl"
+        "rules.bzl",
     ],
     visibility = ["//visibility:public"]
 )
 
 kt_jvm_library(
-    name = "assembler-lib",
+    name = "deployer-lib",
     srcs = glob(["*.kt"]),
     deps = [
         "@vaticle_bazel_distribution//common",
@@ -42,15 +44,8 @@ kt_jvm_library(
 )
 
 java_binary(
-    name = "assembler-bin",
-    runtime_deps = [":assembler-lib"],
-    main_class = "com.vaticle.bazel.distribution.platform.jvm.MainKt",
+    name = "deployer-bin",
+    runtime_deps = [":deployer-lib"],
+    main_class = "com.vaticle.bazel.distribution.npm.deploy.DeployNPMKt",
     visibility = ["//visibility:public"],
-)
-
-config_setting(
-    name = "apple-code-sign",
-    define_values = {
-        "APPLE_CODE_SIGN": "yes"
-    }
 )

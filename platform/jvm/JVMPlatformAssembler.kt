@@ -1,8 +1,10 @@
 package com.vaticle.bazel.distribution.platform.jvm
 
+import com.vaticle.bazel.distribution.common.Logging.Logger
 import com.vaticle.bazel.distribution.common.OS.LINUX
 import com.vaticle.bazel.distribution.common.OS.MAC
 import com.vaticle.bazel.distribution.common.OS.WINDOWS
+import com.vaticle.bazel.distribution.common.shell.Shell
 import com.vaticle.bazel.distribution.common.util.FileUtil.listFilesRecursively
 import com.vaticle.bazel.distribution.common.util.SystemUtil.currentOS
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.InputFiles.Paths.JDK
@@ -29,11 +31,10 @@ import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.Platform
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.WIN_MENU_GROUP
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.WIN_SHORTCUT
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.Windows.Env.PATH
-import com.vaticle.bazel.distribution.platform.jvm.Logging.Logger
-import com.vaticle.bazel.distribution.platform.jvm.Shell.Programs.JAR
-import com.vaticle.bazel.distribution.platform.jvm.Shell.Programs.JPACKAGE
-import com.vaticle.bazel.distribution.platform.jvm.Shell.Programs.JPACKAGE_EXE
-import com.vaticle.bazel.distribution.platform.jvm.Shell.Programs.TAR
+import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Programs.JAR
+import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Programs.JPACKAGE
+import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Programs.JPACKAGE_EXE
+import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Programs.TAR
 import java.io.File
 import java.lang.System.getenv
 import java.nio.file.Files
@@ -52,7 +53,7 @@ object JVMPlatformAssembler {
     fun init(options: Options) {
         this.options = options
         verbose = options.logging.verbose
-        shell = Shell(verbose, options.logging.logSensitiveData)
+        shell = Shell(logger, verbose, options.logging.logSensitiveData)
     }
 
     fun assemble() {
