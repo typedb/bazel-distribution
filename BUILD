@@ -61,6 +61,7 @@ stardoc(
         "//gcp:lib",
         "//github:lib",
         "//maven:lib",
+        "//npm:lib",
         "//npm/assemble:lib",
         "//npm/deploy:lib",
         "//packer:lib",
