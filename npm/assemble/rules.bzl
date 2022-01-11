@@ -56,14 +56,14 @@ assemble_npm = rule(
     attrs = {
         "target": attr.label(
             mandatory = True,
-            doc = "`npm_library` label to be included in the package",
+            doc = "`npm_library` label to be included in the package.",
         ),
         "version_file": attr.label(
             allow_single_file = True,
             doc = """
             File containing version string.
             Alternatively, pass --define version=VERSION to Bazel invocation.
-            Not specifying version at all defaults to '0.0.0'
+            Not specifying version at all defaults to '0.0.0'.
             """
         ),
         "_assemble_script": attr.label(

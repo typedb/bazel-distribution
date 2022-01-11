@@ -47,15 +47,15 @@ deploy_npm = rule(
         "target": attr.label(
             mandatory = True,
             allow_single_file = True,
-            doc = "`assemble_npm` target to be included in the package",
+            doc = "`assemble_npm` target to be included in the package.",
         ),
         "snapshot": attr.string(
             mandatory = True,
-            doc = 'Snapshot repository to deploy npm artifact to',
+            doc = 'Snapshot repository to deploy npm artifact to.',
         ),
         "release": attr.string(
             mandatory = True,
-            doc = 'Release repository to deploy npm artifact to',
+            doc = 'Release repository to deploy npm artifact to.',
         ),
         "_npm_deployer": attr.label(
             allow_single_file = True,
@@ -73,7 +73,7 @@ deploy_npm = rule(
     executable = True,
     implementation = _deploy_npm_impl,
     doc = """
-    Deploy `assemble_npm` target into npm registry using token authentication
+    Deploy `assemble_npm` target into npm registry using token authentication.
 
     ## How to generate an auth token
 
