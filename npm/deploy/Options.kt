@@ -40,10 +40,9 @@ class Options {
 
     companion object {
         fun of(args: Array<String>): Options {
-            val commandLine = CommandLine(Options())
-            val parseResult: CommandLine.ParseResult = commandLine.parseArgs(*args)
-            assert(parseResult.asCommandLineList().size == 1)
-            return parseResult.asCommandLineList()[0].getCommand()
+            val cliList: List<CommandLine> = CommandLine(Options()).parseArgs(*args).asCommandLineList()
+            assert(cliList.size == 1)
+            return cliList[0].getCommand()
         }
     }
 
