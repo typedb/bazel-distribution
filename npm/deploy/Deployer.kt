@@ -39,7 +39,18 @@ class Deployer(private val options: Options) {
     }
 
     private fun configureAuthToken() {
-        Files.writeString(Path.of(".npmrc"), "//${options.registryURL}:_authToken=${options.npmToken}")
+        Files.writeString(Path.of(".npmrc"), "${npmrcFormattedURL(options.registryURL)}/:_authToken=${options.npmToken}")
+    }
+
+    /**
+     * Convert a registry URL to the format expected by .npmrc.
+     *
+     * ### Examples:
+     * - https://registry.npmjs.org/ --> //registry.npmjs.org
+     * - registry.npmjs.org --> //registry.npmjs.org
+     */
+    private fun npmrcFormattedURL(url: String): String {
+        return url.trimEnd('/').let { if (":" in it) it.split(":")[1] else "//$it" }
     }
 
     private fun publishPackage() {
