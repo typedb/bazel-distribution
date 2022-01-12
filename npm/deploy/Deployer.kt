@@ -39,7 +39,8 @@ class Deployer(private val options: Options) {
     }
 
     private fun configureAuthToken() {
-        Files.writeString(Path.of(".npmrc"), "//${options.registryURL}:_authToken=${options.npmToken}")
+        val partialRegistryURL = options.registryURL.split(":")[1].trimEnd('/') // e.g: https://registry.npmjs.org/ --> //registry.npmjs.org
+        Files.writeString(Path.of(".npmrc"), "$partialRegistryURL/:_authToken=${options.npmToken}")
     }
 
     private fun publishPackage() {
