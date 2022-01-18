@@ -26,6 +26,7 @@ import com.vaticle.bazel.distribution.common.Logging.LogLevel.DEBUG
 import com.vaticle.bazel.distribution.common.OS.MAC
 import com.vaticle.bazel.distribution.common.OS.LINUX
 import com.vaticle.bazel.distribution.common.shell.Shell
+import com.vaticle.bazel.distribution.common.shell.Shell.Command.Companion.arg
 import com.vaticle.bazel.distribution.common.util.SystemUtil.currentOS
 import java.nio.file.Files
 import java.nio.file.Path
@@ -35,10 +36,10 @@ class Deployer(private val options: Options) {
 
     fun deploy() {
         Shell(logger = logger, verbose = true).execute(
-            command = listOf(
-                "npm", "publish", "--registry=${options.registryURL}",
-                "--${authParamFormattedURL(options.registryURL)}/:_authToken=${options.npmToken}",
-                "deploy_npm.tgz"),
+            command = Shell.Command(
+                arg("npm"), arg("publish"), arg("--registry=${options.registryURL}"),
+                arg("--${authParamFormattedURL(options.registryURL)}/:_authToken=${options.npmToken}", printable = false),
+                arg("deploy_npm.tgz")),
             env = mapOf("PATH" to pathEnv()))
     }
 
