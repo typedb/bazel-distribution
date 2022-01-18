@@ -34,29 +34,23 @@ class Deployer(private val options: Options) {
     private val logger = Logger(logLevel = DEBUG)
 
     fun deploy() {
-        configureAuthToken()
-        publishPackage()
-    }
-
-    private fun configureAuthToken() {
-        Files.writeString(Path.of(".npmrc"), "${npmrcFormattedURL(options.registryURL)}/:_authToken=${options.npmToken}")
+        Shell(logger = logger, verbose = true).execute(
+            command = listOf(
+                "npm", "publish", "--registry=${options.registryURL}",
+                "--${authParamFormattedURL(options.registryURL)}/:_authToken=${options.npmToken}",
+                "deploy_npm.tgz"),
+            env = mapOf("PATH" to pathEnv()))
     }
 
     /**
-     * Convert a registry URL to the format expected by .npmrc.
+     * Convert a registry URL to the format expected when passing it together with an auth token.
      *
      * ### Examples:
      * - https://registry.npmjs.org/ --> //registry.npmjs.org
      * - registry.npmjs.org --> //registry.npmjs.org
      */
-    private fun npmrcFormattedURL(url: String): String {
+    private fun authParamFormattedURL(url: String): String {
         return url.trimEnd('/').let { if (":" in it) it.split(":")[1] else "//$it" }
-    }
-
-    private fun publishPackage() {
-        Shell(logger = logger, verbose = true).execute(
-            command = listOf("npm", "publish", "--registry=${options.registryURL}", "deploy_npm.tgz"),
-            env = mapOf("PATH" to pathEnv()))
     }
 
     private fun pathEnv(): String {
