@@ -195,7 +195,7 @@ def _aggregate_dependency_info_impl(target, ctx):
             type = "pom",
             maven_coordinates = maven_coordinates
         )
-    else:
+    else if target[OutputGroupInfo].compilation_outputs:
         # include in the JAR
         dependency = struct(
             type = "jar",
