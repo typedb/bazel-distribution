@@ -297,7 +297,7 @@ MavenDeploymentInfo = provider(
 
 
 def _deploy_maven_impl(ctx):
-    deploy_maven_script = ctx.actions.declare_file("deploy.py")
+    deploy_maven_script = ctx.actions.declare_file("%s-deploy.py" % ctx.attr.name)
 
     lib_jar_link = "lib.jar"
     src_jar_link = "lib.srcjar"
