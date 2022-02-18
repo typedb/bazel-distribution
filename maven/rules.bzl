@@ -108,6 +108,7 @@ def _generate_class_jar(ctx, pom_file):
             "--pom-file=" + pom_file.path,
             "--jars=" + ";".join(class_jar_paths),
             "--output=" + output_jar.path,
+            "--fail_on_duplicate_entry=" + ctx.attr.fail_on_duplicate_entry,
         ],
     )
 
@@ -132,7 +133,7 @@ def _generate_source_jar(ctx):
 
     output_jar = ctx.actions.declare_file("{}:{}-sources.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
 
-    source_jar_deps = [dep.source_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar']
+    source_jar_deps = [dep.source_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar' and dep.source_jar]
     source_jar_paths = [srcjar.path] + [target.path for target in source_jar_deps]
 
     ctx.actions.run(
@@ -142,6 +143,7 @@ def _generate_source_jar(ctx):
         arguments = [
             "--jars=" + ";".join(source_jar_paths),
             "--output=" + output_jar.path,
+            "--fail_on_duplicate_entry=" + ctx.attr.fail_on_duplicate_entry,
         ],
     )
 
@@ -266,6 +268,10 @@ assemble_maven = rule(
         "scm_url": attr.string(
             default = "PROJECT_URL",
             doc = "Project source control URL to fill into pom.xml",
+        ),
+        "fail_on_duplicate_entry": attr.bool(
+            default = True,
+            doc = "Fail if detected duplicate entries when assembling the JAR",
         ),
         "_pom_generator": attr.label(
             default = "@vaticle_bazel_distribution//maven:pom-generator",
