@@ -189,26 +189,39 @@ def _aggregate_dependency_info_impl(target, ctx):
     deps_all = deps + exports + runtime_deps
 
     maven_coordinates = find_maven_coordinates(target, tags)
-    dependency = None
+    dependencies = []
 
+    # depend via POM
     if maven_coordinates:
-        # depend via POM
-        dependency = struct(
+        dependencies = [struct(
             type = "pom",
             maven_coordinates = maven_coordinates
-        )
+        )]
+    # include generic compilation_outputs in JAR
     elif target[OutputGroupInfo].compilation_outputs:
         source_jars = target[OutputGroupInfo]._source_jars.to_list()
         # include in the JAR
-        dependency = struct(
+        dependencies = [struct(
             type = "jar",
             class_jar = target[OutputGroupInfo].compilation_outputs.to_list()[0],
             source_jar = source_jars[-1] if source_jars else None,
+        )]
+    # include runtime output jars
+    elif target[JavaInfo].runtime_output_jars:
+        jars = target[JavaInfo].runtime_output_jars
+        source_jars = target[JavaInfo].source_jars
+        create_dependency = lambda jar, source_jar: struct(
+            type = "jar",
+            class_jar = jar,
+            source_jar = source_jar,
         )
+        dependencies = [create_dependency(dep) for dep in zip(
+            jars, source_jars + [None] * (len(jars) - len(source_jars))
+        )]
 
     return JarInfo(
         name = maven_coordinates,
-        deps = depset([dependency] if dependency else [], transitive = [target[JarInfo].deps for target in deps_all]),
+        deps = depset(dependencies, transitive = [target[JarInfo].deps for target in deps_all]),
     )
 
 aggregate_dependency_info = aspect(
