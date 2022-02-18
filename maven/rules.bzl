@@ -210,12 +210,11 @@ def _aggregate_dependency_info_impl(target, ctx):
     elif target[JavaInfo].runtime_output_jars:
         jars = target[JavaInfo].runtime_output_jars
         source_jars = target[JavaInfo].source_jars
-        create_dependency = lambda jar, source_jar: struct(
+        dependencies = [struct(
             type = "jar",
             class_jar = jar,
             source_jar = source_jar,
-        )
-        dependencies = [create_dependency(dep) for dep in zip(
+        ) for (jar, source_jar) in zip(
             jars, source_jars + [None] * (len(jars) - len(source_jars))
         )]
 
