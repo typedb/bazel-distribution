@@ -196,11 +196,12 @@ def _aggregate_dependency_info_impl(target, ctx):
             maven_coordinates = maven_coordinates
         )
     elif target[OutputGroupInfo].compilation_outputs:
+        source_jars = target[OutputGroupInfo]._source_jars.to_list()
         # include in the JAR
         dependency = struct(
             type = "jar",
             class_jar = target[OutputGroupInfo].compilation_outputs.to_list()[0],
-            source_jar = target[OutputGroupInfo]._source_jars.to_list()[-1],
+            source_jar = source_jars[-1] if source_jars else None,
         )
 
     return JarInfo(
