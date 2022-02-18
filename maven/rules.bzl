@@ -108,7 +108,7 @@ def _generate_class_jar(ctx, pom_file):
             "--pom-file=" + pom_file.path,
             "--jars=" + ";".join(class_jar_paths),
             "--output=" + output_jar.path,
-            "--fail_on_duplicate_entry=" + ctx.attr.fail_on_duplicate_entry,
+            "--fail_on_duplicate_entry=" + str(ctx.attr.fail_on_duplicate_entry),
         ],
     )
 
@@ -143,7 +143,7 @@ def _generate_source_jar(ctx):
         arguments = [
             "--jars=" + ";".join(source_jar_paths),
             "--output=" + output_jar.path,
-            "--fail_on_duplicate_entry=" + ctx.attr.fail_on_duplicate_entry,
+            "--fail_on_duplicate_entry=" + str(ctx.attr.fail_on_duplicate_entry),
         ],
     )
 
