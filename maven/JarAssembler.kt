@@ -59,7 +59,7 @@ class JarAssembler : Callable<Unit> {
     lateinit var jars: Array<File>
 
     @Option(names = ["--fail_on_duplicate_entry"])
-    lateinit var failOnDuplicateEntry: Boolean
+    var failOnDuplicateEntry: Boolean = True
 
     private val entries = HashMap<String, ByteArray>()
     private val entryNames = mutableSetOf<String>()
