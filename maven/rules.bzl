@@ -220,7 +220,7 @@ def _aggregate_dependency_info_impl(target, ctx):
 
     return JarInfo(
         name = maven_coordinates,
-        deps = depset(dependencies, transitive = [target[JarInfo].deps for target in deps_all]),
+        deps = depset(dependencies, transitive = [target[JarInfo].deps for target in deps_all if target[OutputGroupInfo].compilation_outputs]),
     )
 
 aggregate_dependency_info = aspect(
