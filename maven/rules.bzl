@@ -218,13 +218,9 @@ def _aggregate_dependency_info_impl(target, ctx):
             jars, source_jars + [None] * (len(jars) - len(source_jars))
         )]
 
-    print([target[JarInfo] for target in deps_all])
-    print("hey")
-    print([target[JarInfo].deps for target in deps_all])
-
     return JarInfo(
         name = maven_coordinates,
-        deps = depset(dependencies, transitive = [target[JarInfo].deps for target in deps_all]),
+        deps = depset(dependencies, transitive = [target[JarInfo].deps for target in deps_all if target[JarInfo].type == "pom"]),
     )
 
 aggregate_dependency_info = aspect(
