@@ -218,8 +218,23 @@ def _aggregate_dependency_info_impl(target, ctx):
             jars, source_jars + [None] * (len(jars) - len(source_jars))
         )]
 
+    print("1")
+    print([target for target in deps_all])
+    print("2")
+    print([target[JarInfo] for target in deps_all])
+    print("3")
+    print([target[JarInfo].deps for target in deps_all])
+    print("4")
+    print([target for target in deps_all if target[JarInfo].name])
+    print("5")
+    print([target[JarInfo] for target in deps_all if target[JarInfo].name])
+    print("6")
+    print([target[JarInfo].deps for target in deps_all if target[JarInfo].name])
+    print("end")
+
     return JarInfo(
         name = maven_coordinates,
+        # Not entirely sure why this doesn't work.... trying to exclude transitive deps that don't have a maven coordinate
         deps = depset(dependencies, transitive = [target[JarInfo].deps for target in deps_all if target[JarInfo].name]),
     )
 
