@@ -72,6 +72,7 @@ subprocess.check_call([
         '/bin/',
         os.path.realpath('external/nodejs/bin/nodejs/bin/'),
         os.path.realpath('external/nodejs_darwin_amd64/bin/'),
+        os.path.realpath('external/nodejs_darwin_arm64/bin/'),
         os.path.realpath('external/nodejs_linux_amd64/bin/'),
         os.path.realpath('external/nodejs_windows_amd64/bin/'),
     ])
