@@ -186,7 +186,7 @@ def _aggregate_dependency_info_impl(target, ctx):
     deps = getattr(ctx.rule.attr, "deps", [])
     runtime_deps = getattr(ctx.rule.attr, "runtime_deps", [])
     exports = getattr(ctx.rule.attr, "exports", [])
-    deps_all = deps + exports + runtime_deps
+    deps_all = map(lambda target: target[JarInfo], deps + exports + runtime_deps)
 
     maven_coordinates = find_maven_coordinates(target, tags)
     dependencies = []
@@ -218,24 +218,15 @@ def _aggregate_dependency_info_impl(target, ctx):
             jars, source_jars + [None] * (len(jars) - len(source_jars))
         )]
 
-    print("1")
-    print([target for target in deps_all])
-    print("2")
-    print([target[JarInfo] for target in deps_all])
-    print("3")
-    print([target[JarInfo].deps for target in deps_all])
-    print("4")
-    print([target for target in deps_all if target[JarInfo].name])
-    print("5")
-    print([target[JarInfo] for target in deps_all if target[JarInfo].name])
-    print("6")
-    print([target[JarInfo].deps for target in deps_all if target[JarInfo].name])
-    print("end")
-
     return JarInfo(
         name = maven_coordinates,
-        # Not entirely sure why this doesn't work.... trying to exclude transitive deps that don't have a maven coordinate
-        deps = depset(dependencies, transitive = [target[JarInfo].deps for target in deps_all if target[JarInfo].name]),
+        deps = depset(dependencies, transitive = [
+            # Filter transitive JARs from dependency that has maven coordinates
+            # because those dependencies will already include the JARs as part
+            # of their classpath
+            depset([dep for dep in target.deps.to_list() if dep.type == 'pom'])
+                if target.name else target.deps for target in deps_all
+        ]),
     )
 
 aggregate_dependency_info = aspect(
