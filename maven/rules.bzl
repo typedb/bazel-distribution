@@ -186,7 +186,7 @@ def _aggregate_dependency_info_impl(target, ctx):
     deps = getattr(ctx.rule.attr, "deps", [])
     runtime_deps = getattr(ctx.rule.attr, "runtime_deps", [])
     exports = getattr(ctx.rule.attr, "exports", [])
-    deps_all = map(lambda target: target[JarInfo], deps + exports + runtime_deps)
+    deps_all = deps + exports + runtime_deps
 
     maven_coordinates = find_maven_coordinates(target, tags)
     dependencies = []
@@ -224,8 +224,8 @@ def _aggregate_dependency_info_impl(target, ctx):
             # Filter transitive JARs from dependency that has maven coordinates
             # because those dependencies will already include the JARs as part
             # of their classpath
-            depset([dep for dep in target.deps.to_list() if dep.type == 'pom'])
-                if target.name else target.deps for target in deps_all
+            depset([dep for dep in target[JarInfo].deps.to_list() if dep.type == 'pom'])
+                if target[JarInfo].name else target[JarInfo].deps for target in deps_all
         ]),
     )
 
