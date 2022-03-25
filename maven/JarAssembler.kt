@@ -58,9 +58,6 @@ class JarAssembler : Callable<Unit> {
     @Option(names = ["--jars"], split = ";")
     lateinit var jars: Array<File>
 
-    @Option(names = ["--fail_on_duplicate_entry"])
-    var failOnDuplicateEntry: Boolean = true
-
     private val entries = HashMap<String, ByteArray>()
     private val entryNames = mutableSetOf<String>()
 
@@ -75,9 +72,7 @@ class JarAssembler : Callable<Unit> {
                 ZipFile(jar).use { jarZip ->
                     jarZip.entries().asSequence().forEach { entry ->
                         if (entryNames.contains(entry.name)) {
-                            if (failOnDuplicateEntry)
-                                throw RuntimeException("duplicate entry in the JAR: ${entry.name}")
-                            return@forEach
+                            throw RuntimeException("duplicate entry in the JAR: ${entry.name}")
                         }
                         if (entry.name.contains("META-INF")) {
                             // pom.xml will be added by us
