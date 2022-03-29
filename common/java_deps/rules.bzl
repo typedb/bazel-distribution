@@ -113,6 +113,13 @@ def _java_deps_impl(ctx):
     outputPathOverrides = ctx.attr.java_deps_root_overrides
 
     mapping = ctx.attr.target[TransitiveJarToMavenCoordinatesMapping].mapping
+    distinct_mapping = {}
+
+    for k, v in mapping.items():
+        if v in distinct_mapping.values() and k not in distinct_mapping.keys():
+            conflicting_file_name = [a for (a, b) in distinct_mapping.items() if b == v][0]
+            fail("{} and {} both have the same Maven coordinates, {}. Distinct JARs must have distinct Maven coordinates.".format(conflicting_file_name, k, v))
+        distinct_mapping[k] = v
 
     for file in ctx.attr.target.data_runfiles.files.to_list() + ctx.attr.target.files.to_list():
         if file.extension == 'jar' and not file.path.startswith(LOCAL_JDK_PREFIX):
