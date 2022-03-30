@@ -195,15 +195,6 @@ def _aggregate_dependency_info_impl(target, ctx):
             type = "pom",
             maven_coordinates = maven_coordinates
         )]
-    # include generic compilation_outputs in JAR
-    elif target[OutputGroupInfo].compilation_outputs:
-        source_jars = target[OutputGroupInfo]._source_jars.to_list()
-        # include in the JAR
-        dependencies = [struct(
-            type = "jar",
-            class_jar = target[OutputGroupInfo].compilation_outputs.to_list()[0],
-            source_jar = source_jars[-1] if source_jars else None,
-        )]
     # include runtime output jars
     elif target[JavaInfo].runtime_output_jars:
         jars = target[JavaInfo].runtime_output_jars
