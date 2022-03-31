@@ -132,7 +132,7 @@ def _generate_source_jar(ctx):
 
     output_jar = ctx.actions.declare_file("{}:{}-sources.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
 
-    source_jar_deps = [dep.source_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar']
+    source_jar_deps = [dep.source_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar' and dep.source_jar]
     source_jar_paths = [srcjar.path] + [target.path for target in source_jar_deps]
 
     ctx.actions.run(
@@ -187,25 +187,37 @@ def _aggregate_dependency_info_impl(target, ctx):
     deps_all = deps + exports + runtime_deps
 
     maven_coordinates = find_maven_coordinates(target, tags)
-    dependency = None
+    dependencies = []
 
+    # depend via POM
     if maven_coordinates:
-        # depend via POM
-        dependency = struct(
+        dependencies = [struct(
             type = "pom",
             maven_coordinates = maven_coordinates
-        )
-    else:
-        # include in the JAR
-        dependency = struct(
+        )]
+    # include runtime output jars
+    elif target[JavaInfo].runtime_output_jars:
+        jars = target[JavaInfo].runtime_output_jars
+        source_jars = target[JavaInfo].source_jars
+        dependencies = [struct(
             type = "jar",
-            class_jar = target[OutputGroupInfo].compilation_outputs.to_list()[0],
-            source_jar = target[OutputGroupInfo]._source_jars.to_list()[-1],
-        )
+            class_jar = jar,
+            source_jar = source_jar,
+        ) for (jar, source_jar) in zip(
+            jars, source_jars + [None] * (len(jars) - len(source_jars))
+        )]
+    else:
+        fail("Unsure how to package dependency for target: %s" % target)
 
     return JarInfo(
         name = maven_coordinates,
-        deps = depset([dependency], transitive = [target[JarInfo].deps for target in deps_all]),
+        deps = depset(dependencies, transitive = [
+            # Filter transitive JARs from dependency that has maven coordinates
+            # because those dependencies will already include the JARs as part
+            # of their classpath
+            depset([dep for dep in target[JarInfo].deps.to_list() if dep.type == 'pom'])
+                if target[JarInfo].name else target[JarInfo].deps for target in deps_all
+        ]),
     )
 
 aggregate_dependency_info = aspect(
@@ -297,7 +309,7 @@ MavenDeploymentInfo = provider(
 
 
 def _deploy_maven_impl(ctx):
-    deploy_maven_script = ctx.actions.declare_file("deploy.py")
+    deploy_maven_script = ctx.actions.declare_file("%s-deploy.py" % ctx.attr.name)
 
     lib_jar_link = "lib.jar"
     src_jar_link = "lib.srcjar"
