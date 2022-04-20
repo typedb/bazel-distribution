@@ -25,7 +25,7 @@ import os
 import re
 import shutil
 import tempfile
-from distutils.core import run_setup
+from setuptools.sandbox import run_setup
 
 
 def create_init_files(directory):
