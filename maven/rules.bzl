@@ -17,6 +17,13 @@
 # under the License.
 #
 
+DO_NOT_INCLUDE_IN_TRANSITIVE_CLOSURE_TARGETS = [
+    Label("@bazel_tools//tools/android:android_jar"),
+    Label("@grab_bazel_common//tools/android:android_sdk"),
+]
+
+def _is_android_library(target):
+    return AndroidLibraryAarInfo in target
 
 def _parse_maven_coordinates(coordinates_string, enforce_version_template=True):
     coordinates = coordinates_string.split(':')
@@ -47,13 +54,14 @@ def _generate_version_file(ctx):
 
 def _generate_pom_file(ctx, version_file):
     target = ctx.attr.target
-    maven_coordinates = _parse_maven_coordinates(target[JarInfo].name)
+    jar_info = target[JarInfo]
+    maven_coordinates = _parse_maven_coordinates(jar_info.name)
     pom_file = ctx.actions.declare_file("{}_pom.xml".format(ctx.attr.name))
 
     pom_deps = []
-    for pom_dependency in [dep for dep in target[JarInfo].deps.to_list() if dep.type == 'pom']:
+    for pom_dependency in [dep for dep in jar_info.deps.to_list() if dep.type == 'pom']:
         pom_dependency = pom_dependency.maven_coordinates
-        if pom_dependency == target[JarInfo].name:
+        if pom_dependency == jar_info.name:
             continue
         pom_dependency_coordinates = _parse_maven_coordinates(pom_dependency, False)
         pom_dependency_artifact = pom_dependency_coordinates.group_id + ":" + pom_dependency_coordinates.artifact_id
@@ -78,6 +86,7 @@ def _generate_pom_file(ctx, version_file):
             "--version_file=" + version_file.path,
             "--output_file=" + pom_file.path,
             "--workspace_refs_file=" + ctx.file.workspace_refs.path,
+            "--packaging=" + jar_info.packaging
         ],
     )
 
@@ -88,12 +97,14 @@ def _generate_class_jar(ctx, pom_file):
     maven_coordinates = _parse_maven_coordinates(target[JarInfo].name)
 
     jar = None
-    if hasattr(target, "files") and target.files.to_list() and target.files.to_list()[0].extension == "jar":
+    if (_is_android_library(target)):
+        jar = target[AndroidLibraryAarInfo].aar
+    elif hasattr(target, "files") and target.files.to_list() and target.files.to_list()[0].extension == "jar":
         jar = target[JavaInfo].outputs.jars[0].class_jar
     else:
         fail("Could not find JAR file to deploy in {}".format(target))
 
-    output_jar = ctx.actions.declare_file("{}:{}.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
+    output_jar = ctx.actions.declare_file("{}:{}.{}".format(maven_coordinates.group_id, maven_coordinates.artifact_id, target[JarInfo].packaging))
 
     class_jar_deps = [dep.class_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar']
     class_jar_paths = [jar.path] + [target.path for target in class_jar_deps]
@@ -119,7 +130,18 @@ def _generate_source_jar(ctx):
 
     srcjar = None
 
-    if hasattr(target, "files") and target.files.to_list() and target.files.to_list()[0].extension == "jar":
+    # TODO: Fix Android sources
+    if (_is_android_library(target)):
+        # print("sources")
+        # print(target[JavaInfo].source_jars)
+        # srcjar = target[JavaInfo].source_jars[0]
+        for output in target[JavaInfo].outputs.jars:
+            if output.source_jar and (output.source_jar.basename.endswith("-src.jar") or output.source_jar.basename.endswith("-sources.jar")):
+                # print("found source jar: ")
+                # print(output.source_jar)
+                srcjar = output.source_jar
+                # break
+    elif hasattr(target, "files") and target.files.to_list() and target.files.to_list()[0].extension == "jar":
         for output in target[JavaInfo].outputs.jars:
             if output.source_jar and (output.source_jar.basename.endswith("-src.jar") or output.source_jar.basename.endswith("-sources.jar")):
                 srcjar = output.source_jar
@@ -176,6 +198,7 @@ JarInfo = provider(
     fields = {
         "name": "The name of a the JAR (Maven coordinates)",
         "deps": "The list of dependencies of this JAR. A dependency may be of two types, POM or JAR.",
+        "packaging": "The type of target to publish (jar, war, aar, etc.)"
     },
 )
 
@@ -184,10 +207,11 @@ def _aggregate_dependency_info_impl(target, ctx):
     deps = getattr(ctx.rule.attr, "deps", [])
     runtime_deps = getattr(ctx.rule.attr, "runtime_deps", [])
     exports = getattr(ctx.rule.attr, "exports", [])
-    deps_all = deps + exports + runtime_deps
+    deps_all = [dep for dep in deps + exports + runtime_deps if dep.label not in DO_NOT_INCLUDE_IN_TRANSITIVE_CLOSURE_TARGETS]
 
     maven_coordinates = find_maven_coordinates(target, tags)
     dependencies = []
+    packaging = "aar" if _is_android_library(target) else "jar" 
 
     # depend via POM
     if maven_coordinates:
@@ -195,11 +219,19 @@ def _aggregate_dependency_info_impl(target, ctx):
             type = "pom",
             maven_coordinates = maven_coordinates
         )]
+    # Hacky way to ignore something we don't care about but not crash
+    elif target.label in DO_NOT_INCLUDE_IN_TRANSITIVE_CLOSURE_TARGETS:
+        return JarInfo(
+            name = None,
+            deps = depset([]),
+            packaging = None,
+        )
     # include runtime output jars
-    elif target[JavaInfo].runtime_output_jars:
+    elif JavaInfo in target:
         jars = target[JavaInfo].runtime_output_jars
         source_jars = target[JavaInfo].source_jars
         dependencies = [struct(
+            target = str(target.label),
             type = "jar",
             class_jar = jar,
             source_jar = source_jar,
@@ -209,7 +241,7 @@ def _aggregate_dependency_info_impl(target, ctx):
     else:
         fail("Unsure how to package dependency for target: %s" % target)
 
-    return JarInfo(
+    jar_info = JarInfo(
         name = maven_coordinates,
         deps = depset(dependencies, transitive = [
             # Filter transitive JARs from dependency that has maven coordinates
@@ -218,7 +250,17 @@ def _aggregate_dependency_info_impl(target, ctx):
             depset([dep for dep in target[JarInfo].deps.to_list() if dep.type == 'pom'])
                 if target[JarInfo].name else target[JarInfo].deps for target in deps_all
         ]),
+        packaging = packaging,
     )
+
+    print("JarInfo for: %s\n%s" % (target, json.encode_indent(dict(
+        target = str(target.label),
+        maven = jar_info.name,
+        deps = str(jar_info.deps.to_list()),
+        packaging = jar_info.packaging,
+    ))))
+
+    return jar_info
 
 aggregate_dependency_info = aspect(
     attr_aspects = [
