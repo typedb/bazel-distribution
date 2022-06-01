@@ -17,9 +17,8 @@
 # under the License.
 #
 
-DO_NOT_INCLUDE_IN_TRANSITIVE_CLOSURE_TARGETS = [
+_DO_NOT_INCLUDE_IN_TRANSITIVE_CLOSURE_TARGETS = [
     Label("@bazel_tools//tools/android:android_jar"),
-    Label("@grab_bazel_common//tools/android:android_sdk"),
 ]
 
 def _is_android_library(target):
@@ -59,7 +58,7 @@ def _generate_pom_file(ctx, version_file):
     pom_file = ctx.actions.declare_file("{}_pom.xml".format(ctx.attr.name))
 
     pom_deps = []
-    for pom_dependency in [dep for dep in jar_info.deps.to_list() if dep.type == 'pom']:
+    for pom_dependency in [dep for dep in jar_info.deps.to_list() if dep.type == 'pom' and dep.target not in ctx.attr.exclusions]:
         pom_dependency = pom_dependency.maven_coordinates
         if pom_dependency == jar_info.name:
             continue
@@ -106,7 +105,7 @@ def _generate_class_jar(ctx, pom_file):
 
     output_jar = ctx.actions.declare_file("{}:{}.{}".format(maven_coordinates.group_id, maven_coordinates.artifact_id, target[JarInfo].packaging))
 
-    class_jar_deps = [dep.class_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar']
+    class_jar_deps = [dep.class_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar' and dep.target not in ctx.attr.exclusions]
     class_jar_paths = [jar.path] + [target.path for target in class_jar_deps]
 
     ctx.actions.run(
@@ -130,18 +129,7 @@ def _generate_source_jar(ctx):
 
     srcjar = None
 
-    # TODO: Fix Android sources
-    if (_is_android_library(target)):
-        # print("sources")
-        # print(target[JavaInfo].source_jars)
-        # srcjar = target[JavaInfo].source_jars[0]
-        for output in target[JavaInfo].outputs.jars:
-            if output.source_jar and (output.source_jar.basename.endswith("-src.jar") or output.source_jar.basename.endswith("-sources.jar")):
-                # print("found source jar: ")
-                # print(output.source_jar)
-                srcjar = output.source_jar
-                # break
-    elif hasattr(target, "files") and target.files.to_list() and target.files.to_list()[0].extension == "jar":
+    if _is_android_library(target) or (hasattr(target, "files") and target.files.to_list() and target.files.to_list()[0].extension == "jar"):
         for output in target[JavaInfo].outputs.jars:
             if output.source_jar and (output.source_jar.basename.endswith("-src.jar") or output.source_jar.basename.endswith("-sources.jar")):
                 srcjar = output.source_jar
@@ -154,7 +142,7 @@ def _generate_source_jar(ctx):
 
     output_jar = ctx.actions.declare_file("{}:{}-sources.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
 
-    source_jar_deps = [dep.source_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar' and dep.source_jar]
+    source_jar_deps = [dep.source_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar' and dep.source_jar and dep.target not in ctx.attr.exclusions]
     source_jar_paths = [srcjar.path] + [target.path for target in source_jar_deps]
 
     ctx.actions.run(
@@ -207,7 +195,7 @@ def _aggregate_dependency_info_impl(target, ctx):
     deps = getattr(ctx.rule.attr, "deps", [])
     runtime_deps = getattr(ctx.rule.attr, "runtime_deps", [])
     exports = getattr(ctx.rule.attr, "exports", [])
-    deps_all = [dep for dep in deps + exports + runtime_deps if dep.label not in DO_NOT_INCLUDE_IN_TRANSITIVE_CLOSURE_TARGETS]
+    deps_all = deps + exports + runtime_deps
 
     maven_coordinates = find_maven_coordinates(target, tags)
     dependencies = []
@@ -220,7 +208,7 @@ def _aggregate_dependency_info_impl(target, ctx):
             maven_coordinates = maven_coordinates
         )]
     # Hacky way to ignore something we don't care about but not crash
-    elif target.label in DO_NOT_INCLUDE_IN_TRANSITIVE_CLOSURE_TARGETS:
+    elif target.label in _DO_NOT_INCLUDE_IN_TRANSITIVE_CLOSURE_TARGETS:
         return JarInfo(
             name = None,
             deps = depset([]),
@@ -231,7 +219,7 @@ def _aggregate_dependency_info_impl(target, ctx):
         jars = target[JavaInfo].runtime_output_jars
         source_jars = target[JavaInfo].source_jars
         dependencies = [struct(
-            target = str(target.label),
+            target = target,
             type = "jar",
             class_jar = jar,
             source_jar = source_jar,
@@ -312,6 +300,10 @@ assemble_maven = rule(
         "scm_url": attr.string(
             default = "PROJECT_URL",
             doc = "Project source control URL to fill into pom.xml",
+        ),
+        "exclusions": attr.label_list(
+            default = _DO_NOT_INCLUDE_IN_TRANSITIVE_CLOSURE_TARGETS,
+            doc = "Labels to not capture in transitive closure when assembling the artifact"
         ),
         "_pom_generator": attr.label(
             default = "@vaticle_bazel_distribution//maven:pom-generator",
