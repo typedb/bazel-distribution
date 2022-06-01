@@ -95,6 +95,7 @@ maven_url = maven_repositories[repo_type]
 jar_path = "$JAR_PATH"
 pom_file_path = "$POM_PATH"
 srcjar_path = "$SRCJAR_PATH"
+packaging = "$PACKAGING"
 
 namespace = { 'namespace': 'http://maven.apache.org/POM/4.0.0' }
 root = ElementTree.parse(pom_file_path).getroot()
@@ -127,12 +128,13 @@ if repo_type == 'release' and len(re.findall(version_release_regex, version)) ==
                      'must have a version which complies to this regex: {}'
                      .format(version, repo_type, version_release_regex))
 
+artifact_extension = '.' + packaging
 filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format(
     coordinates=group_id.text.replace('.', '/'), version=version, artifact=artifact_id.text)
 
-upload(maven_url, username, password, jar_path, filename_base + '.jar')
+upload(maven_url, username, password, jar_path, filename_base + artifact_extension)
 if should_sign:
-    upload(maven_url, username, password, sign(jar_path), filename_base + '.jar.asc')
+    upload(maven_url, username, password, sign(jar_path), filename_base + artifact_extension + '.asc')
 upload(maven_url, username, password, pom_file_path, filename_base + '.pom')
 if should_sign:
     upload(maven_url, username, password, sign(pom_file_path), filename_base + '.pom.asc')
@@ -158,12 +160,12 @@ with tempfile.NamedTemporaryFile(mode='wt', delete=True) as pom_sha1:
 with tempfile.NamedTemporaryFile(mode='wt', delete=True) as jar_md5:
     jar_md5.write(md5(jar_path))
     jar_md5.flush()
-    upload(maven_url, username, password, jar_md5.name, filename_base + '.jar.md5')
+    upload(maven_url, username, password, jar_md5.name, filename_base + artifact_extension + '.md5')
 
 with tempfile.NamedTemporaryFile(mode='wt', delete=True) as jar_sha1:
     jar_sha1.write(sha1(jar_path))
     jar_sha1.flush()
-    upload(maven_url, username, password, jar_sha1.name, filename_base + '.jar.sha1')
+    upload(maven_url, username, password, jar_sha1.name, filename_base + artifact_extension + '.sha1')
 
 if os.path.exists(srcjar_path):
     with tempfile.NamedTemporaryFile(mode='wt', delete=True) as srcjar_md5:

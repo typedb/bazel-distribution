@@ -181,7 +181,7 @@ def _assemble_maven_impl(ctx):
 
     return [
         DefaultInfo(files = depset(output_files)),
-        MavenDeploymentInfo(jar = class_jar, pom = pom_file, srcjar = source_jar)
+        MavenDeploymentInfo(packaging = ctx.attr.target[JarInfo].packaging, jar = class_jar, pom = pom_file, srcjar = source_jar)
     ]
 
 def find_maven_coordinates(target, tags):
@@ -252,13 +252,6 @@ def _aggregate_dependency_info_impl(target, ctx):
         ]),
         packaging = packaging,
     )
-
-    print("JarInfo for: %s\n%s" % (target, json.encode_indent(dict(
-        target = str(target.label),
-        maven = jar_info.name,
-        deps = str(jar_info.deps.to_list()),
-        packaging = jar_info.packaging,
-    ))))
 
     return jar_info
 
@@ -343,6 +336,7 @@ assemble_maven = rule(
 
 MavenDeploymentInfo = provider(
     fields = {
+        'packaging': 'The type of target to publish (jar, war, aar, etc.)',
         'jar': 'JAR file to deploy',
         'srcjar': 'JAR file with sources',
         'pom': 'Accompanying pom.xml file'
@@ -356,6 +350,7 @@ def _deploy_maven_impl(ctx):
     lib_jar_link = "lib.jar"
     src_jar_link = "lib.srcjar"
     pom_xml_link = ctx.attr.target[MavenDeploymentInfo].pom.basename
+    packaging = ctx.attr.target[MavenDeploymentInfo].packaging
 
     ctx.actions.expand_template(
         template = ctx.file._deployment_script,
@@ -365,7 +360,8 @@ def _deploy_maven_impl(ctx):
             "$SRCJAR_PATH": src_jar_link,
             "$POM_PATH": pom_xml_link,
             "{snapshot}": ctx.attr.snapshot,
-            "{release}": ctx.attr.release
+            "{release}": ctx.attr.release,
+            "$PACKAGING": packaging,
         }
     )
 
