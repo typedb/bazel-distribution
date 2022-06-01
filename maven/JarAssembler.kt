@@ -28,6 +28,7 @@ import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.io.InputStream
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -37,9 +38,10 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import kotlin.RuntimeException
-import kotlin.collections.HashMap
 import kotlin.system.exitProcess
 
+typealias Entries = MutableMap<String, ByteArray>
+private fun Entries(): Entries = mutableMapOf()
 
 @Command(name = "jar-assembler", mixinStandardHelpOptions = true)
 class JarAssembler : Callable<Unit> {
@@ -59,156 +61,110 @@ class JarAssembler : Callable<Unit> {
     @Option(names = ["--jars"], split = ";")
     lateinit var jars: Array<File>
 
-    private val isAarPackaging get() = outputFile.extension == "aar"
-
     override fun call() {
-        when (isAarPackaging) {
-            true -> assembleAar()
-            else -> assembleJar()
+        Entries().apply {
+            pomFile?.readBytes()?.let { pomContents ->
+                val pomPath = "META-INF/maven/${groupId}/${artifactId}/pom.xml"
+                this += preCreateDirectories(Paths.get(pomPath))
+                this[pomPath] = pomContents
+            }
+
+            ZipOutputStream(BufferedOutputStream(FileOutputStream(outputFile))).use {
+                if (outputFile.extension == "aar") assembleAar(it)
+                else assembleClassesJar(it)
+            }
         }
     }
 
-    // TODO: Call into to build class jar for aar
-    private fun assembleJar() {
-        val entries = hashMapOf<String, ByteArray>()
-        val entryNames = mutableSetOf<String>()
-
-        if (pomFile != null) {
-            val pomPath = "META-INF/maven/${groupId}/${artifactId}/pom.xml"
-            entries += preCreateDirectories(Paths.get(pomPath))
-            entries[pomPath] = pomFile!!.readBytes()
-        }
-
+    /** Assemble a class JAR containing the transitive class closure from [jars] and any pre-existing entries in [this] */
+    private fun Entries.assembleClassesJar(output: ZipOutputStream, jars: List<File> = this@JarAssembler.jars.toList()) {
         for (jar in jars) {
             if (jar.extension == "aar") {
-                throw RuntimeException("cannot package AAR unless output is AAR")
+                throw RuntimeException("cannot package AAR within classes JAR")
             }
-            ZipFile(jar).use { jarZip ->
-                jarZip.entries().asSequence().forEach { entry ->
-                    if (entryNames.contains(entry.name)) {
-                        return@forEach
-                        // throw RuntimeException("duplicate entry in the JAR: ${entry.name}")
-                    }
-                    if (entry.name.contains("META-INF/maven")) {
-                        // pom.xml will be added by us
-                        return@forEach
-                    }
-                    if (entry.isDirectory) {
-                        // needed directories would be added by us
-                        return@forEach
-                    }
-                    entryNames.add(entry.name)
-                    entries.processEntry(jarZip, entry)
-                }
-            }
+            processZip(ZipFile(jar))
         }
 
-        ZipOutputStream(BufferedOutputStream(FileOutputStream(outputFile))).use { jar ->
-            entries.keys.sorted().forEach {
-                val newEntry = ZipEntry(it)
-                jar.putNextEntry(newEntry)
-                jar.write(entries[it]!!)
-            }
-        }
+        writeEntries(output)
     }
 
-
-    private fun assembleAar() {
-        val entries = hashMapOf<String, ByteArray>()
-        val entryNames = mutableSetOf<String>()
-
-        val classes = hashMapOf<String, ByteArray>()
-        val classNames = mutableSetOf<String>()
-
-        if (pomFile != null) {
-            val pomPath = "META-INF/maven/${groupId}/${artifactId}/pom.xml"
-            entries += preCreateDirectories(Paths.get(pomPath))
-            entries[pomPath] = pomFile!!.readBytes()
-        }
-
-        var baseAar = jars.single { it.extension == "aar" }
-        ZipFile(baseAar).use { aar ->
-            aar.entries().asSequence().forEach { entry ->
-                if (entry.name.contains("META-INF/maven")) {
-                    // pom.xml will be added by us
-                } else if (entry.isDirectory) {
-                    // needed directories would be added by us
-                } else if (entry.name == "classes.jar") {
+    /** Assemble an AAR from a base AAR containing the transitive class closure from the additional [jars] and any pre-existing entries in [this] */
+    private fun Entries.assembleAar(output: ZipOutputStream) {
+        val classes = Entries()
+        processZip(jars.single { it.extension == "aar" }.let(::ZipFile)) { aar, entry ->
+            validateEntry(entry)?.let {
+                if (entry.name == "classes.jar") {
                     // pull out classes in nested JAR
                     entry.let(aar::getInputStream).let(::ZipInputStream).use { classesJar ->
                         var zipEntry: ZipEntry? = classesJar.nextEntry
                         while (zipEntry != null) {
-                            if (zipEntry.name.contains("META-INF/maven")) {
-                                // pom.xml will be added by us
-                            } else if (zipEntry.isDirectory) {
-                                // needed directories would be added by us
-                            } else {
-                                classNames.add(zipEntry.name)
-                                val sourceFileBytes = classesJar.readBytes()
-                                val resultLocation = getFinalPath(zipEntry, sourceFileBytes)
-                                classes += preCreateDirectories(Paths.get(resultLocation))
-                                classes[resultLocation] = sourceFileBytes
-                            }
+                            classes.processEntry(classesJar, zipEntry)
                             zipEntry = classesJar.nextEntry
                         }
                     }
                 } else {
                     // add to top-level entries
-                    entryNames.add(entry.name)
-                    entries.processEntry(aar, entry)
+                    processEntry(aar, entry)
                 }
             }
         }
 
-        // merge the rest of the class jars
-        for (jar in jars.filter { it.extension != "aar" }) {
-            ZipFile(jar).use { jarZip ->
-                jarZip.entries().asSequence().forEach { entry ->
-                    if (classNames.contains(entry.name)) {
-                        // TODO: Investigate why this is
-                        println("I have a duplicate entry: ${entry.name}")
-                        return@forEach
-//                        throw RuntimeException("duplicate entry in the JAR: ${entry.name}")
-                    }
-                    if (entry.name.contains("META-INF/maven")) {
-                        // pom.xml will be added by us
-                        return@forEach
-                    }
-                    if (entry.isDirectory) {
-                        // needed directories would be added by us
-                        return@forEach
-                    }
-                    classNames.add(entry.name)
-                    classes.processEntry(jarZip, entry)
-                }
-            }
-        }
+        // write classes jar first
+        ZipEntry("classes.jar").let(output::putNextEntry)
+        val classJar = ZipOutputStream(output)
+        classes.assembleClassesJar(classJar, jars.filter { it.extension != "aar" })
+        classJar.finish()
 
-        ZipOutputStream(BufferedOutputStream(FileOutputStream(outputFile))).use { aar ->
-            ZipEntry("classes.jar").let(aar::putNextEntry)
-            val classJar = ZipOutputStream(aar)
-            classes.keys.sorted().forEach {
-                val newEntry = ZipEntry(it)
-                classJar.putNextEntry(newEntry)
-                classJar.write(classes[it])
-            }
-            classJar.finish()
+        // write the rest of the entries
+        writeEntries(output)
+    }
 
-            entries.keys.sorted().forEach {
-                val newEntry = ZipEntry(it)
-                aar.putNextEntry(newEntry)
-                aar.write(entries[it]!!)
-            }
+    /** [process] each [ZipEntry] in [file] within the context of [this] */
+    private fun Entries.processZip(file: ZipFile, process: Entries.(zip: ZipFile, entry: ZipEntry) -> Unit = { zip, entry -> processEntry(zip, entry) }) = file.use { zip ->
+        zip.entries().asSequence().forEach { entry ->
+            process(zip, entry)
         }
     }
 
-    /** Add [ZipEntry] information to [this] map */
-    private fun HashMap<String, ByteArray>.processEntry(file: ZipFile, entry: ZipEntry) {
-        BufferedInputStream(file.getInputStream(entry)).use { inputStream ->
+    /** Validate [ZipEntry] and add information to [this] entries map */
+    private fun Entries.processEntry(zip: ZipFile, entry: ZipEntry): Unit = BufferedInputStream(zip.getInputStream(entry)).use {
+        processEntry(it, entry)
+    }
+
+    /** Validate [ZipEntry] and add information to [this] entries map */
+    private fun Entries.processEntry(inputStream: InputStream, entry: ZipEntry) {
+        validateEntry(entry)?.let {
             val sourceFileBytes = inputStream.readBytes()
-            val resultLocation = getFinalPath(entry, sourceFileBytes)
+            val resultLocation = getFinalPath(it, sourceFileBytes)
             this += preCreateDirectories(Paths.get(resultLocation))
             this[resultLocation] = sourceFileBytes
+        }
+    }
+
+    /** Return null if this [entry] shouldn't be processed */
+    private fun Entries.validateEntry(entry: ZipEntry): ZipEntry? = when {
+        entry.isDirectory -> {
+            // needed directories would be added by us
+            null
+        }
+        entry.name.contains("META-INF/maven") -> {
+            // pom.xml will be added by us
+            null
+        }
+        keys.contains(entry.name) -> {
+            // TODO: Investigate why I'm getting duplicates
+            println("I have a duplicate entry: ${entry.name}")
+            null
+            // throw RuntimeException("duplicate entry in the JAR: ${entry.name}")
+        }
+        else -> entry
+    }
+
+    /** Write entries captured in [this] to [output] */
+    private fun Entries.writeEntries(output: ZipOutputStream) {
+        entries.sortedBy(Map.Entry<String, *>::key).forEach { (key, entry) ->
+            output.putNextEntry(ZipEntry(key))
+            output.write(entry)
         }
     }
 
@@ -216,7 +172,7 @@ class JarAssembler : Callable<Unit> {
      * For path "a/b/c.java" inserts "a/" and "a/b/ into `entries`
      */
     private fun preCreateDirectories(path: Path): Map<String, ByteArray> {
-        val newEntries = HashMap<String, ByteArray>()
+        val newEntries = Entries()
         for (i in path.nameCount-1 downTo 1) {
             val subPath = path.subpath(0, i).toString() + "/"
             newEntries[subPath] = ByteArray(0)
