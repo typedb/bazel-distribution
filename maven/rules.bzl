@@ -17,6 +17,7 @@
 # under the License.
 #
 
+# Known generic labels to automatically not include in closure
 _DO_NOT_INCLUDE_IN_TRANSITIVE_CLOSURE_TARGETS = [
     Label("@bazel_tools//tools/android:android_jar"),
 ]
@@ -58,7 +59,7 @@ def _generate_pom_file(ctx, version_file):
     pom_file = ctx.actions.declare_file("{}_pom.xml".format(ctx.attr.name))
 
     pom_deps = []
-    for pom_dependency in [dep for dep in jar_info.deps.to_list() if dep.type == 'pom' and dep.target not in ctx.attr.exclusions]:
+    for pom_dependency in [dep for dep in jar_info.deps.to_list() if dep.type == 'pom']:
         pom_dependency = pom_dependency.maven_coordinates
         if pom_dependency == jar_info.name:
             continue
@@ -105,7 +106,7 @@ def _generate_class_jar(ctx, pom_file):
 
     output_jar = ctx.actions.declare_file("{}:{}.{}".format(maven_coordinates.group_id, maven_coordinates.artifact_id, target[JarInfo].packaging))
 
-    class_jar_deps = [dep.class_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar' and dep.target not in ctx.attr.exclusions]
+    class_jar_deps = [dep.class_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar']
     class_jar_paths = [jar.path] + [target.path for target in class_jar_deps]
 
     ctx.actions.run(
@@ -142,7 +143,7 @@ def _generate_source_jar(ctx):
 
     output_jar = ctx.actions.declare_file("{}:{}-sources.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
 
-    source_jar_deps = [dep.source_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar' and dep.source_jar and dep.target not in ctx.attr.exclusions]
+    source_jar_deps = [dep.source_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar' and dep.source_jar]
     source_jar_paths = [srcjar.path] + [target.path for target in source_jar_deps]
 
     ctx.actions.run(
@@ -195,6 +196,7 @@ def _aggregate_dependency_info_impl(target, ctx):
     deps = getattr(ctx.rule.attr, "deps", [])
     runtime_deps = getattr(ctx.rule.attr, "runtime_deps", [])
     exports = getattr(ctx.rule.attr, "exports", [])
+    neverlink = getattr(ctx.rule.attr, "neverlink", False)
     deps_all = deps + exports + runtime_deps
 
     maven_coordinates = find_maven_coordinates(target, tags)
@@ -204,11 +206,12 @@ def _aggregate_dependency_info_impl(target, ctx):
     # depend via POM
     if maven_coordinates:
         dependencies = [struct(
+            target = target,
             type = "pom",
             maven_coordinates = maven_coordinates
         )]
     # Hacky way to ignore something we don't care about but not crash
-    elif target.label in _DO_NOT_INCLUDE_IN_TRANSITIVE_CLOSURE_TARGETS:
+    elif neverlink or target.label in _DO_NOT_INCLUDE_IN_TRANSITIVE_CLOSURE_TARGETS:
         return JarInfo(
             name = None,
             deps = depset([]),
@@ -300,10 +303,6 @@ assemble_maven = rule(
         "scm_url": attr.string(
             default = "PROJECT_URL",
             doc = "Project source control URL to fill into pom.xml",
-        ),
-        "exclusions": attr.label_list(
-            default = _DO_NOT_INCLUDE_IN_TRANSITIVE_CLOSURE_TARGETS,
-            doc = "Labels to not capture in transitive closure when assembling the artifact"
         ),
         "_pom_generator": attr.label(
             default = "@vaticle_bazel_distribution//maven:pom-generator",
