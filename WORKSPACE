@@ -56,11 +56,21 @@ rules_pkg()
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
 
+# TODO: remove this declaration once we upgrade to @io_bazel_stardoc with Bazel 5 support
+# Load @bazel_skylib
+git_repository(
+    name = "bazel_skylib",
+    remote = "https://github.com/bazelbuild/bazel-skylib",
+    commit = "6abad3de5fd9c001f67b17fe8c7242b3cc3b8851",
+)
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+bazel_skylib_workspace()
+
 # Load @io_bazel_stardoc
 git_repository(
     name = "io_bazel_stardoc",
     remote = "https://github.com/bazelbuild/stardoc",
-    commit = "87dc99cfe1baa9255c607ac0229bfd33a65367f5",
+    tag = "0.5.1",
 )
 load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
 stardoc_repositories()
