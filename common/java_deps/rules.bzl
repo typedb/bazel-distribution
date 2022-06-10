@@ -107,7 +107,7 @@ _transitive_collect_maven_coordinate = aspect(
 
 
 def _java_deps_impl(ctx):
-    names = {}
+    full_output_paths = {}
     files_by_output_path = {}
     output_path_overrides = ctx.attr.java_deps_root_overrides
 
@@ -127,17 +127,17 @@ def _java_deps_impl(ctx):
                 )
             for jar_pattern in output_path_overrides:
                 if file.basename == jar_pattern or (jar_pattern.endswith("*") and file.basename.startswith(jar_pattern.rstrip("*"))):
-                    names[file.path] = output_path_overrides[jar_pattern] + output_path + ".jar"
+                    full_output_paths[file.path] = output_path_overrides[jar_pattern] + output_path + ".jar"
                     break
-            if file.path not in names:
-                names[file.path] = ctx.attr.java_deps_root + output_path + ".jar"
+            if file.path not in full_output_paths:
+                full_output_paths[file.path] = ctx.attr.java_deps_root + output_path + ".jar"
             files_by_output_path[output_path] = file
 
     jars_mapping = ctx.actions.declare_file("{}_jars.mapping".format(ctx.attr.target.label.name))
 
     ctx.actions.write(
         output = jars_mapping,
-        content = str(names)
+        content = str(full_output_paths)
     )
 
     if not ctx.attr.version_file:
