@@ -108,7 +108,7 @@ _transitive_collect_maven_coordinate = aspect(
 
 def _java_deps_impl(ctx):
     full_output_paths = {}
-    files_by_output_path = {}
+    jars_by_output_path = {}
     output_path_overrides = ctx.attr.java_deps_root_overrides
 
     mapping = ctx.attr.target[TransitiveJarToMavenCoordinatesMapping].mapping
@@ -118,20 +118,20 @@ def _java_deps_impl(ctx):
             if ctx.attr.maven_name and file.path not in mapping:
                 fail("{} does not have associated Maven coordinate".format(file.owner))
             output_path = mapping.get(file.path, default=file.basename).replace('.', '-').replace(':', '-')
-            conflicting_file = files_by_output_path.get(output_path)
-            if conflicting_file:
+            conflicting_jar_file = jars_by_output_path.get(output_path)
+            if conflicting_jar_file:
                 fail(
                     ("'{}' and '{}' were both mapped to the same filename, '{}'. Distinct JARs should be mapped to distinct " +
                     "filenames, either by supplying Maven coordinates, or ensuring the original filenames are distinct."
-                    ).format(conflicting_file.path, file.path, output_path)
+                    ).format(conflicting_jar_file.path, file.path, output_path)
                 )
+            jars_by_output_path[output_path] = file
             for jar_pattern in output_path_overrides:
                 if file.basename == jar_pattern or (jar_pattern.endswith("*") and file.basename.startswith(jar_pattern.rstrip("*"))):
                     full_output_paths[file.path] = output_path_overrides[jar_pattern] + output_path + ".jar"
                     break
             if file.path not in full_output_paths:
                 full_output_paths[file.path] = ctx.attr.java_deps_root + output_path + ".jar"
-            files_by_output_path[output_path] = file
 
     jars_mapping = ctx.actions.declare_file("{}_jars.mapping".format(ctx.attr.target.label.name))
 
@@ -154,7 +154,7 @@ def _java_deps_impl(ctx):
 
     ctx.actions.run(
         outputs = [ctx.outputs.distribution],
-        inputs = files_by_output_path.values() + [jars_mapping, version_file],
+        inputs = jars_by_output_path.values() + [jars_mapping, version_file],
         arguments = [jars_mapping.path, ctx.outputs.distribution.path, version_file.path],
         executable = ctx.executable._java_deps_builder,
         progress_message = "Generating tarball with Java deps: {}".format(
