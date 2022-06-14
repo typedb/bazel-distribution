@@ -107,35 +107,37 @@ _transitive_collect_maven_coordinate = aspect(
 
 
 def _java_deps_impl(ctx):
-    names = {}
-    files = []
-    filenames = []
-    outputPathOverrides = ctx.attr.java_deps_root_overrides
+    full_output_paths = {}
+    jars_by_output_path = {}
+    output_path_overrides = ctx.attr.java_deps_root_overrides
 
     mapping = ctx.attr.target[TransitiveJarToMavenCoordinatesMapping].mapping
 
-    for file in ctx.attr.target.data_runfiles.files.to_list() + ctx.attr.target.files.to_list():
-        if file.extension == 'jar' and not file.path.startswith(LOCAL_JDK_PREFIX):
+    for file in ctx.attr.target.data_runfiles.files.to_list():
+        if file.extension == "jar" and not file.path.startswith(LOCAL_JDK_PREFIX):
             if ctx.attr.maven_name and file.path not in mapping:
                 fail("{} does not have associated Maven coordinate".format(file.owner))
-            filename = mapping.get(file.path, file.basename).replace('.', '-').replace(':', '-')
-            if filename in filenames:
-                print("Excluded duplicate: {}".format(filename))
-                continue # do not pack JARs with same name
-            for jarPattern in outputPathOverrides:
-                if file.basename == jarPattern or (jarPattern.endswith("*") and file.basename.startswith(jarPattern.rstrip("*"))):
-                    names[file.path] = outputPathOverrides[jarPattern] + filename + ".jar"
+            output_path = mapping.get(file.path, default=file.basename).replace('.', '-').replace(':', '-')
+            conflicting_jar_file = jars_by_output_path.get(output_path)
+            if conflicting_jar_file:
+                fail(
+                    ("'{}' and '{}' were both mapped to the same filename, '{}'. Distinct JARs should be mapped to distinct " +
+                    "filenames, either by supplying Maven coordinates, or ensuring the original filenames are distinct."
+                    ).format(conflicting_jar_file.path, file.path, output_path)
+                )
+            jars_by_output_path[output_path] = file
+            for jar_pattern in output_path_overrides:
+                if file.basename == jar_pattern or (jar_pattern.endswith("*") and file.basename.startswith(jar_pattern.rstrip("*"))):
+                    full_output_paths[file.path] = output_path_overrides[jar_pattern] + output_path + ".jar"
                     break
-            if file.path not in names:
-                names[file.path] = ctx.attr.java_deps_root + filename + ".jar"
-            files.append(file)
-            filenames.append(filename)
+            if file.path not in full_output_paths:
+                full_output_paths[file.path] = ctx.attr.java_deps_root + output_path + ".jar"
 
     jars_mapping = ctx.actions.declare_file("{}_jars.mapping".format(ctx.attr.target.label.name))
 
     ctx.actions.write(
         output = jars_mapping,
-        content = str(names)
+        content = str(full_output_paths)
     )
 
     if not ctx.attr.version_file:
@@ -152,7 +154,7 @@ def _java_deps_impl(ctx):
 
     ctx.actions.run(
         outputs = [ctx.outputs.distribution],
-        inputs = files + [jars_mapping, version_file],
+        inputs = jars_by_output_path.values() + [jars_mapping, version_file],
         arguments = [jars_mapping.path, ctx.outputs.distribution.path, version_file.path],
         executable = ctx.executable._java_deps_builder,
         progress_message = "Generating tarball with Java deps: {}".format(
