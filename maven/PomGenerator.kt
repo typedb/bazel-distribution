@@ -23,6 +23,7 @@ package com.vaticle.bazel.distribution.maven
 
 import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonObject
+import com.eclipsesource.json.JsonValue
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import picocli.CommandLine
@@ -64,6 +65,9 @@ class PomGenerator : Callable<Unit> {
 
     @Option(names = ["--scm_url"])
     var scmUrl = ""
+
+    @Option(names = ["--developers"])
+    var developers = "{}"
 
     @Option(names = ["--target_group_id"])
     var targetGroupId = ""
@@ -121,6 +125,27 @@ class PomGenerator : Callable<Unit> {
         licenseElem.appendChild(licenseUrlElem)
         licenses.appendChild(licenseElem)
         return licenses
+    }
+
+    /**
+     * Creates the `developers` tag for a POM from a [JsonObject] describing each `developer`
+     * using the key as the `id` and the value as an array of strings containing a "=" delimited
+     * key, value pair for additional developer info elements.
+     *
+     * { "john": ["name=John Smith", "email=john@email.com"] }
+     */
+    fun Document.developers(developers: JsonObject): Element = createElement("developers").apply {
+        developers.map { (id, attributes) ->
+            createElement("developer").apply {
+                (listOf(createElement("id").apply {
+                    appendChild(createTextNode(id))
+                }) + attributes.asArray().map { it.asString().split("=") }.map { (element, value) ->
+                    createElement(element).apply {
+                        appendChild(createTextNode(value))
+                    }
+                }).forEach(::appendChild)
+            }
+        }.forEach(::appendChild)
     }
 
     fun scm(pom: Document, version: String): Element {
@@ -206,6 +231,9 @@ class PomGenerator : Callable<Unit> {
         // licenses
         rootElement.appendChild(licenses(pom))
 
+        val developers = Json.parse(developers).asObject()
+        if (!developers.isEmpty) rootElement.appendChild(pom.developers(developers))
+
         // source control management information
         rootElement.appendChild(scm(pom, version))
 
@@ -231,5 +259,8 @@ class PomGenerator : Callable<Unit> {
         outputDocumentToFile(pom)
     }
 }
+
+private operator fun JsonObject.Member.component1(): String = name
+private operator fun JsonObject.Member.component2(): JsonValue = value
 
 fun main(args: Array<String>): Unit = exitProcess(CommandLine(PomGenerator()).execute(*args))
