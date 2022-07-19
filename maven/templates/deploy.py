@@ -53,15 +53,20 @@ def upload(url, username, password, local_fn, remote_fn):
             local_fn, upload_status_code))
 
 
-def sign(fn):
+def sign(fn, passphrase=None):
     # TODO(vmax): current limitation of this functionality
     # is that gpg key should already be present in keyring
-    # and should not require passphrase
     asc_file = tempfile.mktemp()
     sp.check_call([
         'gpg',
         '--detach-sign',
         '--armor',
+    ] + ([
+        '--pinentry-mode',
+        'loopback',
+        '--passphrase',
+        passphrase
+    ] if passphrase else []) + [
         '--output',
         asc_file,
         fn
@@ -79,7 +84,9 @@ if len(sys.argv) < 2:
 
 repo_type, should_sign = unpack_args(*sys.argv)
 
-username, password = os.getenv('DEPLOY_MAVEN_USERNAME'), os.getenv('DEPLOY_MAVEN_PASSWORD')
+username, password, gpg_passphrase = os.getenv('DEPLOY_MAVEN_USERNAME'), \
+                               os.getenv('DEPLOY_MAVEN_PASSWORD'), \
+                               os.getenv('DEPLOY_MAVEN_GPG_PASSPHRASE')
 
 if not username:
     raise ValueError('Error: username should be passed via $DEPLOY_MAVEN_USERNAME env variable')
@@ -132,18 +139,18 @@ filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format
 
 upload(maven_url, username, password, jar_path, filename_base + '.jar')
 if should_sign:
-    upload(maven_url, username, password, sign(jar_path), filename_base + '.jar.asc')
+    upload(maven_url, username, password, sign(jar_path, gpg_passphrase), filename_base + artifact_extension + '.asc')
 upload(maven_url, username, password, pom_file_path, filename_base + '.pom')
 if should_sign:
-    upload(maven_url, username, password, sign(pom_file_path), filename_base + '.pom.asc')
+    upload(maven_url, username, password, sign(pom_file_path, gpg_passphrase), filename_base + '.pom.asc')
 if os.path.exists(srcjar_path):
     upload(maven_url, username, password, srcjar_path, filename_base + '-sources.jar')
     if should_sign:
-        upload(maven_url, username, password, sign(srcjar_path), filename_base + '-sources.jar.asc')
+        upload(maven_url, username, password, sign(srcjar_path, gpg_passphrase), filename_base + '-sources.jar.asc')
     # TODO(vmax): use real Javadoc instead of srcjar
     upload(maven_url, username, password, srcjar_path, filename_base + '-javadoc.jar')
     if should_sign:
-        upload(maven_url, username, password, sign(srcjar_path), filename_base + '-javadoc.jar.asc')
+        upload(maven_url, username, password, sign(srcjar_path, gpg_passphrase), filename_base + '-javadoc.jar.asc')
 
 with tempfile.NamedTemporaryFile(mode='wt', delete=True) as pom_md5:
     pom_md5.write(md5(pom_file_path))
