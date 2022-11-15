@@ -30,7 +30,7 @@ def _generate_version_file(ctx):
     version_file = ctx.file.version_file
     if not ctx.attr.version_file:
         version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
-        version = ctx.var.get("version", "0.0.0")
+        version = ctx.var.get("version", ctx.attr.target[CrateSummary].version)
 
         ctx.actions.run_shell(
             inputs = [],
