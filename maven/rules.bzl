@@ -72,6 +72,7 @@ def _generate_pom_file(ctx, version_file):
             "--project_url=" + ctx.attr.project_url,
             "--license=" + ctx.attr.license,
             "--scm_url=" + ctx.attr.scm_url,
+            "--developers=" + json.encode(ctx.attr.developers),
             "--target_group_id=" + maven_coordinates.group_id,
             "--target_artifact_id=" + maven_coordinates.artifact_id,
             "--target_deps_coordinates=" + ";".join(pom_deps),
@@ -277,6 +278,10 @@ assemble_maven = rule(
         "scm_url": attr.string(
             default = "PROJECT_URL",
             doc = "Project source control URL to fill into pom.xml",
+        ),
+        "developers": attr.string_list_dict(
+            default = {},
+            doc = "Project developers to fill into pom.xml",
         ),
         "_pom_generator": attr.label(
             default = "@vaticle_bazel_distribution//maven:pom-generator",
