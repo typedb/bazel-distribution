@@ -57,22 +57,23 @@ args.imports = list(map(
 # new package root
 pkg_dir = tempfile.mkdtemp()
 
+if not args.files:
+    raise Exception("Cannot create an archive without any files")
 
-if args.files:
-    for f in args.files:
-        fn = f
-        for _imp in args.imports:
-            match = _imp.match(fn)
-            if match:
-                fn = match.group('fn')
-                break
-        try:
-            e = os.path.join(pkg_dir, os.path.dirname(fn))
-            os.makedirs(e)
-        except OSError:
-            # directory already exists
-            pass
-        shutil.copy(f, os.path.join(pkg_dir, fn))
+for f in args.files:
+    fn = f
+    for _imp in args.imports:
+        match = _imp.match(fn)
+        if match:
+            fn = match.group('fn')
+            break
+    try:
+        e = os.path.join(pkg_dir, os.path.dirname(fn))
+        os.makedirs(e)
+    except OSError:
+        # directory already exists
+        pass
+    shutil.copy(f, os.path.join(pkg_dir, fn))
 
 setup_py = os.path.join(pkg_dir, 'setup.py')
 readme = os.path.join(pkg_dir, 'README.md')
