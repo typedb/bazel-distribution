@@ -43,6 +43,7 @@ parser.add_argument('--requirements_file', help="install_requires")
 parser.add_argument('--readme', help="README file")
 parser.add_argument('--files', nargs='+', help='Python files to pack into archive')
 parser.add_argument('--imports', nargs='+', help='Folders considered to be source code roots')
+parser.add_argument('--strip_prefix', help="Path prefix to strip from all package files")
 
 args = parser.parse_args()
 
@@ -65,13 +66,16 @@ for f in args.files:
         if match:
             fn = match.group('fn')
             break
+    destination_f = fn
     try:
-        e = os.path.join(pkg_dir, os.path.dirname(fn))
+        if args.strip_prefix and destination_f.startswith(args.strip_prefix):
+            destination_f = destination_f[len(args.strip_prefix):]
+        e = os.path.join(pkg_dir, os.path.dirname(destination_f))
         os.makedirs(e)
     except OSError:
         # directory already exists
         pass
-    shutil.copy(f, os.path.join(pkg_dir, fn))
+    shutil.copy(f, os.path.join(pkg_dir, destination_f))
 
 setup_py = os.path.join(pkg_dir, 'setup.py')
 readme = os.path.join(pkg_dir, 'README.md')

@@ -94,6 +94,9 @@ def _assemble_pip_impl(ctx):
     args.add('--output', ctx.outputs.pip_package.path)
     args.add('--readme', ctx.file.long_description_file.path)
 
+    if ctx.attr.strip_prefix:
+        args.add('--strip_prefix', ctx.attr.strip_prefix)
+
     # Final 'setup.py' is generated in 2 steps
     setup_py = ctx.actions.declare_file("setup.py")
     preprocessed_setup_py = ctx.actions.declare_file("_setup.py")
@@ -261,6 +264,9 @@ assemble_pip = rule(
             allow_single_file = True,
             mandatory = True,
             doc = "A file with the list of required packages for this one",
+        ),
+        "strip_prefix": attr.string(
+            doc = "Path prefix to strip from all package files",
         ),
         "_setup_py_template": attr.label(
             allow_single_file = True,
