@@ -37,4 +37,5 @@ setup(
     packages=packages,
     install_requires=INSTALL_REQUIRES_PLACEHOLDER,
     zip_safe=False,
+    python_requires="{python_requires}",
 )

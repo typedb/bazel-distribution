@@ -57,6 +57,8 @@ args.imports = list(map(
 # new package root
 pkg_dir = tempfile.mkdtemp()
 
+if not args.files:
+    raise Exception("Cannot create an archive without any files")
 
 for f in args.files:
     fn = f

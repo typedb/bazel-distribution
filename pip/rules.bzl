@@ -111,7 +111,8 @@ def _assemble_pip_impl(ctx):
           "{author}": ctx.attr.author,
           "{author_email}": ctx.attr.author_email,
           "{license}": ctx.attr.license,
-          "{long_description_file}": ctx.file.long_description_file.path
+          "{long_description_file}": ctx.file.long_description_file.path,
+          "{python_requires}": ctx.attr.python_requires,
       },
     )
 
@@ -261,6 +262,10 @@ assemble_pip = rule(
             allow_single_file = True,
             mandatory = True,
             doc = "A file with the list of required packages for this one",
+        ),
+        "python_requires": attr.string(
+            default = ">0",
+            doc = "If your project only runs on certain Python versions, setting the python_requires argument to the appropriate PEP 440 version specifier string will prevent pip from installing the project on other Python versions.",
         ),
         "_setup_py_template": attr.label(
             allow_single_file = True,
