@@ -111,6 +111,7 @@ class CrateAssembler : Callable<Unit> {
             BufferedOutputStream(fos).use { bos ->
                 GZIPOutputStream(bos).use { gzos ->
                     TarArchiveOutputStream(gzos).use { tarOutputStream ->
+                        tarOutputStream.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX)
                         val libraryRoot = crateRoot.toAbsolutePath().parent
                         srcsList.forEach { file ->
                             val sourceEntry = TarArchiveEntry(
