@@ -124,7 +124,8 @@ class CrateAssembler : Callable<Unit> {
                         }
 
                         val cargoToml = TarArchiveEntry("$prefix/Cargo.toml")
-                        val cargoTomlText = generateCargoToml().toByteArray()
+                        val crateRootPath = "src/" + libraryRoot.relativize(crateRoot.toAbsolutePath()).toString()
+                        val cargoTomlText = generateCargoToml(crateRootPath).toByteArray()
                         cargoToml.size = cargoTomlText.size.toLong()
                         tarOutputStream.putArchiveEntry(cargoToml)
 
@@ -136,7 +137,7 @@ class CrateAssembler : Callable<Unit> {
         }
     }
 
-    private fun generateCargoToml(): String {
+    private fun generateCargoToml(crateRootPath: String): String {
         val cargoToml = Config.inMemory()
         cargoToml.createSubConfig().apply {
             cargoToml.set<Config>("package", this)
@@ -151,6 +152,10 @@ class CrateAssembler : Callable<Unit> {
             }
             set<String>("description", description)
             set<String>("readme", readmeFile?.toPath()?.fileName?.toString() ?: "")
+        }
+        cargoToml.createSubConfig().apply {
+            cargoToml.set<Config>("lib", this)
+            set<String>("path", crateRootPath)
         }
         cargoToml.createSubConfig().apply {
             cargoToml.set<Config>("dependencies", this)
