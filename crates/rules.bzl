@@ -113,21 +113,31 @@ CrateSummary = provider(
     },
 )
 
+def _is_universe_crate(target):
+    return str(target.label).startswith("@crates__")
+
+def _universe_crate_name(target):
+    return str(target.label).split(".")[0].rsplit("-", 1)[0].removeprefix("@crates__")
+
 def _aggregate_crate_summary_impl(target, ctx):
-    name = ctx.rule.attr.name
-    for tag in ctx.rule.attr.tags:
-        if tag.startswith("crate-name"):
-            name = tag.split("=")[1]
+    if _is_universe_crate(target):
+        name = _universe_crate_name(target)
+    else:
+        name = ctx.rule.attr.name
+        for tag in ctx.rule.attr.tags:
+            if tag.startswith("crate-name"):
+                name = tag.split("=")[1]
     return CrateSummary(
         name = name,
         version = ctx.rule.attr.version,
-        deps = [target for target in getattr(ctx.rule.attr, "deps", [])]
+        deps = [target for target in getattr(ctx.rule.attr, "deps", []) + getattr(ctx.rule.attr, "proc_macro_deps", [])]
     )
 
 
 aggregate_crate_summary = aspect(
     attr_aspects = [
        "deps",
+       "proc_macro_deps",
     ],
     doc = "Collects the Crate coordinates of the given rust_library and its direct dependencies",
     implementation = _aggregate_crate_summary_impl,
