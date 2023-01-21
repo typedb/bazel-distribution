@@ -90,8 +90,15 @@ def _assemble_pip_impl(ctx):
         if 'pypi' not in i.path and 'external' not in i.path:
             python_source_files.append(i)
 
+    data_files = []
+    for i in ctx.attr.target[DefaultInfo].data_runfiles.files.to_list():
+         if 'pypi' not in i.path and 'external' not in i.path and i.extension != "py":
+            data_files.append(i)
+
     args.add_all('--files', python_source_files)
-    args.add('--output', ctx.outputs.pip_package.path)
+    args.add_all('--data_files', data_files)
+    args.add('--output_sdist', ctx.outputs.pip_package.path)
+    args.add('--output_wheel', ctx.outputs.pip_wheel.path)
     args.add('--readme', ctx.file.long_description_file.path)
 
     # Final 'setup.py' is generated in 2 steps
@@ -145,8 +152,8 @@ def _assemble_pip_impl(ctx):
     args.add_all("--imports", imports)
 
     ctx.actions.run(
-        inputs = [version_file, setup_py, ctx.file.long_description_file, ctx.file.requirements_file] + python_source_files,
-        outputs = [ctx.outputs.pip_package],
+        inputs = [version_file, setup_py, ctx.file.long_description_file, ctx.file.requirements_file] + python_source_files + data_files,
+        outputs = [ctx.outputs.pip_package, ctx.outputs.pip_wheel],
         arguments = [args],
         executable = ctx.executable._assemble_script,
     )
@@ -275,11 +282,12 @@ assemble_pip = rule(
             default = "//pip:assemble",
             executable = True,
             cfg = "host"
-        )
+        ),
     },
     implementation = _assemble_pip_impl,
     outputs = {
         "pip_package": "%{package_name}.tar.gz",
+        "pip_wheel": "%{package_name}.whl"
     },
 )
 

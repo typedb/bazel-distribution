@@ -13,4 +13,4 @@ tqdm==4.29.1
 twine==1.12.1
 urllib3==1.26.5
 webencodings==0.5.1
-wheel==0.32.3
+wheel==0.33.1
