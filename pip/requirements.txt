@@ -14,3 +14,8 @@ twine==1.12.1
 urllib3==1.26.5
 webencodings==0.5.1
 wheel==0.33.1
+six==1.16.0
+charset-normalizer==2.0.12
+packaging==21.3
+pyparsing==3.0.9
+

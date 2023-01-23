@@ -71,6 +71,7 @@ def _python_repackage_impl(ctx):
 PyDeploymentInfo = provider(
     fields = {
         'package': 'package to deploy',
+        'wheel': 'wheel file to deploy',
         'version_file': 'file with package version'
     }
 )
@@ -158,7 +159,7 @@ def _assemble_pip_impl(ctx):
         executable = ctx.executable._assemble_script,
     )
 
-    return [PyDeploymentInfo(package=ctx.outputs.pip_package, version_file=version_file)]
+    return [PyDeploymentInfo(package=ctx.outputs.pip_package, wheel=ctx.outputs.pip_wheel, version_file=version_file)]
 
 
 def _deploy_pip_impl(ctx):
@@ -170,9 +171,8 @@ def _deploy_pip_impl(ctx):
         is_executable = True,
         substitutions = {
             "{package_file}": ctx.attr.target[PyDeploymentInfo].package.short_path,
+            "{wheel_file}": ctx.attr.target[PyDeploymentInfo].wheel.short_path,
             "{version_file}": ctx.attr.target[PyDeploymentInfo].version_file.short_path,
-            "{snapshot}": ctx.attr.snapshot,
-            "{release}": ctx.attr.release,
         }
     )
 
@@ -184,7 +184,7 @@ def _deploy_pip_impl(ctx):
     return DefaultInfo(
         executable = deployment_script,
         runfiles = ctx.runfiles(
-                files=[ctx.attr.target[PyDeploymentInfo].package, ctx.attr.target[PyDeploymentInfo].version_file] + all_python_files
+                files=[ctx.attr.target[PyDeploymentInfo].package, ctx.attr.target[PyDeploymentInfo].wheel, ctx.attr.target[PyDeploymentInfo].version_file] + all_python_files
             )
         )
 
@@ -296,17 +296,8 @@ deploy_pip = rule(
     attrs = {
         "target": attr.label(
             mandatory = True,
-            allow_single_file = [".tar.gz"],
             providers = [PyDeploymentInfo],
             doc = "`assemble_pip` label to be included in the package",
-        ),
-        "snapshot": attr.string(
-            mandatory = True,
-            doc = "Remote repository to deploy pip snapshot to"
-        ),
-        "release": attr.string(
-            mandatory = True,
-            doc = "Remote repository to deploy pip release to"
         ),
         "_deploy_py_template": attr.label(
             allow_single_file = True,
