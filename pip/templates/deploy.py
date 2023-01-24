@@ -29,6 +29,31 @@ sys.path.extend(map(os.path.abspath, glob.glob('external/*/*')))
 # noinspection PyUnresolvedReferences
 import twine.commands.upload
 
+pypi_profile = "{pypi_profile}"
+pip_registry = "{snapshot}" if "{snapshot}" else "{release}"
+command = None
+
+if pypi_profile:
+    command = ['./dist/*', '--repository', pypi_profile]
+else:
+    pip_username, pip_password = (
+        os.getenv('DEPLOY_PIP_USERNAME'),
+        os.getenv('DEPLOY_PIP_PASSWORD'),
+    )
+
+    if not pip_username:
+        raise Exception(
+            'username should be passed via '
+            'DEPLOY_PIP_USERNAME env variable'
+        )
+
+    if not pip_password:
+        raise Exception(
+            'password should be passed via '
+            '$DEPLOY_PIP_PASSWORD env variable'
+        )
+    command = ['./dist/*', '-u', pip_username, '-p', pip_password, '--repository-url', pip_registry]
+
 with open("{version_file}") as version_file:
     version = version_file.read().strip()
 new_package_file = None
@@ -41,11 +66,7 @@ try:
     shutil.copy("{package_file}", new_package_file)
     shutil.copy("{wheel_file}", new_wheel_file)
 
-    twine.commands.upload.main([
-        './dist/*',
-        '--repository',
-        'codeartifact'
-    ])
+    twine.commands.upload.main(command)
 finally:
     if new_package_file:
         os.remove(new_package_file)

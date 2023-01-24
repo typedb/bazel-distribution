@@ -164,6 +164,14 @@ def _assemble_pip_impl(ctx):
 
 def _deploy_pip_impl(ctx):
     deployment_script = ctx.actions.declare_file("{}_deploy.py".format(ctx.attr.name))
+    if ctx.attr.snapshot and ctx.attr.release:
+        fail(msg="canot deploy snapshot and release at the same time.")
+    if ctx.attr.snapshot and ctx.attr.pypi_profile:
+        fail(msg="cannot deploy using pypi_profile and snapshot url at the same time.")
+    if ctx.attr.release and ctx.attr.pypi_profile:
+        fail(msg="cannot deploy using pypi_profile and release url at the same time.")
+    if not ctx.attr.pypi_profile and not (ctx.attr.snapshot or ctx.attr.release):
+        fail(msg="either pypi_profile or one of the snapshot or realease url is needed.")
 
     ctx.actions.expand_template(
         template = ctx.file._deploy_py_template,
@@ -173,6 +181,9 @@ def _deploy_pip_impl(ctx):
             "{package_file}": ctx.attr.target[PyDeploymentInfo].package.short_path,
             "{wheel_file}": ctx.attr.target[PyDeploymentInfo].wheel.short_path,
             "{version_file}": ctx.attr.target[PyDeploymentInfo].version_file.short_path,
+            "{pypi_profile}": ctx.attr.pypi_profile,
+            "{snapshot}": ctx.attr.snapshot,
+            "{release}": ctx.attr.release,
         }
     )
 
@@ -216,7 +227,7 @@ python_repackage = rule(
 
 assemble_pip = rule(
     attrs = {
-         "target": attr.label(
+        "target": attr.label(
             mandatory = True,
             doc = "`py_library` label to be included in the package",
         ),
@@ -298,6 +309,18 @@ deploy_pip = rule(
             mandatory = True,
             providers = [PyDeploymentInfo],
             doc = "`assemble_pip` label to be included in the package",
+        ),
+        "pypi_profile": attr.string(
+            default = "",
+            doc = "name of pypirc profile to deploy to"
+        ),
+        "snapshot": attr.string(
+            default = "",
+            doc = "Remote repository to deploy pip snapshot to"
+        ),
+        "release": attr.string(
+            default = "",
+            doc = "Remote repository to deploy pip release to"
         ),
         "_deploy_py_template": attr.label(
             allow_single_file = True,
