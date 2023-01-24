@@ -165,7 +165,7 @@ def _assemble_pip_impl(ctx):
 def _deploy_pip_impl(ctx):
     deployment_script = ctx.actions.declare_file("{}_deploy.py".format(ctx.attr.name))
     if ctx.attr.snapshot and ctx.attr.release:
-        fail(msg="canot deploy snapshot and release at the same time.")
+        fail(msg="cannot deploy snapshot and release at the same time.")
     if ctx.attr.snapshot and ctx.attr.pypi_profile:
         fail(msg="cannot deploy using pypi_profile and snapshot url at the same time.")
     if ctx.attr.release and ctx.attr.pypi_profile:
