@@ -59,14 +59,19 @@ with open("{version_file}") as version_file:
 new_package_file = None
 new_wheel_file = None
 try:
-    os.mkdir("./dist")
-    new_package_file = "./dist/" + "{package_file}".replace(".tar.gz", "-{}.tar.gz".format(version))
-    new_wheel_file = "./dist/" + "{wheel_file}".replace(".whl", "-{}.whl".format(version))
+    dist_prefix = "./dist/"
+    if not os.path.exists(dist_prefix):
+        os.mkdir(dist_prefix)
+        
+    new_package_file = dist_prefix + "{package_file}".replace(".tar.gz", "-{}.tar.gz".format(version))
+    new_wheel_file = dist_prefix + "{wheel_file}".replace(".whl", "-{}.whl".format(version))
 
-    shutil.copy("{package_file}", new_package_file)
-    shutil.copy("{wheel_file}", new_wheel_file)
+    if os.path.exists("{package_file}"):
+        shutil.copy("{package_file}", new_package_file)
+
+    if os.path.exists("{wheel_file}"):
+        shutil.copy("{wheel_file}", new_wheel_file)
 
     twine.commands.upload.main(command)
 finally:
-    if new_package_file:
-        os.remove(new_package_file)
+    shutil.rmtree(dist_prefix)
