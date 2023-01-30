@@ -343,7 +343,8 @@ deploy_pip = rule(
                 vaticle_bazel_distribution_requirement("Pygments"),
                 vaticle_bazel_distribution_requirement("docutils"),
                 vaticle_bazel_distribution_requirement("bleach"),
-                vaticle_bazel_distribution_requirement("webencodings")
+                vaticle_bazel_distribution_requirement("webencodings"),
+                vaticle_bazel_distribution_requirement("packaging")
             ]
         )
     },
