@@ -23,7 +23,7 @@ def deps():
     http_archive(
         name = "packer_osx",
         url = "https://releases.hashicorp.com/packer/1.7.4/packer_1.7.4_darwin_amd64.zip",
-        sha256 = "7fe8e59d9c456e98e52c9dcbca53009659da31f4fa2bf0dda5af43ebcc688685",
+        sha256 = "f3faf9dce0cebdfc7abfcf70511c6230e0c0a5c499ca3478def81549ded91b20",
         build_file_content = 'exports_files(["packer"])'
     )
 
