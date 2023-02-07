@@ -20,6 +20,7 @@
 workspace(name="vaticle_bazel_distribution")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Load @rules_python, @io_bazel_rules_kotlin and @rules_jvm_external
 load("//common:deps.bzl", "rules_python", "rules_kotlin", "rules_jvm_external", "rules_rust")
@@ -58,11 +59,15 @@ rules_pkg_dependencies()
 
 # TODO: remove this declaration once we upgrade to @io_bazel_stardoc with Bazel 5 support
 # Load @bazel_skylib
-git_repository(
+http_archive(
     name = "bazel_skylib",
-    remote = "https://github.com/bazelbuild/bazel-skylib",
-    commit = "6abad3de5fd9c001f67b17fe8c7242b3cc3b8851",
+    sha256 = "f24ab666394232f834f74d19e2ff142b0af17466ea0c69a3f4c276ee75f6efce",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.4.0/bazel-skylib-1.4.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.4.0/bazel-skylib-1.4.0.tar.gz",
+    ],
 )
+
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
 
