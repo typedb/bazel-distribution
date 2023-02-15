@@ -43,7 +43,7 @@ parser.add_argument('--setup_py', help="setup.py")
 parser.add_argument('--requirements_file', help="install_requires")
 parser.add_argument('--readme', help="README file")
 parser.add_argument('--files', nargs='+', help='Python files to pack into archive')
-parser.add_argument('--data_files', nargs='+', help='Data files to pack into archive')
+parser.add_argument('--data_files', nargs='+', default=[], help='Data files to pack into archive')
 parser.add_argument('--imports', nargs='+', help='Folders considered to be source code roots')
 
 args = parser.parse_args()

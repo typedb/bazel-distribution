@@ -31,7 +31,6 @@ import twine.commands.upload
 
 pypi_profile = "{pypi_profile}"
 pip_registry = "{snapshot}" if "{snapshot}" else "{release}"
-command = None
 
 if pypi_profile:
     command = ['./dist/*', '--repository', pypi_profile]
