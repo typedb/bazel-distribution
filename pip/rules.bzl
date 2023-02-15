@@ -172,6 +172,9 @@ def _deploy_pip_impl(ctx):
         fail(msg="cannot deploy using pypi_profile and release url at the same time.")
     if not ctx.attr.pypi_profile and not (ctx.attr.snapshot or ctx.attr.release):
         fail(msg="either pypi_profile or one of the snapshot or realease url is needed.")
+    for deploy_type in ctx.attr.deploy_types:
+        if deploy_type != "package_file" or deploy_type != "wheel_file":
+            fail(msg="deploy type needs to be either package_file or wheel_file")
 
     ctx.actions.expand_template(
         template = ctx.file._deploy_py_template,
@@ -184,6 +187,7 @@ def _deploy_pip_impl(ctx):
             "{pypi_profile}": ctx.attr.pypi_profile,
             "{snapshot}": ctx.attr.snapshot,
             "{release}": ctx.attr.release,
+            "{deploy_types}": '["' + '","'.join(ctx.attr.deploy_types) + '"]',
         }
     )
 
@@ -321,6 +325,10 @@ deploy_pip = rule(
         "release": attr.string(
             default = "",
             doc = "Remote repository to deploy pip release to"
+        ),
+        "deploy_types": attr.string_list(
+            default = ["package_file"],
+            doc = "Types of build package to deploy"
         ),
         "_deploy_py_template": attr.label(
             allow_single_file = True,
