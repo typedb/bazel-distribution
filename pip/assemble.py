@@ -37,8 +37,8 @@ def create_init_files(directory):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--output', '--output_sdist', help="Output sdist archive")
-parser.add_argument('--output_wheel', help="Output wheel archive")
+parser.add_argument('--output_sdist', help="Output archive")
+parser.add_argument('--output_wheel', help="Output archive")
 parser.add_argument('--setup_py', help="setup.py")
 parser.add_argument('--requirements_file', help="install_requires")
 parser.add_argument('--readme', help="README file")
@@ -49,7 +49,7 @@ parser.add_argument('--imports', nargs='+', help='Folders considered to be sourc
 args = parser.parse_args()
 
 # absolutize the path
-args.output = os.path.abspath(args.output)
+args.output_sdist = os.path.abspath(args.output_sdist)
 args.output_wheel = os.path.abspath(args.output_wheel)
 # turn imports into regex patterns
 args.imports = list(map(
@@ -124,6 +124,6 @@ wheel_archives = glob.glob('dist/*.whl')
 if len(wheel_archives) != 1:
     raise Exception('archive expected was not produced by bdist_wheel')
 
-shutil.copy(sdist_archives[0], args.output)
+shutil.copy(sdist_archives[0], args.output_sdist)
 shutil.copy(wheel_archives[0], args.output_wheel)
 shutil.rmtree(pkg_dir)
