@@ -31,7 +31,6 @@ import twine.commands.upload
 
 pypi_profile = "{pypi_profile}"
 pip_registry = "{snapshot}" if "{snapshot}" else "{release}"
-deploy_types = {deploy_types}
 
 if pypi_profile:
     command = ['./dist/*', '--repository', pypi_profile]
@@ -63,15 +62,14 @@ try:
     if not os.path.exists(dist_prefix):
         os.mkdir(dist_prefix)
         
-    for deploy_type in deploy_types:
-        if deploy_type == "package_file":
-            new_package_file = dist_prefix + "{package_file}".replace(".tar.gz", "-{}.tar.gz".format(version))
-            if os.path.exists("{package_file}"):
-                shutil.copy("{package_file}", new_package_file)
-        if deploy_type == "wheel_file":
-            new_wheel_file = dist_prefix + "{wheel_file}".replace(".whl", "-{}.whl".format(version))
-            if os.path.exists("{wheel_file}"):
-                shutil.copy("{wheel_file}", new_wheel_file)
+    new_package_file = dist_prefix + "{package_file}".replace(".tar.gz", "-{}.tar.gz".format(version))
+    new_wheel_file = dist_prefix + "{wheel_file}".replace(".whl", "-{}.whl".format(version))
+
+    if os.path.exists("{package_file}"):
+        shutil.copy("{package_file}", new_package_file)
+
+    if os.path.exists("{wheel_file}"):
+        shutil.copy("{wheel_file}", new_wheel_file)
 
     twine.commands.upload.main(command)
 finally:
