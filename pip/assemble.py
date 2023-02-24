@@ -37,17 +37,20 @@ def create_init_files(directory):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--output', help="Output archive")
+parser.add_argument('--output_sdist', help="Output archive")
+parser.add_argument('--output_wheel', help="Output archive")
 parser.add_argument('--setup_py', help="setup.py")
 parser.add_argument('--requirements_file', help="install_requires")
 parser.add_argument('--readme', help="README file")
 parser.add_argument('--files', nargs='+', help='Python files to pack into archive')
+parser.add_argument('--data_files', nargs='+', default=[], help='Data files to pack into archive')
 parser.add_argument('--imports', nargs='+', help='Folders considered to be source code roots')
 
 args = parser.parse_args()
 
 # absolutize the path
-args.output = os.path.abspath(args.output)
+args.output_sdist = os.path.abspath(args.output_sdist)
+args.output_wheel = os.path.abspath(args.output_wheel)
 # turn imports into regex patterns
 args.imports = list(map(
     lambda imp: re.compile('(?:.*){}[/]?(?P<fn>.*)'.format(imp)),
@@ -60,7 +63,7 @@ pkg_dir = tempfile.mkdtemp()
 if not args.files:
     raise Exception("Cannot create an archive without any files")
 
-for f in args.files:
+for f in args.files + args.data_files:
     fn = f
     for _imp in args.imports:
         match = _imp.match(fn)
@@ -74,6 +77,13 @@ for f in args.files:
         # directory already exists
         pass
     shutil.copy(f, os.path.join(pkg_dir, fn))
+
+# MANIFEST.in is needed for data files that are not included in version control
+if args.data_files:
+    manifest_in_path = os.path.join(pkg_dir, 'MANIFEST.in')
+    with open(manifest_in_path, 'w') as manifest_in:
+        for f in args.data_files:
+            manifest_in.write("include {}\n".format(f))
 
 setup_py = os.path.join(pkg_dir, 'setup.py')
 readme = os.path.join(pkg_dir, 'README.md')
@@ -104,11 +114,16 @@ os.chdir(pkg_dir)
 create_init_files(pkg_dir)
 
 # pack sources
-run_setup(setup_py, ['sdist'])
+run_setup(setup_py, ['sdist', 'bdist_wheel'])
 
-archives = glob.glob('dist/*.tar.gz')
-if len(archives) != 1:
+sdist_archives = glob.glob('dist/*.tar.gz')
+if len(sdist_archives) != 1:
     raise Exception('archive expected was not produced by sdist')
 
-shutil.copy(archives[0], args.output)
+wheel_archives = glob.glob('dist/*.whl')
+if len(wheel_archives) != 1:
+    raise Exception('archive expected was not produced by bdist_wheel')
+
+shutil.copy(sdist_archives[0], args.output_sdist)
+shutil.copy(wheel_archives[0], args.output_wheel)
 shutil.rmtree(pkg_dir)

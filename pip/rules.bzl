@@ -71,6 +71,7 @@ def _python_repackage_impl(ctx):
 PyDeploymentInfo = provider(
     fields = {
         'package': 'package to deploy',
+        'wheel': 'wheel file to deploy',
         'version_file': 'file with package version'
     }
 )
@@ -90,8 +91,15 @@ def _assemble_pip_impl(ctx):
         if 'pypi' not in i.path and 'external' not in i.path:
             python_source_files.append(i)
 
+    data_files = []
+    for i in ctx.attr.target[DefaultInfo].data_runfiles.files.to_list():
+         if 'pypi' not in i.path and 'external' not in i.path and i.extension != "py":
+            data_files.append(i)
+
     args.add_all('--files', python_source_files)
-    args.add('--output', ctx.outputs.pip_package.path)
+    args.add_all('--data_files', data_files)
+    args.add('--output_sdist', ctx.outputs.pip_package.path)
+    args.add('--output_wheel', ctx.outputs.pip_wheel.path)
     args.add('--readme', ctx.file.long_description_file.path)
 
     # Final 'setup.py' is generated in 2 steps
@@ -145,17 +153,25 @@ def _assemble_pip_impl(ctx):
     args.add_all("--imports", imports)
 
     ctx.actions.run(
-        inputs = [version_file, setup_py, ctx.file.long_description_file, ctx.file.requirements_file] + python_source_files,
-        outputs = [ctx.outputs.pip_package],
+        inputs = [version_file, setup_py, ctx.file.long_description_file, ctx.file.requirements_file] + python_source_files + data_files,
+        outputs = [ctx.outputs.pip_package, ctx.outputs.pip_wheel],
         arguments = [args],
         executable = ctx.executable._assemble_script,
     )
 
-    return [PyDeploymentInfo(package=ctx.outputs.pip_package, version_file=version_file)]
+    return [PyDeploymentInfo(package=ctx.outputs.pip_package, wheel=ctx.outputs.pip_wheel, version_file=version_file)]
 
 
 def _deploy_pip_impl(ctx):
     deployment_script = ctx.actions.declare_file("{}_deploy.py".format(ctx.attr.name))
+    if ctx.attr.snapshot and ctx.attr.release:
+        fail(msg="cannot deploy snapshot and release at the same time.")
+    if ctx.attr.snapshot and ctx.attr.pypi_profile:
+        fail(msg="cannot deploy using pypi_profile and snapshot url at the same time.")
+    if ctx.attr.release and ctx.attr.pypi_profile:
+        fail(msg="cannot deploy using pypi_profile and release url at the same time.")
+    if not ctx.attr.pypi_profile and not (ctx.attr.snapshot or ctx.attr.release):
+        fail(msg="either pypi_profile or one of the snapshot or realease url is needed.")
 
     ctx.actions.expand_template(
         template = ctx.file._deploy_py_template,
@@ -163,7 +179,9 @@ def _deploy_pip_impl(ctx):
         is_executable = True,
         substitutions = {
             "{package_file}": ctx.attr.target[PyDeploymentInfo].package.short_path,
+            "{wheel_file}": ctx.attr.target[PyDeploymentInfo].wheel.short_path,
             "{version_file}": ctx.attr.target[PyDeploymentInfo].version_file.short_path,
+            "{pypi_profile}": ctx.attr.pypi_profile,
             "{snapshot}": ctx.attr.snapshot,
             "{release}": ctx.attr.release,
         }
@@ -177,7 +195,7 @@ def _deploy_pip_impl(ctx):
     return DefaultInfo(
         executable = deployment_script,
         runfiles = ctx.runfiles(
-                files=[ctx.attr.target[PyDeploymentInfo].package, ctx.attr.target[PyDeploymentInfo].version_file] + all_python_files
+                files=[ctx.attr.target[PyDeploymentInfo].package, ctx.attr.target[PyDeploymentInfo].wheel, ctx.attr.target[PyDeploymentInfo].version_file] + all_python_files
             )
         )
 
@@ -209,7 +227,7 @@ python_repackage = rule(
 
 assemble_pip = rule(
     attrs = {
-         "target": attr.label(
+        "target": attr.label(
             mandatory = True,
             doc = "`py_library` label to be included in the package",
         ),
@@ -275,11 +293,12 @@ assemble_pip = rule(
             default = "//pip:assemble",
             executable = True,
             cfg = "host"
-        )
+        ),
     },
     implementation = _assemble_pip_impl,
     outputs = {
         "pip_package": "%{package_name}.tar.gz",
+        "pip_wheel": "%{package_name}.whl"
     },
 )
 
@@ -288,16 +307,19 @@ deploy_pip = rule(
     attrs = {
         "target": attr.label(
             mandatory = True,
-            allow_single_file = [".tar.gz"],
             providers = [PyDeploymentInfo],
             doc = "`assemble_pip` label to be included in the package",
         ),
+        "pypi_profile": attr.string(
+            default = "",
+            doc = "name of pypirc profile to deploy to"
+        ),
         "snapshot": attr.string(
-            mandatory = True,
+            default = "",
             doc = "Remote repository to deploy pip snapshot to"
         ),
         "release": attr.string(
-            mandatory = True,
+            default = "",
             doc = "Remote repository to deploy pip release to"
         ),
         "_deploy_py_template": attr.label(
@@ -321,7 +343,8 @@ deploy_pip = rule(
                 vaticle_bazel_distribution_requirement("Pygments"),
                 vaticle_bazel_distribution_requirement("docutils"),
                 vaticle_bazel_distribution_requirement("bleach"),
-                vaticle_bazel_distribution_requirement("webencodings")
+                vaticle_bazel_distribution_requirement("webencodings"),
+                vaticle_bazel_distribution_requirement("packaging")
             ]
         )
     },

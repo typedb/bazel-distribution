@@ -24,59 +24,54 @@ import os
 import shutil
 import sys
 
-
-sys.path.extend(map(os.path.abspath, glob.glob('external/*/*')))
+# Prefer using the runfile dependency than system dependency
+runfile_deps = [path for path in map(os.path.abspath, glob.glob('external/*/*'))]
+sys.path = runfile_deps + sys.path
 # noinspection PyUnresolvedReferences
 import twine.commands.upload
 
-parser = argparse.ArgumentParser()
-parser.add_argument('repo_type')
-args = parser.parse_args()
+pypi_profile = "{pypi_profile}"
+pip_registry = "{snapshot}" if "{snapshot}" else "{release}"
 
-repo_type_key = args.repo_type
-
-pip_repositories = {
-    'snapshot' : "{snapshot}",
-    'release' : "{release}"
-}
-
-pip_registry = pip_repositories[repo_type_key]
-
-pip_username, pip_password = (
-    os.getenv('DEPLOY_PIP_USERNAME'),
-    os.getenv('DEPLOY_PIP_PASSWORD'),
-)
-
-if not pip_username:
-    raise Exception(
-        'username should be passed via '
-        'DEPLOY_PIP_USERNAME env variable'
+if pypi_profile:
+    command = ['./dist/*', '--repository', pypi_profile]
+else:
+    pip_username, pip_password = (
+        os.getenv('DEPLOY_PIP_USERNAME'),
+        os.getenv('DEPLOY_PIP_PASSWORD'),
     )
 
-if not pip_password:
-    raise Exception(
-        'password should be passed via '
-        '$DEPLOY_PIP_PASSWORD env variable'
-    )
+    if not pip_username:
+        raise Exception(
+            'username should be passed via '
+            'DEPLOY_PIP_USERNAME env variable'
+        )
+
+    if not pip_password:
+        raise Exception(
+            'password should be passed via '
+            '$DEPLOY_PIP_PASSWORD env variable'
+        )
+    command = ['./dist/*', '-u', pip_username, '-p', pip_password, '--repository-url', pip_registry]
 
 with open("{version_file}") as version_file:
     version = version_file.read().strip()
-
 new_package_file = None
-
+new_wheel_file = None
 try:
-    new_package_file = "{package_file}".replace(".tar.gz", "-{}.tar.gz".format(version))
-    shutil.copy("{package_file}", new_package_file)
+    dist_prefix = "./dist/"
+    if not os.path.exists(dist_prefix):
+        os.mkdir(dist_prefix)
+        
+    new_package_file = dist_prefix + "{package_file}".replace(".tar.gz", "-{}.tar.gz".format(version))
+    new_wheel_file = dist_prefix + "{wheel_file}".replace(".whl", "-{}.whl".format(version))
 
-    twine.commands.upload.main([
-        new_package_file,
-        '-u',
-        pip_username,
-        '-p',
-        pip_password,
-        '--repository-url',
-        pip_registry
-    ])
+    if os.path.exists("{package_file}"):
+        shutil.copy("{package_file}", new_package_file)
+
+    if os.path.exists("{wheel_file}"):
+        shutil.copy("{wheel_file}", new_wheel_file)
+
+    twine.commands.upload.main(command)
 finally:
-    if new_package_file:
-        os.remove(new_package_file)
+    shutil.rmtree(dist_prefix)

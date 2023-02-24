@@ -18,9 +18,9 @@
 #
 
 from setuptools import setup
-from setuptools import find_packages
+from setuptools import find_namespace_packages
 
-packages = find_packages()
+packages = find_namespace_packages()
 
 setup(
     name = "{name}",
@@ -35,7 +35,9 @@ setup(
     author_email = "{author_email}",
     license = "{license}",
     packages=packages,
+    include_package_data = True,
     install_requires=INSTALL_REQUIRES_PLACEHOLDER,
     zip_safe=False,
     python_requires="{python_requires}",
+    setup_requires=["wheel"]
 )
