@@ -121,6 +121,7 @@ def _assemble_pip_impl(ctx):
           "{license}": ctx.attr.license,
           "{long_description_file}": ctx.file.long_description_file.path,
           "{python_requires}": ctx.attr.python_requires,
+          "{entry_points}": str(ctx.attr.entry_points),
       },
     )
 
@@ -284,6 +285,9 @@ assemble_pip = rule(
         "python_requires": attr.string(
             default = ">0",
             doc = "If your project only runs on certain Python versions, setting the python_requires argument to the appropriate PEP 440 version specifier string will prevent pip from installing the project on other Python versions.",
+        ),
+        "entry_points": attr.string_list_dict(
+            doc = "entry_points for setuptools."
         ),
         "_setup_py_template": attr.label(
             allow_single_file = True,
