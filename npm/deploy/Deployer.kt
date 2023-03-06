@@ -57,13 +57,16 @@ class Deployer(private val options: Options) {
     }
 
     private fun auth(username: String, password: String): String {
-        return base64URLEncode(username + ":" + password)
+        val base64URLEncode = base64URLEncode(username + ":" + password)
+        print("Encoded: " + base64URLEncode)
+        return base64URLEncode;
     }
 
     private fun base64URLEncode(string: String): String {
-        return Base64.getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(string.toByteArray(StandardCharsets.UTF_8))
+        return Base64.getEncoder().encodeToString(string.toByteArray())
+                //.getUrlEncoder()
+//                .withoutPadding()
+//                .encodeToString(string.toByteArray(StandardCharsets.UTF_8))
     }
 
     private fun pathEnv(): String {
