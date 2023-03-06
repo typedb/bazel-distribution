@@ -32,10 +32,16 @@ class Options {
             }
         }
 
-    val npmToken: String
+    val npmUsername: String
         get() {
-            return System.getenv(DEPLOY_NPM_TOKEN)
-                ?: throw IllegalArgumentException("token should be passed via \$${DEPLOY_NPM_TOKEN} env variable")
+            return System.getenv(Env.DEPLOY_NPM_USERNAME)
+                    ?: throw IllegalArgumentException("Npm username should be passed via \$${Env.DEPLOY_NPM_USERNAME} env variable")
+        }
+
+    val npmPassword: String
+        get() {
+            return System.getenv(Env.DEPLOY_NPM_PASSWORD)
+                ?: throw IllegalArgumentException("Npm password should be passed via \$${Env.DEPLOY_NPM_PASSWORD} env variable")
         }
 
     companion object {
@@ -67,6 +73,7 @@ class Options {
     }
 
     object Env {
-        const val DEPLOY_NPM_TOKEN = "DEPLOY_NPM_TOKEN"
+        const val DEPLOY_NPM_USERNAME = "DEPLOY_NPM_USERNAME"
+        const val DEPLOY_NPM_PASSWORD = "DEPLOY_NPM_PASSWORD"
     }
 }

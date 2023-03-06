@@ -28,19 +28,21 @@ import com.vaticle.bazel.distribution.common.OS.LINUX
 import com.vaticle.bazel.distribution.common.shell.Shell
 import com.vaticle.bazel.distribution.common.shell.Shell.Command.Companion.arg
 import com.vaticle.bazel.distribution.common.util.SystemUtil.currentOS
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.*
 
 class Deployer(private val options: Options) {
     private val logger = Logger(logLevel = DEBUG)
 
     fun deploy() {
         Shell(logger = logger, verbose = true).execute(
-            command = Shell.Command(
-                arg("npm"), arg("publish"), arg("--registry=${options.registryURL}"),
-                arg("--${authParamFormattedURL(options.registryURL)}/:_authToken=${options.npmToken}", printable = false),
-                arg("deploy_npm.tgz")),
-            env = mapOf("PATH" to pathEnv()))
+                command = Shell.Command(
+                        arg("npm"), arg("publish"), arg("--registry=${options.registryURL}"),
+                        arg("--${authParamFormattedURL(options.registryURL)}/:_auth=${auth(options.npmUsername, options.npmPassword)}", printable = false),
+                        arg("deploy_npm.tgz")),
+                env = mapOf("PATH" to pathEnv()))
     }
 
     /**
@@ -52,6 +54,16 @@ class Deployer(private val options: Options) {
      */
     private fun authParamFormattedURL(url: String): String {
         return url.trimEnd('/').let { if (":" in it) it.split(":")[1] else "//$it" }
+    }
+
+    private fun auth(username: String, password: String): String {
+        return base64URLEncode(username + ":" + password)
+    }
+
+    private fun base64URLEncode(string: String): String {
+        return Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(string.toByteArray(StandardCharsets.UTF_8))
     }
 
     private fun pathEnv(): String {
