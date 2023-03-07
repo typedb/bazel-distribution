@@ -21,14 +21,16 @@
 
 package com.vaticle.bazel.distribution.npm.deploy
 
-import com.vaticle.bazel.distribution.common.Logging.Logger
 import com.vaticle.bazel.distribution.common.Logging.LogLevel.DEBUG
-import com.vaticle.bazel.distribution.common.OS.MAC
+import com.vaticle.bazel.distribution.common.Logging.Logger
 import com.vaticle.bazel.distribution.common.OS.LINUX
+import com.vaticle.bazel.distribution.common.OS.MAC
 import com.vaticle.bazel.distribution.common.shell.Shell
 import com.vaticle.bazel.distribution.common.shell.Shell.Command.Companion.arg
 import com.vaticle.bazel.distribution.common.util.SystemUtil.currentOS
-import java.nio.charset.StandardCharsets
+import com.vaticle.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_PASSWORD
+import com.vaticle.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_TOKEN
+import com.vaticle.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_USERNAME
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
@@ -40,9 +42,28 @@ class Deployer(private val options: Options) {
         Shell(logger = logger, verbose = true).execute(
                 command = Shell.Command(
                         arg("npm"), arg("publish"), arg("--registry=${options.registryURL}"),
-                        arg("--${authParamFormattedURL(options.registryURL)}/:_auth=${auth(options.npmUsername, options.npmPassword)}", printable = false),
+                        arg(authURI(options), printable = false),
                         arg("deploy_npm.tgz")),
                 env = mapOf("PATH" to pathEnv()))
+    }
+
+    private fun authURI(options: Options): String {
+        val token = options.npmToken;
+        val user = options.npmUsername
+        val pass = options.npmPassword
+        val uriPrefix = "--" + authParamFormattedURI(options.registryURL)
+        if (token != null) {
+            if (user != null || pass != null) {
+                throw IllegalArgumentException("If using an NPM authentication token via '\\$DEPLOY_NPM_TOKEN', " +
+                        "do not provide NPM username and password via '\\$DEPLOY_NPM_USERNAME' and '\\$DEPLOY_NPM_PASSWORD'.")
+            }
+            return authTokenURI(uriPrefix, token)
+        } else if (user != null && pass != null) {
+            return authUsernamePasswordURI(uriPrefix, user, pass)
+        } else {
+            throw IllegalArgumentException("Either the NPM token must be supplied using '\\$DEPLOY_NPM_TOKEN', " +
+                    "or both NPM username and password must be supplied with '\\$DEPLOY_NPM_USERNAME' and '\\$DEPLOY_NPM_PASSWORD'.")
+        }
     }
 
     /**
@@ -52,21 +73,21 @@ class Deployer(private val options: Options) {
      * - https://registry.npmjs.org/ --> //registry.npmjs.org
      * - registry.npmjs.org --> //registry.npmjs.org
      */
-    private fun authParamFormattedURL(url: String): String {
+    private fun authParamFormattedURI(url: String): String {
         return url.trimEnd('/').let { if (":" in it) it.split(":")[1] else "//$it" }
     }
 
-    private fun auth(username: String, password: String): String {
-        val base64URLEncode = base64URLEncode(username + ":" + password)
-        print("Encoded: " + base64URLEncode)
-        return base64URLEncode;
+    private fun authTokenURI(uriPrefix: String, token: String): String {
+        return "$uriPrefix/:_authToken=$token";
     }
 
-    private fun base64URLEncode(string: String): String {
+    private fun authUsernamePasswordURI(uriPrefix: String, username: String, password: String): String {
+        val base64 = base64(username + ":" + password)
+        return "$uriPrefix/:_auth=$base64";
+    }
+
+    private fun base64(string: String): String {
         return Base64.getEncoder().encodeToString(string.toByteArray())
-                //.getUrlEncoder()
-//                .withoutPadding()
-//                .encodeToString(string.toByteArray(StandardCharsets.UTF_8))
     }
 
     private fun pathEnv(): String {
