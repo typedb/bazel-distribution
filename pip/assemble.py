@@ -37,8 +37,8 @@ def create_init_files(directory):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--output_sdist', help="Output archive")
-parser.add_argument('--output_wheel', help="Output archive")
+parser.add_argument('--output_sdist', help="Output targz archive")
+parser.add_argument('--output_wheel', help="Output wheel archive")
 parser.add_argument('--setup_py', help="setup.py")
 parser.add_argument('--requirements_file', help="install_requires")
 parser.add_argument('--readme', help="README file")

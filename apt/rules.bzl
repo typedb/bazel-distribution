@@ -185,5 +185,8 @@ deploy_apt = rule(
     },
     implementation = _deploy_apt_impl,
     executable = True,
-    doc = 'Deploy package built with `assemble_apt` to APT repository'
+    doc = """Deploy package built with `assemble_apt` to APT repository.
+
+    Select deployment to `snapshot` or `release` repository with `bazel run //:some-deploy-apt -- [snapshot|release]
+    """
 )
