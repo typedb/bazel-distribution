@@ -64,25 +64,32 @@ def upload_command(repo_type_key):
         raise Exception(f"Unrecognised repository selector: {repo_type_key}")
 
 
+if not os.path.exists("{package_file}"):
+    raise Exception("Cannot find expected distribution .tar.gz to deploy at '{package_file}'")
+
+if not os.path.exists("{wheel_file}"):
+    raise Exception("Cannot find expected distribution wheel to deploy at '{wheel_file}'")
+
 args = parser.parse_args()
 repo_type_key = args.repo_type
 
 with open("{version_file}") as version_file:
     version = version_file.read().strip()
-new_package_file = None
-new_wheel_file = None
 try:
     if not os.path.exists(dist_dir):
         os.mkdir(dist_dir)
-        
+
     new_package_file = dist_dir + "{package_file}".replace(".tar.gz", "-{}.tar.gz".format(version))
     new_wheel_file = dist_dir + "{wheel_file}".replace(".whl", "-{}.whl".format(version))
 
-    if os.path.exists("{package_file}"):
-        shutil.copy("{package_file}", new_package_file)
+    if not os.path.exists(os.path.dirname(new_package_file)):
+        os.makedirs(os.path.dirname(new_package_file))
 
-    if os.path.exists("{wheel_file}"):
-        shutil.copy("{wheel_file}", new_wheel_file)
+    if not os.path.exists(os.path.dirname(new_wheel_file)):
+        os.makedirs(os.path.dirname(new_wheel_file))
+
+    shutil.copy("{package_file}", new_package_file)
+    shutil.copy("{wheel_file}", new_wheel_file)
 
     twine.commands.upload.main(upload_command(repo_type_key))
 finally:
