@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2022 Vaticle
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package com.vaticle.bazel.distribution.npm.deploy
 
 import com.vaticle.bazel.distribution.npm.deploy.Options.CommandLineParams.NPM_PATH
@@ -34,19 +55,16 @@ class Options {
     val npmToken: String?
         get() {
             return System.getenv().get(Env.DEPLOY_NPM_TOKEN);
-//                     throw IllegalArgumentException("Npm token should be passed via \$${Env.DEPLOY_NPM_TOKEN} env variable")
         }
 
     val npmUsername: String?
         get() {
             return System.getenv().get(Env.DEPLOY_NPM_USERNAME)
-//                    ?: throw IllegalArgumentException("Npm username should be passed via \$${Env.DEPLOY_NPM_USERNAME} env variable")
         }
 
     val npmPassword: String?
         get() {
             return System.getenv().get(Env.DEPLOY_NPM_PASSWORD)
-//                ?: throw IllegalArgumentException("Npm password should be passed via \$${Env.DEPLOY_NPM_PASSWORD} env variable")
         }
 
     companion object {
