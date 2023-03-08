@@ -30,7 +30,6 @@ sys.path = runfile_deps + sys.path
 # noinspection PyUnresolvedReferences
 import twine.commands.upload
 
-dist_dir = "./dist"
 PYPIRC_KEY = 'pypirc'
 SNAPSHOT_KEY = 'snapshot'
 RELEASE_KEY = 'release'
@@ -73,12 +72,10 @@ if not os.path.exists("{wheel_file}"):
 args = parser.parse_args()
 repo_type_key = args.repo_type
 
+dist_dir = "./dist"
 with open("{version_file}") as version_file:
     version = version_file.read().strip()
 try:
-    if not os.path.exists(dist_dir):
-        os.mkdir(dist_dir)
-
     new_package_file = dist_dir + "/{package_file}".replace(".tar.gz", "-{}.tar.gz".format(version))
     new_wheel_file = dist_dir + "/{wheel_file}".replace(".whl", "-{}.whl".format(version))
 
