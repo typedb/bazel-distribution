@@ -114,5 +114,8 @@ deploy_brew = rule(
         "deployment_script": "%{name}.py"
     },
     implementation = _deploy_brew_impl,
-    doc = "Deploy Homebrew (Caskroom) formula to Homebrew tap"
+    doc = """Deploy Homebrew (Caskroom) formula to Homebrew tap.
+
+    Select deployment to `snapshot` or `release` repository with `bazel run //some-deploy-brew -- [snapshot|release]
+    """
 )

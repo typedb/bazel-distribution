@@ -371,5 +371,9 @@ deploy_maven = rule(
     },
     executable = True,
     implementation = _deploy_maven_impl,
-    doc = "Deploy `assemble_maven` target into Maven repo"
+    doc = """
+    Deploy `assemble_maven` target into Maven repo.
+
+    Select deployment to `snapshot` or `release` repository with `bazel run //:some-deploy-maven -- [snapshot|release]
+    """
 )

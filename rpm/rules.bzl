@@ -224,5 +224,8 @@ deploy_rpm = rule(
     },
     implementation = _deploy_rpm_impl,
     executable = True,
-    doc = 'Deploy package built with `assemble_rpm` to RPM repository'
+    doc = """Deploy package built with `assemble_rpm` to RPM repository.
+
+    Select deployment to `snapshot` or `release` repository with `bazel run //:some-deploy-rpm -- [snapshot|release]
+    """
 )

@@ -75,6 +75,8 @@ deploy_npm = rule(
     doc = """
     Deploy `assemble_npm` target into npm registry using token authentication.
 
+    Select deployment to `snapshot` or `release` repository with `bazel run //:some-deploy-npm -- [snapshot|release]
+
     ## How to generate an auth token
 
     ### Using the command line (`npm adduser`)

@@ -164,14 +164,6 @@ def _assemble_pip_impl(ctx):
 
 def _deploy_pip_impl(ctx):
     deployment_script = ctx.actions.declare_file("{}_deploy.py".format(ctx.attr.name))
-    if ctx.attr.snapshot and ctx.attr.release:
-        fail(msg="cannot deploy snapshot and release at the same time.")
-    if ctx.attr.snapshot and ctx.attr.pypi_profile:
-        fail(msg="cannot deploy using pypi_profile and snapshot url at the same time.")
-    if ctx.attr.release and ctx.attr.pypi_profile:
-        fail(msg="cannot deploy using pypi_profile and release url at the same time.")
-    if not ctx.attr.pypi_profile and not (ctx.attr.snapshot or ctx.attr.release):
-        fail(msg="either pypi_profile or one of the snapshot or realease url is needed.")
 
     ctx.actions.expand_template(
         template = ctx.file._deploy_py_template,
@@ -181,7 +173,7 @@ def _deploy_pip_impl(ctx):
             "{package_file}": ctx.attr.target[PyDeploymentInfo].package.short_path,
             "{wheel_file}": ctx.attr.target[PyDeploymentInfo].wheel.short_path,
             "{version_file}": ctx.attr.target[PyDeploymentInfo].version_file.short_path,
-            "{pypi_profile}": ctx.attr.pypi_profile,
+            "{pyprc_repository}": ctx.attr.pyprc_repository,
             "{snapshot}": ctx.attr.snapshot,
             "{release}": ctx.attr.release,
         }
@@ -310,17 +302,17 @@ deploy_pip = rule(
             providers = [PyDeploymentInfo],
             doc = "`assemble_pip` label to be included in the package",
         ),
-        "pypi_profile": attr.string(
-            default = "",
-            doc = "name of pypirc profile to deploy to"
-        ),
         "snapshot": attr.string(
             default = "",
-            doc = "Remote repository to deploy pip snapshot to"
+            doc = "Snapshot repository URL to deploy pip artifact to"
         ),
         "release": attr.string(
             default = "",
-            doc = "Remote repository to deploy pip release to"
+            doc = "Release repository URL to deploy pip artifact to"
+        ),
+        "pyprc_repository": attr.string(
+            default = "",
+            doc = "Repository name in the .pyprc profile to deploy to"
         ),
         "_deploy_py_template": attr.label(
             allow_single_file = True,
@@ -349,5 +341,16 @@ deploy_pip = rule(
         )
     },
     executable = True,
-    implementation = _deploy_pip_impl
+    implementation = _deploy_pip_impl,
+    doc = """
+        Deploy python target to one of multiple provided repositories.
+
+        This rule can be provided with either a `pyprc` repository name to deploy to,
+        or an explicit 'snapshot' or 'release' repository URL to deploy to.
+
+        The `pyprc` must be in the expected location for twine deployment. Typically it is in `$HOME/.pyprc`.
+
+        To deploy to one of these repositories, select it using an argument:
+        ```bazel run //:some-deploy-pip -- [pyprc|snapshot|release]```
+        """
 )
