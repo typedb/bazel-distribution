@@ -30,7 +30,7 @@ sys.path = runfile_deps + sys.path
 # noinspection PyUnresolvedReferences
 import twine.commands.upload
 
-dist_dir = "./dist/"
+dist_dir = "./dist"
 PYPRC_KEY = 'pyprc'
 SNAPSHOT_KEY = 'snapshot'
 RELEASE_KEY = 'release'
@@ -47,19 +47,19 @@ repositories = {
 parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')
 
-def upload_command(repo_type_key):
+def upload_command(repo_type_key, package_file, wheel_file):
     if repo_type_key not in repositories:
         raise Exception(f"Selected repository must be one of: {list(repositories.keys())}")
 
     if repo_type_key == PYPRC_KEY:
-        return [f"{dist_dir}*", '--repository', repositories[repo_type_key]]
+        return [package_file, wheel_file, '--repository', repositories[repo_type_key]]
     elif repo_type_key == SNAPSHOT_KEY or repo_type_key == RELEASE_KEY:
         pip_username, pip_password = (os.getenv(ENV_DEPLOY_PIP_USERNAME), os.getenv(ENV_DEPLOY_PIP_PASSWORD))
         if not pip_username:
             raise Exception(f"username should be passed via the {ENV_DEPLOY_PIP_USERNAME} environment variable")
         if not pip_password:
             raise Exception(f"password should be passed via the {ENV_DEPLOY_PIP_PASSWORD} environment variable")
-        return [f'{dist_dir}*', '-u', pip_username, '-p', pip_password, '--repository-url', repositories[repo_type_key]]
+        return [package_file, wheel_file, '-u', pip_username, '-p', pip_password, '--repository-url', repositories[repo_type_key]]
     else:
         raise Exception(f"Unrecognised repository selector: {repo_type_key}")
 
@@ -79,8 +79,8 @@ try:
     if not os.path.exists(dist_dir):
         os.mkdir(dist_dir)
 
-    new_package_file = dist_dir + "{package_file}".replace(".tar.gz", "-{}.tar.gz".format(version))
-    new_wheel_file = dist_dir + "{wheel_file}".replace(".whl", "-{}.whl".format(version))
+    new_package_file = dist_dir + "/{package_file}".replace(".tar.gz", "-{}.tar.gz".format(version))
+    new_wheel_file = dist_dir + "/{wheel_file}".replace(".whl", "-{}.whl".format(version))
 
     if not os.path.exists(os.path.dirname(new_package_file)):
         os.makedirs(os.path.dirname(new_package_file))
@@ -91,6 +91,6 @@ try:
     shutil.copy("{package_file}", new_package_file)
     shutil.copy("{wheel_file}", new_wheel_file)
 
-    twine.commands.upload.main(upload_command(repo_type_key))
+    twine.commands.upload.main(upload_command(repo_type_key, new_package_file, new_wheel_file))
 finally:
     shutil.rmtree(dist_dir)
