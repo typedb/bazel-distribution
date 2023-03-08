@@ -26,7 +26,8 @@ requests-toolbelt==0.10.1
 rfc3986==2.0.0
 rich==13.2.0
 secretstorage==3.3.3
-setuptools==66.1.1
+### DO NOT UPGRADE - setuptools > 65.x.x removes flexible versioning ###
+setuptools==65.0.0
 six==1.16.0
 tqdm==4.64.1
 twine==4.0.2
