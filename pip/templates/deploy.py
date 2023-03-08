@@ -31,7 +31,7 @@ sys.path = runfile_deps + sys.path
 import twine.commands.upload
 
 dist_dir = "./dist"
-PYPRC_KEY = 'pyprc'
+PYPIRC_KEY = 'pypirc'
 SNAPSHOT_KEY = 'snapshot'
 RELEASE_KEY = 'release'
 
@@ -39,7 +39,7 @@ ENV_DEPLOY_PIP_USERNAME = 'DEPLOY_PIP_USERNAME'
 ENV_DEPLOY_PIP_PASSWORD = 'DEPLOY_PIP_PASSWORD'
 
 repositories = {
-    PYPRC_KEY: "{pyprc_repository}",
+    PYPIRC_KEY: "{pypirc_repository}",
     SNAPSHOT_KEY: "{snapshot}",
     RELEASE_KEY: "{release}"
 }
@@ -51,7 +51,7 @@ def upload_command(repo_type_key, package_file, wheel_file):
     if repo_type_key not in repositories:
         raise Exception(f"Selected repository must be one of: {list(repositories.keys())}")
 
-    if repo_type_key == PYPRC_KEY:
+    if repo_type_key == PYPIRC_KEY:
         return [package_file, wheel_file, '--repository', repositories[repo_type_key]]
     elif repo_type_key == SNAPSHOT_KEY or repo_type_key == RELEASE_KEY:
         pip_username, pip_password = (os.getenv(ENV_DEPLOY_PIP_USERNAME), os.getenv(ENV_DEPLOY_PIP_PASSWORD))

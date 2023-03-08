@@ -173,7 +173,7 @@ def _deploy_pip_impl(ctx):
             "{package_file}": ctx.attr.target[PyDeploymentInfo].package.short_path,
             "{wheel_file}": ctx.attr.target[PyDeploymentInfo].wheel.short_path,
             "{version_file}": ctx.attr.target[PyDeploymentInfo].version_file.short_path,
-            "{pyprc_repository}": ctx.attr.pyprc_repository,
+            "{pypirc_repository}": ctx.attr.pypirc_repository,
             "{snapshot}": ctx.attr.snapshot,
             "{release}": ctx.attr.release,
         }
@@ -310,9 +310,9 @@ deploy_pip = rule(
             default = "",
             doc = "Release repository URL to deploy pip artifact to"
         ),
-        "pyprc_repository": attr.string(
+        "pypirc_repository": attr.string(
             default = "",
-            doc = "Repository name in the .pyprc profile to deploy to"
+            doc = "Repository name in the .pypirc profile to deploy to"
         ),
         "_deploy_py_template": attr.label(
             allow_single_file = True,
@@ -345,12 +345,12 @@ deploy_pip = rule(
     doc = """
         Deploy python target to one of multiple provided repositories.
 
-        This rule can be provided with either a `pyprc` repository name to deploy to,
+        This rule can be provided with either a `pypirc` repository name to deploy to,
         or an explicit 'snapshot' or 'release' repository URL to deploy to.
 
-        The `pyprc` must be in the expected location for twine deployment. Typically it is in `$HOME/.pyprc`.
+        The `pypirc` must be in the expected location for twine deployment. Typically it is in `$HOME/.pypirc`.
 
         To deploy to one of these repositories, select it using an argument:
-        ```bazel run //:some-deploy-pip -- [pyprc|snapshot|release]```
+        ```bazel run //:some-deploy-pip -- [pypirc|snapshot|release]```
         """
 )
