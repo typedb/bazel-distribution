@@ -77,17 +77,17 @@ with open("{version_file}") as version_file:
     version = version_file.read().strip()
 try:
     new_package_file = dist_dir + "/{package_file}".replace(".tar.gz", "-{}.tar.gz".format(version))
-    new_wheel_file = dist_dir + "/{wheel_file}".replace(".whl", "-{}.whl".format(version))
+    new_wheel_pep491 = dist_dir + "/{wheel_file}".replace("-", "_").replace(".whl", "-{}-py3-none-any.whl".format(version))
 
     if not os.path.exists(os.path.dirname(new_package_file)):
         os.makedirs(os.path.dirname(new_package_file))
 
-    if not os.path.exists(os.path.dirname(new_wheel_file)):
-        os.makedirs(os.path.dirname(new_wheel_file))
+    if not os.path.exists(os.path.dirname(new_wheel_pep491)):
+        os.makedirs(os.path.dirname(new_wheel_pep491))
 
     shutil.copy("{package_file}", new_package_file)
-    shutil.copy("{wheel_file}", new_wheel_file)
+    shutil.copy("{wheel_file}", new_wheel_pep491)
 
-    twine.commands.upload.main(upload_command(repo_type_key, new_package_file, new_wheel_file))
+    twine.commands.upload.main(upload_command(repo_type_key, new_package_file, new_wheel_pep491))
 finally:
     shutil.rmtree(dist_dir)
