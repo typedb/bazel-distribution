@@ -101,12 +101,6 @@ with open(args.setup_py) as setup_py_template:
 
 shutil.copy(args.readme, readme)
 
-with open(os.path.join(pkg_dir, 'setup.cfg'), 'w') as setup_cfg:
-    setup_cfg.writelines([
-        '[bdist_wheel]\n',
-        'universal = 1\n'
-    ])
-
 # change directory into new package root
 os.chdir(pkg_dir)
 
