@@ -96,6 +96,9 @@ def _assemble_pip_impl(ctx):
          if 'pypi' not in i.path and 'external' not in i.path and i.extension != "py":
             data_files.append(i)
 
+    if ctx.attr.python_requires.startswith(">2.") or ctx.attr.python_requires.startswith("=2."):
+        fail("This rule only supports Python 3.x, was given 'python_requires = " + ctx.attr.python_requires + "'.")
+
     args.add_all('--files', python_source_files)
     args.add_all('--data_files', data_files)
     args.add('--output_sdist', ctx.outputs.pip_package.path)
