@@ -1,4 +1,4 @@
-Contributions to this project are welcomed - but be aware of the following caveats!
+Want to contribute? Your contribution is warmly welcomed! Please be aware of the following caveats:
 
 ### Large contributions
 
