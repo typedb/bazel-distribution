@@ -7,7 +7,7 @@ Before you start working on a larger contribution, you should get in touch with 
 explain your idea so we can help and possibly guide you, which you can do using:
 
 - The GitHub issue tracker;
-- [Discord](https://discord.gg/typedb)
+- [Discord](https://discord.gg/typedb).
 
 ### Code reviews and other contributions.
 
