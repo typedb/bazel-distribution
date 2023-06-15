@@ -17,7 +17,8 @@
 # under the License.
 #
 
-LOCAL_JDK_PREFIX = "external/local_jdk/"
+LOCAL_JDK_PREFIX = "external/local_jdk"
+REMOTE_JDK_PREFIX = "external/remotejdk"
 MAVEN_COORDINATES_PREFIX = "maven_coordinates="
 
 # mapping of single JAR to its Maven coordinates
@@ -106,6 +107,10 @@ _transitive_collect_maven_coordinate = aspect(
 )
 
 
+def _is_jdk_jar(file):
+    return file.path.startswith(LOCAL_JDK_PREFIX) or file.path.startswith(REMOTE_JDK_PREFIX)
+
+
 def _java_deps_impl(ctx):
     full_output_paths = {}
     jars_by_output_path = {}
@@ -114,7 +119,7 @@ def _java_deps_impl(ctx):
     mapping = ctx.attr.target[TransitiveJarToMavenCoordinatesMapping].mapping
 
     for file in ctx.attr.target.data_runfiles.files.to_list():
-        if file.extension == "jar" and not file.path.startswith(LOCAL_JDK_PREFIX):
+        if file.extension == "jar" and not _is_jdk_jar(file):
             if ctx.attr.maven_name and file.path not in mapping:
                 fail("{} does not have associated Maven coordinate".format(file.owner))
             output_path = mapping.get(file.path, default=file.basename).replace('.', '-').replace(':', '-')
