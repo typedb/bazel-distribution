@@ -108,7 +108,7 @@ _transitive_collect_maven_coordinate = aspect(
 
 
 def _is_jdk_jar(file):
-    return not file.path.startswith(LOCAL_JDK_PREFIX) and not file.path.startswith(REMOTE_JDK_PREFIX)
+    return file.path.startswith(LOCAL_JDK_PREFIX) or file.path.startswith(REMOTE_JDK_PREFIX)
 
 
 def _java_deps_impl(ctx):
