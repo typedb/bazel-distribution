@@ -55,7 +55,6 @@ os.chmod(package_json_fn, 0o755)
 with open(package_json_fn, 'w') as f:
     json.dump(package_json, f)
 
-
 os.chmod(new_package_root, 0o755)
 for root, dirs, files in os.walk(new_package_root):
     for d in dirs:
@@ -63,10 +62,13 @@ for root, dirs, files in os.walk(new_package_root):
     for f in files:
         os.chmod(os.path.join(root, f), 0o755)
 
+npm_cache = tempfile.mktemp()
+
 subprocess.check_call([
     'npm',
     'pack'
 ], env={
+    'npm_config_cache': npm_cache,
     'PATH': ':'.join([
         '/usr/bin/',
         '/bin/',
@@ -84,3 +86,4 @@ if len(archives) != 1:
 
 shutil.copy(archives[0], args.output)
 shutil.rmtree(new_package_root)
+shutil.rmtree(npm_cache)
