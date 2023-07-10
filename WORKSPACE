@@ -48,8 +48,10 @@ maven_install(
 
 
 # Load @vaticle_bazel_distribution_pip
-load("//pip:deps.bzl", pip_deps = "deps")
-pip_deps()
+load("//pip:deps.bzl", vaticle_bazel_distribution_pip_deps = "deps")
+vaticle_bazel_distribution_pip_deps()
+load("@vaticle_bazel_distribution_pip//:requirements.bzl", "install_deps")
+install_deps()
 
 # Load @rules_pkg
 load("//common:deps.bzl", "rules_pkg")

@@ -2,17 +2,19 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 def rules_python():
-    git_repository(
-        name = "rules_python",
-        remote = "https://github.com/bazelbuild/rules_python.git",
-        tag = "0.1.0",
-        patches = [
-            # Force rules_python to export the requirements.bzl file in
-            # order for stardoc to be able to load it during documentation
-            # generation.
-            "@vaticle_bazel_distribution//:bazelbuild_rules_python-export-requirements-bzl-for-stardoc.patch",
+    http_archive(
+        name = "bazel_skylib",
+        sha256 = "74d544d96f4a5bb630d465ca8bbcfe231e3594e5aae57e1edbf17a6eb3ca2506",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
+            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
         ],
-        patch_args = ["-p1"],
+    )
+    http_archive(
+        name = "rules_python",
+        sha256 = "fda23c37fbacf7579f94d5e8f342d3a831140e9471b770782e83846117dd6596",
+        strip_prefix = "rules_python-0.15.0",
+        url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.15.0.tar.gz",
     )
 
 def rules_pkg():
@@ -39,11 +41,14 @@ def rules_kotlin():
     )
 
 def rules_jvm_external():
+    RULES_JVM_EXTERNAL_TAG = "5.3"
+    RULES_JVM_EXTERNAL_SHA ="d31e369b854322ca5098ea12c69d7175ded971435e55c18dd9dd5f29cc5249ac"
+
     http_archive(
         name = "rules_jvm_external",
-        strip_prefix = "rules_jvm_external-3.2",
-        sha256 = "82262ff4223c5fda6fb7ff8bd63db8131b51b413d26eb49e3131037e79e324af",
-        url = "https://github.com/bazelbuild/rules_jvm_external/archive/3.2.zip",
+        strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+        sha256 = RULES_JVM_EXTERNAL_SHA,
+        url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/%s/rules_jvm_external-%s.tar.gz" % (RULES_JVM_EXTERNAL_TAG, RULES_JVM_EXTERNAL_TAG)
     )
 
 def rules_rust():

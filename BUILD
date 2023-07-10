@@ -42,100 +42,99 @@ bzl_library(
         "@rules_pkg//:private/util.bzl",
         "@bazel_tools//tools:bzl_srcs",
         "@vaticle_bazel_distribution_pip//:requirements.bzl",
-        "@rules_python//python:whl.bzl",
         "@rules_rust//rust:rules",
     ],
 )
 
-stardoc(
-    name = "docs",
-    input = "doc_hub.bzl",
-    out = "README.md",
-    deps = [
-        "//apt:lib",
-        "//aws:lib",
-        "//azure:lib",
-        "//brew:lib",
-        "//common:lib",
-        "//crates:lib",
-        "//gcp:lib",
-        "//github:lib",
-        "//maven:lib",
-        "//npm:lib",
-        "//npm/assemble:lib",
-        "//npm/deploy:lib",
-        "//packer:lib",
-        "//pip:lib",
-        "//rpm:lib",
-        ":stardoc_hacks",
-    ],
-    symbol_names = [
-        # From: //apt:rules.bzl
-        "assemble_apt",
-        "deploy_apt",
-
-        # From: //aws:rules.bzl
-        "assemble_aws",
-
-        # From: //azure:rules.bzl
-        "assemble_azure",
-
-        # From: //brew:rules.bzl
-        "deploy_brew",
-
-        # From: //common/assemble_versioned:rules.bzl
-        "assemble_versioned",
-
-        # From: //common/checksum:rules.bzl
-        "checksum",
-
-        # From: //common/generate_json_config:rules.bzl
-        "generate_json_config",
-
-        # From: //common/java_deps:rules.bzl
-        "MAVEN_COORDINATES_PREFIX",
-        "JarToMavenCoordinatesMapping",
-        "TransitiveJarToMavenCoordinatesMapping",
-        "java_deps",
-
-        # From: //common:rules.bzl
-        "assemble_targz",
-        "assemble_zip",
-
-        # From: //common/tgz2zip:rules.bzl
-        "tgz2zip",
-
-        # From: //crates:rules.bzl
-        "assemble_crate",
-        "deploy_crate",
-
-        # From: //gcp:rules.bzl
-        "assemble_gcp",
-
-        # From: //github:rules.bzl
-        "deploy_github",
-
-        # From: //maven:rules.bzl
-        "JavaLibInfo",
-        "MavenPomInfo",
-        "MavenDeploymentInfo",
-        "assemble_maven",
-        "deploy_maven",
-
-        # From: //npm:rules.bzl
-        "assemble_npm",
-        "deploy_npm",
-
-        # From: //packer:rules.bzl
-        "assemble_packer",
-        "deploy_packer",
-
-        # From: //pip:rules.bzl
-        "assemble_pip",
-        "deploy_pip",
-
-        # From: //rpm:rules.bzl
-        "assemble_rpm",
-        "deploy_rpm",
-    ],
-)
+#stardoc(
+#    name = "docs",
+#    input = "doc_hub.bzl",
+#    out = "README.md",
+#    deps = [
+#        "//apt:lib",
+#        "//aws:lib",
+#        "//azure:lib",
+#        "//brew:lib",
+#        "//common:lib",
+#        "//crates:lib",
+#        "//gcp:lib",
+#        "//github:lib",
+#        "//maven:lib",
+#        "//npm:lib",
+#        "//npm/assemble:lib",
+#        "//npm/deploy:lib",
+#        "//packer:lib",
+#        "//pip:lib",
+#        "//rpm:lib",
+#        ":stardoc_hacks",
+#    ],
+#    symbol_names = [
+#        # From: //apt:rules.bzl
+#        "assemble_apt",
+#        "deploy_apt",
+#
+#        # From: //aws:rules.bzl
+#        "assemble_aws",
+#
+#        # From: //azure:rules.bzl
+#        "assemble_azure",
+#
+#        # From: //brew:rules.bzl
+#        "deploy_brew",
+#
+#        # From: //common/assemble_versioned:rules.bzl
+#        "assemble_versioned",
+#
+#        # From: //common/checksum:rules.bzl
+#        "checksum",
+#
+#        # From: //common/generate_json_config:rules.bzl
+#        "generate_json_config",
+#
+#        # From: //common/java_deps:rules.bzl
+#        "MAVEN_COORDINATES_PREFIX",
+#        "JarToMavenCoordinatesMapping",
+#        "TransitiveJarToMavenCoordinatesMapping",
+#        "java_deps",
+#
+#        # From: //common:rules.bzl
+#        "assemble_targz",
+#        "assemble_zip",
+#
+#        # From: //common/tgz2zip:rules.bzl
+#        "tgz2zip",
+#
+#        # From: //crates:rules.bzl
+#        "assemble_crate",
+#        "deploy_crate",
+#
+#        # From: //gcp:rules.bzl
+#        "assemble_gcp",
+#
+#        # From: //github:rules.bzl
+#        "deploy_github",
+#
+#        # From: //maven:rules.bzl
+#        "JavaLibInfo",
+#        "MavenPomInfo",
+#        "MavenDeploymentInfo",
+#        "assemble_maven",
+#        "deploy_maven",
+#
+#        # From: //npm:rules.bzl
+#        "assemble_npm",
+#        "deploy_npm",
+#
+#        # From: //packer:rules.bzl
+#        "assemble_packer",
+#        "deploy_packer",
+#
+#        # From: //pip:rules.bzl
+#        "assemble_pip",
+#        "deploy_pip",
+#
+#        # From: //rpm:rules.bzl
+#        "assemble_rpm",
+#        "deploy_rpm",
+#    ],
+#)
