@@ -23,6 +23,10 @@ bzl_library(
     name = "lib",
     srcs = [
         "rules.bzl",
+        "@rules_pkg//:rpm.bzl",
+    ],
+    deps = [
+        "@rules_pkg//doc_build:rules_pkg_lib",
     ],
     visibility = ["//visibility:public"]
 )

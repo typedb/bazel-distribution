@@ -20,7 +20,6 @@
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_pkg//:rpm.bzl", "pkg_rpm")
 
-
 def _assemble_rpm_version_file_impl(ctx):
     version = ctx.var.get('version', '0.0.0')
 
