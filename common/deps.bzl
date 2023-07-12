@@ -3,32 +3,20 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 def rules_python():
     http_archive(
-        name = "bazel_skylib",
-        sha256 = "74d544d96f4a5bb630d465ca8bbcfe231e3594e5aae57e1edbf17a6eb3ca2506",
-        urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
-            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
-        ],
-    )
-    http_archive(
         name = "rules_python",
-        sha256 = "fda23c37fbacf7579f94d5e8f342d3a831140e9471b770782e83846117dd6596",
-        strip_prefix = "rules_python-0.15.0",
-        url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.15.0.tar.gz",
+        sha256 = "84aec9e21cc56fbc7f1335035a71c850d1b9b5cc6ff497306f84cced9a769841",
+        strip_prefix = "rules_python-0.23.1",
+        url = "https://github.com/bazelbuild/rules_python/releases/download/0.23.1/rules_python-0.23.1.tar.gz",
     )
 
 def rules_pkg():
     http_archive(
         name = "rules_pkg",
         urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.4.0/rules_pkg-0.4.0.tar.gz",
-            "https://github.com/bazelbuild/rules_pkg/releases/download/0.4.0/rules_pkg-0.4.0.tar.gz",
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
+            "https://github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
         ],
-        sha256 = "038f1caa773a7e35b3663865ffb003169c6a71dc995e39bf4815792f385d837d",
-        patches = [
-            "@vaticle_bazel_distribution//:bazelbuild_rules_pkg-allow-long-filenames.patch",
-        ],
-        patch_args = ["-p1"],
+        sha256 = "8f9ee2dc10c1ae514ee599a8b42ed99fa262b757058f65ad3c384289ff70c4b8",
     )
 
 def rules_kotlin():
@@ -54,9 +42,6 @@ def rules_jvm_external():
 def rules_rust():
     http_archive(
         name = "rules_rust",
-        sha256 = "531bdd470728b61ce41cf7604dc4f9a115983e455d46ac1d0c1632f613ab9fc3",
-        strip_prefix = "rules_rust-d8238877c0e552639d3e057aadd6bfcf37592408",
-        urls = [
-            "https://github.com/bazelbuild/rules_rust/archive/d8238877c0e552639d3e057aadd6bfcf37592408.tar.gz",
-        ],
+        sha256 = "aaaa4b9591a5dad8d8907ae2dbe6e0eb49e6314946ce4c7149241648e56a1277",
+        urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.16.1/rules_rust-v0.16.1.tar.gz"],
     )
