@@ -208,7 +208,9 @@ def _aggregate_dependency_info_impl(target, ctx):
             jars, source_jars + [None] * (len(jars) - len(source_jars))
         )]
     else:
-        fail("Unsure how to package dependency for target: %s" % target)
+        print("WARNING: unsure how to package dependency for target: %s, contains JavaInfo:\n %s" % (target, target[JavaInfo]))
+        print("WARNING: proceeding with empty dependency")
+        dependencies = []
 
     return JarInfo(
         name = maven_coordinates,
