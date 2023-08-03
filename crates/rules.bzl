@@ -87,13 +87,20 @@ def _assemble_crate_impl(ctx):
         validate_url('documentation', ctx.attr.documentation)
         args.append("--documentation")
         args.append(ctx.attr.documentation)
+    if ctx.attr.crate_features:
+        args.append("--features")
+        args.append(";".join([
+            feature + "=" + ",".join(implied) if implied else feature for feature, implied in ctx.attr.crate_features.items()
+        ]))
+    if ctx.files.universe_manifests:
+        args += ["--universe-manifests", ";".join([f.path for f in ctx.files.universe_manifests])]
     inputs = [version_file]
     if ctx.file.readme_file:
         args.append("--readme-file")
         args.append(ctx.file.readme_file.path)
         inputs.append(ctx.file.readme_file)
     ctx.actions.run(
-        inputs = inputs + ctx.attr.target[CrateInfo].srcs.to_list(),
+        inputs = inputs + ctx.attr.target[CrateInfo].srcs.to_list() + ctx.files.universe_manifests,
         outputs = [ctx.outputs.crate_package, ctx.outputs.metadata_json],
         executable = ctx.executable._crate_assembler_tool,
         arguments = args,
@@ -159,6 +166,20 @@ assemble_crate = rule(
             File containing version string.
             Alternatively, pass --define version=VERSION to Bazel invocation.
             Not specifying version at all defaults to '0.0.0'
+            """,
+        ),
+        "universe_manifests": attr.label_list(
+            doc = """
+            The Cargo manifests used by crates_universe to generate Bazel targets for crates.io dependencies.
+
+            These manifests serve as the source of truth for emitting dependency configuration in the assembled crate,
+            such as explicitly requested features and the exact version requirement.
+            """,
+            allow_files = True,
+        ),
+        "crate_features": attr.string_list_dict(
+            doc = """
+            Available features in the crate, in format similar to the cargo features format.
             """,
         ),
         "authors": attr.string_list(

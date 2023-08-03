@@ -25,6 +25,7 @@ import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonArray
 import com.eclipsesource.json.JsonObject
 import com.electronwill.nightconfig.core.Config
+import com.electronwill.nightconfig.toml.TomlParser
 import com.electronwill.nightconfig.toml.TomlWriter
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
@@ -37,7 +38,6 @@ import java.io.ByteArrayInputStream
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.concurrent.Callable
 import java.util.zip.GZIPOutputStream
 import kotlin.system.exitProcess
@@ -93,6 +93,12 @@ class CrateAssembler : Callable<Unit> {
 
     @Option(names = ["--repository"], required = true)
     lateinit var repository: String
+
+    @Option(names = ["--features"], split = ";")
+    var features: Array<String> = arrayOf()
+
+    @Option(names = ["--universe-manifests"], split = ";")
+    var universeManifests: Array<File> = arrayOf()
 
     @Option(names = ["--readme-file"])
     var readmeFile: File? = null
@@ -157,12 +163,30 @@ class CrateAssembler : Callable<Unit> {
             cargoToml.set<Config>("lib", this)
             set<String>("path", crateRootPath)
         }
+
+        val canonicalDeps: Map<String, String> = universeManifests.flatMap {
+            TomlParser().parse(it.inputStream())
+                    .getOrElse("dependencies", Config.inMemory()).entrySet().asSequence()
+        }.associate { it.key to it.getValue() }
+
         cargoToml.createSubConfig().apply {
             cargoToml.set<Config>("dependencies", this)
             depsList.associate { it.split("=").let { (dep, ver) -> dep to ver } }.forEach { (dep, ver) ->
-                set<String>(dep, ver)
+                if (canonicalDeps.contains(dep)) set<String>(dep, canonicalDeps[dep])
+                else set<String>(dep, "=$ver")
             }
         }
+
+        if (features.isNotEmpty()) {
+            cargoToml.createSubConfig().apply {
+                cargoToml.set<Config>("features", this)
+                features.associate { it.split("=").let { items ->
+                    if (items.size == 2) items[0] to items[1].split(",")
+                    else items[0] to listOf()
+                } } .forEach { (feature, implied) -> set(feature, implied) }
+            }
+        }
+
         return TomlWriter().writeToString(cargoToml.unmodifiable())
     }
 
