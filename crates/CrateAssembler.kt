@@ -55,6 +55,11 @@ class CrateAssembler : Callable<Unit> {
     private val depsList: Array<String>
         get() = if (deps.isEmpty()) emptyArray() else deps.split(";").toTypedArray()
 
+    @Option(names = ["--dep-features"])
+    lateinit var depFeatures: String
+    private val depFeaturesList: Array<String>
+        get() = if (depFeatures.isEmpty()) emptyArray() else depFeatures.split(";").toTypedArray()
+
     @Option(names = ["--output-crate"], required = true)
     lateinit var outputCrateFile: File
 
@@ -164,16 +169,26 @@ class CrateAssembler : Callable<Unit> {
             set<String>("path", crateRootPath)
         }
 
-        val canonicalDeps: Map<String, String> = universeManifests.flatMap {
+        val canonicalDeps = universeManifests.flatMap {
             TomlParser().parse(it.inputStream())
                     .getOrElse("dependencies", Config.inMemory()).entrySet().asSequence()
-        }.associate { it.key to it.getValue() }
+        }.associate { it.key to it.getValue<String>() }
+
+        val bazelDepFeatures = depFeaturesList.associate { it.split("=").let { (dep, feats) -> dep to feats } }
+                .mapValues { (_, feats) -> feats.split(",") }
 
         cargoToml.createSubConfig().apply {
             cargoToml.set<Config>("dependencies", this)
             depsList.associate { it.split("=").let { (dep, ver) -> dep to ver } }.forEach { (dep, ver) ->
-                if (canonicalDeps.contains(dep)) set<String>(dep, canonicalDeps[dep])
-                else set<String>(dep, "=$ver")
+                if (canonicalDeps.contains(dep))
+                    set<String>(dep, canonicalDeps[dep])
+                else if (bazelDepFeatures.containsKey(dep)) {
+                    val depConfig = Config.inMemory()
+                    set<Config>(dep, depConfig)
+                    depConfig.set<String>("version", "=$ver")
+                    depConfig.set("features", bazelDepFeatures[dep])
+                } else
+                    set<String>(dep, "=$ver")
             }
         }
 

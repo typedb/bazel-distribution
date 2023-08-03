@@ -60,8 +60,11 @@ def validate_keywords(keywords):
 
 def _assemble_crate_impl(ctx):
     deps = {}
+    dep_features = {}
     for dependency in ctx.attr.target[CrateSummary].deps:
         deps[dependency[CrateSummary].name] = dependency[CrateSummary].version
+        if dependency[CrateSummary].enabled_features:
+            dep_features[dependency[CrateSummary].name] = ",".join(dependency[CrateSummary].enabled_features)
     validate_url('homepage', ctx.attr.homepage)
     validate_url('repository', ctx.attr.repository)
     validate_keywords(ctx.attr.keywords)
@@ -82,6 +85,7 @@ def _assemble_crate_impl(ctx):
         "--license", ctx.attr.license,
         "--repository", ctx.attr.repository,
         "--deps", ";".join(["{}={}".format(k, v) for k, v in deps.items()]),
+        "--dep-features", ";".join(["{}={}".format(k, v) for k, v in dep_features.items()]),
     ]
     if ctx.attr.documentation != "":
         validate_url('documentation', ctx.attr.documentation)
@@ -90,10 +94,12 @@ def _assemble_crate_impl(ctx):
     if ctx.attr.crate_features:
         args.append("--features")
         args.append(";".join([
-            feature + "=" + ",".join(implied) if implied else feature for feature, implied in ctx.attr.crate_features.items()
+            "{}={}".format(feature, ",".join(implied)) if implied else feature
+            for feature, implied in ctx.attr.crate_features.items()
         ]))
     if ctx.files.universe_manifests:
-        args += ["--universe-manifests", ";".join([f.path for f in ctx.files.universe_manifests])]
+        args.append("--universe-manifests")
+        args.append(";".join([f.path for f in ctx.files.universe_manifests]))
     inputs = [version_file]
     if ctx.file.readme_file:
         args.append("--readme-file")
@@ -117,6 +123,7 @@ CrateSummary = provider(
         "name": "Crate name",
         "version": "Crate version",
         "deps": "Crate dependencies",
+        "enabled_features": "Enabled features",
     },
 )
 
@@ -137,7 +144,8 @@ def _aggregate_crate_summary_impl(target, ctx):
     return CrateSummary(
         name = name,
         version = ctx.rule.attr.version,
-        deps = [target for target in getattr(ctx.rule.attr, "deps", []) + getattr(ctx.rule.attr, "proc_macro_deps", [])]
+        deps = [target for target in getattr(ctx.rule.attr, "deps", []) + getattr(ctx.rule.attr, "proc_macro_deps", [])],
+        enabled_features = getattr(ctx.rule.attr, "crate_features", []),
     )
 
 
