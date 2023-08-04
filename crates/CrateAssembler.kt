@@ -25,6 +25,7 @@ import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonArray
 import com.eclipsesource.json.JsonObject
 import com.electronwill.nightconfig.core.Config
+import com.electronwill.nightconfig.toml.TomlParser
 import com.electronwill.nightconfig.toml.TomlWriter
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
@@ -37,7 +38,6 @@ import java.io.ByteArrayInputStream
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.concurrent.Callable
 import java.util.zip.GZIPOutputStream
 import kotlin.system.exitProcess
@@ -54,6 +54,11 @@ class CrateAssembler : Callable<Unit> {
     lateinit var deps: String
     private val depsList: Array<String>
         get() = if (deps.isEmpty()) emptyArray() else deps.split(";").toTypedArray()
+
+    @Option(names = ["--dep-features"])
+    lateinit var depFeatures: String
+    private val depFeaturesList: Array<String>
+        get() = if (depFeatures.isEmpty()) emptyArray() else depFeatures.split(";").toTypedArray()
 
     @Option(names = ["--output-crate"], required = true)
     lateinit var outputCrateFile: File
@@ -93,6 +98,12 @@ class CrateAssembler : Callable<Unit> {
 
     @Option(names = ["--repository"], required = true)
     lateinit var repository: String
+
+    @Option(names = ["--crate-features"], split = ";")
+    var crateFeatures: Array<String> = arrayOf()
+
+    @Option(names = ["--universe-manifests"], split = ";")
+    var universeManifests: Array<File> = arrayOf()
 
     @Option(names = ["--readme-file"])
     var readmeFile: File? = null
@@ -157,12 +168,40 @@ class CrateAssembler : Callable<Unit> {
             cargoToml.set<Config>("lib", this)
             set<String>("path", crateRootPath)
         }
+
+        val universeDeps = universeManifests.flatMap {
+            TomlParser().parse(it.inputStream())
+                    .getOrElse("dependencies", Config.inMemory()).entrySet().asSequence()
+        }.associate { it.key to it.getValue<String>() }
+
+        val bazelDepFeatures = depFeaturesList.associate { it.split("=").let { (dep, feats) -> dep to feats } }
+                .mapValues { (_, feats) -> feats.split(",") }
+
         cargoToml.createSubConfig().apply {
             cargoToml.set<Config>("dependencies", this)
             depsList.associate { it.split("=").let { (dep, ver) -> dep to ver } }.forEach { (dep, ver) ->
-                set<String>(dep, ver)
+                if (universeDeps.contains(dep))
+                    set<String>(dep, universeDeps[dep])
+                else if (bazelDepFeatures.containsKey(dep)) {
+                    val depConfig = Config.inMemory()
+                    set<Config>(dep, depConfig)
+                    depConfig.set<String>("version", "=$ver")
+                    depConfig.set("features", bazelDepFeatures[dep])
+                } else
+                    set<String>(dep, "=$ver")
             }
         }
+
+        if (crateFeatures.isNotEmpty()) {
+            cargoToml.createSubConfig().apply {
+                cargoToml.set<Config>("features", this)
+                crateFeatures.associate { it.split("=").let { items ->
+                    if (items.size == 2) items[0] to items[1].split(",")
+                    else items[0] to listOf()
+                } } .forEach { (feature, implied) -> set(feature, implied) }
+            }
+        }
+
         return TomlWriter().writeToString(cargoToml.unmodifiable())
     }
 

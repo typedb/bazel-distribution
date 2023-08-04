@@ -60,8 +60,11 @@ def validate_keywords(keywords):
 
 def _assemble_crate_impl(ctx):
     deps = {}
+    dep_features = {}
     for dependency in ctx.attr.target[CrateSummary].deps:
         deps[dependency[CrateSummary].name] = dependency[CrateSummary].version
+        if dependency[CrateSummary].enabled_features:
+            dep_features[dependency[CrateSummary].name] = ",".join(dependency[CrateSummary].enabled_features)
     validate_url('homepage', ctx.attr.homepage)
     validate_url('repository', ctx.attr.repository)
     validate_keywords(ctx.attr.keywords)
@@ -82,18 +85,28 @@ def _assemble_crate_impl(ctx):
         "--license", ctx.attr.license,
         "--repository", ctx.attr.repository,
         "--deps", ";".join(["{}={}".format(k, v) for k, v in deps.items()]),
+        "--dep-features", ";".join(["{}={}".format(k, v) for k, v in dep_features.items()]),
     ]
     if ctx.attr.documentation != "":
         validate_url('documentation', ctx.attr.documentation)
         args.append("--documentation")
         args.append(ctx.attr.documentation)
+    if ctx.attr.crate_features:
+        args.append("--crate-features")
+        args.append(";".join([
+            "{}={}".format(feature, ",".join(implied)) if implied else feature
+            for feature, implied in ctx.attr.crate_features.items()
+        ]))
+    if ctx.files.universe_manifests:
+        args.append("--universe-manifests")
+        args.append(";".join([f.path for f in ctx.files.universe_manifests]))
     inputs = [version_file]
     if ctx.file.readme_file:
         args.append("--readme-file")
         args.append(ctx.file.readme_file.path)
         inputs.append(ctx.file.readme_file)
     ctx.actions.run(
-        inputs = inputs + ctx.attr.target[CrateInfo].srcs.to_list(),
+        inputs = inputs + ctx.attr.target[CrateInfo].srcs.to_list() + ctx.files.universe_manifests,
         outputs = [ctx.outputs.crate_package, ctx.outputs.metadata_json],
         executable = ctx.executable._crate_assembler_tool,
         arguments = args,
@@ -110,6 +123,7 @@ CrateSummary = provider(
         "name": "Crate name",
         "version": "Crate version",
         "deps": "Crate dependencies",
+        "enabled_features": "Enabled features",
     },
 )
 
@@ -130,7 +144,8 @@ def _aggregate_crate_summary_impl(target, ctx):
     return CrateSummary(
         name = name,
         version = ctx.rule.attr.version,
-        deps = [target for target in getattr(ctx.rule.attr, "deps", []) + getattr(ctx.rule.attr, "proc_macro_deps", [])]
+        deps = [target for target in getattr(ctx.rule.attr, "deps", []) + getattr(ctx.rule.attr, "proc_macro_deps", [])],
+        enabled_features = getattr(ctx.rule.attr, "crate_features", []),
     )
 
 
@@ -159,6 +174,20 @@ assemble_crate = rule(
             File containing version string.
             Alternatively, pass --define version=VERSION to Bazel invocation.
             Not specifying version at all defaults to '0.0.0'
+            """,
+        ),
+        "universe_manifests": attr.label_list(
+            doc = """
+            The Cargo manifests used by crates_universe to generate Bazel targets for crates.io dependencies.
+
+            These manifests serve as the source of truth for emitting dependency configuration in the assembled crate,
+            such as explicitly requested features and the exact version requirement.
+            """,
+            allow_files = True,
+        ),
+        "crate_features": attr.string_list_dict(
+            doc = """
+            Available features in the crate, in format similar to the cargo features format.
             """,
         ),
         "authors": attr.string_list(
