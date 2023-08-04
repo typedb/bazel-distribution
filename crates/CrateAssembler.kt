@@ -99,8 +99,8 @@ class CrateAssembler : Callable<Unit> {
     @Option(names = ["--repository"], required = true)
     lateinit var repository: String
 
-    @Option(names = ["--features"], split = ";")
-    var features: Array<String> = arrayOf()
+    @Option(names = ["--crate-features"], split = ";")
+    var crateFeatures: Array<String> = arrayOf()
 
     @Option(names = ["--universe-manifests"], split = ";")
     var universeManifests: Array<File> = arrayOf()
@@ -169,7 +169,7 @@ class CrateAssembler : Callable<Unit> {
             set<String>("path", crateRootPath)
         }
 
-        val canonicalDeps = universeManifests.flatMap {
+        val universeDeps = universeManifests.flatMap {
             TomlParser().parse(it.inputStream())
                     .getOrElse("dependencies", Config.inMemory()).entrySet().asSequence()
         }.associate { it.key to it.getValue<String>() }
@@ -180,8 +180,8 @@ class CrateAssembler : Callable<Unit> {
         cargoToml.createSubConfig().apply {
             cargoToml.set<Config>("dependencies", this)
             depsList.associate { it.split("=").let { (dep, ver) -> dep to ver } }.forEach { (dep, ver) ->
-                if (canonicalDeps.contains(dep))
-                    set<String>(dep, canonicalDeps[dep])
+                if (universeDeps.contains(dep))
+                    set<String>(dep, universeDeps[dep])
                 else if (bazelDepFeatures.containsKey(dep)) {
                     val depConfig = Config.inMemory()
                     set<Config>(dep, depConfig)
@@ -192,10 +192,10 @@ class CrateAssembler : Callable<Unit> {
             }
         }
 
-        if (features.isNotEmpty()) {
+        if (crateFeatures.isNotEmpty()) {
             cargoToml.createSubConfig().apply {
                 cargoToml.set<Config>("features", this)
-                features.associate { it.split("=").let { items ->
+                crateFeatures.associate { it.split("=").let { items ->
                     if (items.size == 2) items[0] to items[1].split(",")
                     else items[0] to listOf()
                 } } .forEach { (feature, implied) -> set(feature, implied) }

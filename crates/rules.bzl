@@ -92,7 +92,7 @@ def _assemble_crate_impl(ctx):
         args.append("--documentation")
         args.append(ctx.attr.documentation)
     if ctx.attr.crate_features:
-        args.append("--features")
+        args.append("--crate-features")
         args.append(";".join([
             "{}={}".format(feature, ",".join(implied)) if implied else feature
             for feature, implied in ctx.attr.crate_features.items()
