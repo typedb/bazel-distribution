@@ -39,5 +39,6 @@ setup(
     install_requires=INSTALL_REQUIRES_PLACEHOLDER,
     zip_safe=False,
     python_requires="{python_requires}",
-    setup_requires=["wheel"]
+    entry_points={entry_points},
+    setup_requires=["setuptools-git", "wheel"]
 )

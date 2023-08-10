@@ -36,6 +36,7 @@ py_binary(
     srcs = ["assemble.py"],
     deps = [
         vaticle_bazel_distribution_requirement("setuptools"),
+        vaticle_bazel_distribution_requirement("setuptools-git"),
         vaticle_bazel_distribution_requirement("wheel")
     ],
     visibility = ["//visibility:public"]

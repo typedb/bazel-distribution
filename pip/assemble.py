@@ -28,14 +28,6 @@ import tempfile
 from setuptools.sandbox import run_setup
 
 
-def create_init_files(directory):
-    from os import walk
-    from os.path import join
-    for dirName, subdirList, fileList in walk(directory):
-        if "__init__.py" not in fileList:
-            open(join(dirName, "__init__.py"), "w").close()
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--output_sdist', help="Output targz archive")
 parser.add_argument('--output_wheel', help="Output wheel archive")
@@ -103,9 +95,6 @@ shutil.copy(args.readme, readme)
 
 # change directory into new package root
 os.chdir(pkg_dir)
-
-# ensure every folder is a Python package
-create_init_files(pkg_dir)
 
 # pack sources
 run_setup(setup_py, ['sdist', 'bdist_wheel'])
