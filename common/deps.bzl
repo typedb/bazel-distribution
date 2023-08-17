@@ -6,13 +6,6 @@ def rules_python():
         name = "rules_python",
         remote = "https://github.com/bazelbuild/rules_python.git",
         tag = "0.24.0",
-        patches = [
-            # Force rules_python to export the requirements.bzl file in
-            # order for stardoc to be able to load it during documentation
-            # generation.
-            "@vaticle_bazel_distribution//:bazelbuild_rules_python-export-requirements-bzl-for-stardoc.patch",
-        ],
-        patch_args = ["-p1"],
     )
 
 def rules_pkg():
