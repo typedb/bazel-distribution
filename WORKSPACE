@@ -60,12 +60,6 @@ pip_deps()
 load("@vaticle_bazel_distribution_pip//:requirements.bzl", "install_deps")
 install_deps()
 
-# Load @rules_pkg
-load("//common:deps.bzl", "rules_pkg")
-rules_pkg()
-load("@rules_pkg//pkg:deps.bzl", "rules_pkg_dependencies")
-rules_pkg_dependencies()
-
 # TODO: remove this declaration once we upgrade to @io_bazel_stardoc with Bazel 5 support
 # Load @bazel_skylib
 http_archive(
@@ -79,6 +73,13 @@ http_archive(
 
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
+
+# Load @rules_pkg
+load("//common:deps.bzl", "rules_pkg")
+rules_pkg()
+load("@rules_pkg//pkg:deps.bzl", "rules_pkg_dependencies")
+rules_pkg_dependencies()
+
 
 # Load @io_bazel_stardoc
 http_archive(
