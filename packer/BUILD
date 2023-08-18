@@ -23,7 +23,8 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 bzl_library(
     name = "lib",
     srcs = [
-        "rules.bzl"
+        "rules.bzl",
+        "@bazel_tools//tools:bzl_srcs",
     ],
     visibility = ["//visibility:public"]
 )

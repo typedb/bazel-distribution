@@ -26,6 +26,9 @@ bzl_library(
     srcs = [
         "rules.bzl",
     ],
+    deps = [
+        "@rules_rust//rust:bzl_lib"
+    ],
     visibility = ["//visibility:public"],
 )
 

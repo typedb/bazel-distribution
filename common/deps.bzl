@@ -9,17 +9,10 @@ def rules_python():
     )
 
 def rules_pkg():
-    http_archive(
+    git_repository(
         name = "rules_pkg",
-        urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.4.0/rules_pkg-0.4.0.tar.gz",
-            "https://github.com/bazelbuild/rules_pkg/releases/download/0.4.0/rules_pkg-0.4.0.tar.gz",
-        ],
-        sha256 = "038f1caa773a7e35b3663865ffb003169c6a71dc995e39bf4815792f385d837d",
-        patches = [
-            "@vaticle_bazel_distribution//:bazelbuild_rules_pkg-allow-long-filenames.patch",
-        ],
-        patch_args = ["-p1"],
+        remote = "https://github.com/bazelbuild/rules_pkg",
+        tag = "0.9.1",
     )
 
 def rules_kotlin():
@@ -42,9 +35,6 @@ def rules_jvm_external():
 def rules_rust():
     http_archive(
         name = "rules_rust",
-        sha256 = "531bdd470728b61ce41cf7604dc4f9a115983e455d46ac1d0c1632f613ab9fc3",
-        strip_prefix = "rules_rust-d8238877c0e552639d3e057aadd6bfcf37592408",
-        urls = [
-            "https://github.com/bazelbuild/rules_rust/archive/d8238877c0e552639d3e057aadd6bfcf37592408.tar.gz",
-        ],
+        sha256 = "9d04e658878d23f4b00163a72da3db03ddb451273eb347df7d7c50838d698f49",
+        urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.26.0/rules_rust-v0.26.0.tar.gz"],
     )

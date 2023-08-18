@@ -29,6 +29,14 @@ rules_kotlin()
 rules_jvm_external()
 rules_rust()
 
+# Load @rules_python
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
+py_repositories()
+python_register_toolchains(
+    name = "python39",
+    python_version = "3.9",
+)
+
 # Load @io_bazel_rules_kotlin
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
 kotlin_repositories()
@@ -55,17 +63,17 @@ install_deps()
 # Load @rules_pkg
 load("//common:deps.bzl", "rules_pkg")
 rules_pkg()
-load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+load("@rules_pkg//pkg:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
 
 # TODO: remove this declaration once we upgrade to @io_bazel_stardoc with Bazel 5 support
 # Load @bazel_skylib
 http_archive(
     name = "bazel_skylib",
-    sha256 = "f24ab666394232f834f74d19e2ff142b0af17466ea0c69a3f4c276ee75f6efce",
+    sha256 = "66ffd9315665bfaafc96b52278f57c7e2dd09f5ede279ea6d39b2be471e7e3aa",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.4.0/bazel-skylib-1.4.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.4.0/bazel-skylib-1.4.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.4.2/bazel-skylib-1.4.2.tar.gz",
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.4.2/bazel-skylib-1.4.2.tar.gz"
     ],
 )
 
@@ -73,10 +81,14 @@ load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
 
 # Load @io_bazel_stardoc
-git_repository(
-    name = "io_bazel_stardoc",
-    remote = "https://github.com/bazelbuild/stardoc",
-    tag = "0.5.1",
+http_archive(
+    name = "bazel_stardoc",
+    sha256 = "dfbc364aaec143df5e6c52faf1f1166775a5b4408243f445f44b661cfdc3134f",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/stardoc/releases/download/0.5.6/stardoc-0.5.6.tar.gz",
+        "https://github.com/bazelbuild/stardoc/releases/download/0.5.6/stardoc-0.5.6.tar.gz",
+    ],
 )
-load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
+
+load("@bazel_stardoc//:setup.bzl", "stardoc_repositories")
 stardoc_repositories()
