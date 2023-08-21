@@ -36,6 +36,15 @@ def create_init_files(directory):
             open(join(dirName, "__init__.py"), "w").close()
 
 
+def split_path(path: str) -> list[str]:
+    head, tail = os.path.split(path)
+    dirs = [tail]
+    while head:
+        head, tail = os.path.split(head)
+        dirs.append(tail)
+    return dirs[::-1]
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--output_sdist', help="Output targz archive")
 parser.add_argument('--output_wheel', help="Output wheel archive")
@@ -65,6 +74,9 @@ if not args.files:
 
 for f in args.files + args.data_files:
     fn = f
+    # We need to move generated files from `bazel-out/.../bin` to the package directory
+    if fn.startswith("bazel-out"):
+        fn = os.path.join(*split_path(fn)[3:])
     for _imp in args.imports:
         match = _imp.match(fn)
         if match:
@@ -83,6 +95,9 @@ if args.data_files:
     manifest_in_path = os.path.join(pkg_dir, 'MANIFEST.in')
     with open(manifest_in_path, 'w') as manifest_in:
         for f in args.data_files:
+            # We need to move generated files from `bazel-out/.../bin` to the package directory
+            if f.startswith("bazel-out"):
+                f = os.path.join(*split_path(f)[3:])
             manifest_in.write("include {}\n".format(f))
 
 setup_py = os.path.join(pkg_dir, 'setup.py')

@@ -17,35 +17,9 @@
 # under the License.
 #
 
-load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
+load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-exports_files([
-    "bazelbuild_rules_python-export-requirements-bzl-for-stardoc.patch",
-    "bazelbuild_rules_pkg-fix-tarfile-format.patch",
-])
-
-# Stardoc is unable to generate documentation unless it can
-# load files that our rule files depends on via load(...)
-# statements.
-# This means it needs to have them accessible within the
-# sandbox, which it can only do if it depends on the files
-# as source.
-# https://github.com/bazelbuild/skydoc/issues/166
-bzl_library(
-    name = "stardoc_hacks",
-    srcs = [
-        "@rules_pkg//:pkg.bzl",
-        "@rules_pkg//:path.bzl",
-        "@rules_pkg//:rpm.bzl",
-        "@rules_pkg//:providers.bzl",
-        "@rules_pkg//:private/util.bzl",
-        "@bazel_tools//tools:bzl_srcs",
-        "@vaticle_bazel_distribution_pip//:requirements.bzl",
-        "@rules_python//python:whl.bzl",
-        "@rules_rust//rust:rules",
-    ],
-)
 
 stardoc(
     name = "docs",
@@ -67,7 +41,6 @@ stardoc(
         "//packer:lib",
         "//pip:lib",
         "//rpm:lib",
-        ":stardoc_hacks",
     ],
     symbol_names = [
         # From: //apt:rules.bzl
