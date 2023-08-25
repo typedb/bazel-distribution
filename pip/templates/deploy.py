@@ -77,7 +77,7 @@ with open("{version_file}") as version_file:
     version = version_file.read().strip()
 try:
     new_package_file = dist_dir + "/{package_file}".replace(".tar.gz", "-{}.tar.gz".format(version))
-    new_wheel_pep491 = dist_dir + "/{wheel_file}".replace("-", "_").replace(".whl", "-{}-py3-none-any.whl".format(version))
+    new_wheel_pep491 = dist_dir + "/{wheel_file}".replace("-", "_").replace(".whl", "-{}-{distribution_tag}.whl".format(version))
 
     if not os.path.exists(os.path.dirname(new_package_file)):
         os.makedirs(os.path.dirname(new_package_file))

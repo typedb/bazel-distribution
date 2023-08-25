@@ -179,6 +179,7 @@ def _deploy_pip_impl(ctx):
             "{pypirc_repository}": ctx.attr.pypirc_repository,
             "{snapshot}": ctx.attr.snapshot,
             "{release}": ctx.attr.release,
+            "{distribution_tag}": ctx.attr.distribution_tag,
         }
     )
 
@@ -316,6 +317,10 @@ deploy_pip = rule(
         "pypirc_repository": attr.string(
             default = "",
             doc = "Repository name in the .pypirc profile to deploy to"
+        ),
+        "distribution_tag": attr.string(
+            default = "py3-none-any",
+            doc = "Specify tag for the package name. Format: {python tag}-{abi tag}-{platform tag} (PEP 425)",
         ),
         "_deploy_py_template": attr.label(
             allow_single_file = True,
