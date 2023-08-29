@@ -36,13 +36,13 @@ def create_init_files(directory):
             open(join(dirName, "__init__.py"), "w").close()
 
 
-def split_path(path: str) -> list[str]:
-    head, tail = os.path.split(path)
-    dirs = [tail]
-    while head:
-        head, tail = os.path.split(head)
-        dirs.append(tail)
-    return dirs[::-1]
+# def split_path(path: str) -> list[str]:
+#     head, tail = os.path.split(path)
+#     dirs = [tail]
+#     while head:
+#         head, tail = os.path.split(head)
+#         dirs.append(tail)
+#     return dirs[::-1]
 
 
 parser = argparse.ArgumentParser()
@@ -74,31 +74,37 @@ if not args.files:
 
 for f in args.files + args.data_files:
     fn = f
-    # We need to move generated files from `bazel-out/.../bin` to the package directory
-    if fn.startswith("bazel-out"):
-        fn = os.path.join(*split_path(fn)[3:])
+    # We need to move generated files from `bazel-out/.../bin/python` to the package directory
+    if re.fullmatch(r"bazel-out[/\\][^/\\]*[/\\]bin[/\\]python[/\\](.*)", fn):
+        fn = re.sub(r"bazel-out[/\\][^/\\]*[/\\]bin[/\\]python[/\\](.*)", r"\1", fn)
     for _imp in args.imports:
         match = _imp.match(fn)
         if match:
             fn = match.group('fn')
             break
-    try:
-        e = os.path.join(pkg_dir, os.path.dirname(fn))
-        os.makedirs(e)
-    except OSError:
-        # directory already exists
-        pass
-    shutil.copy(f, os.path.join(pkg_dir, fn))
+    # We do not need other files from `bazel-out`
+    if not fn.startswith("bazel-out"):
+        # Remove `python` from the beginning of the path
+        fn = re.sub(r"(python[/\\]|)(.*)", r"\2", fn)
+        try:
+            e = os.path.join(pkg_dir, os.path.dirname(fn))
+            os.makedirs(e)
+        except OSError:
+            # directory already exists
+            pass
+        shutil.copy(f, os.path.join(pkg_dir, fn))
 
 # MANIFEST.in is needed for data files that are not included in version control
 if args.data_files:
     manifest_in_path = os.path.join(pkg_dir, 'MANIFEST.in')
     with open(manifest_in_path, 'w') as manifest_in:
         for f in args.data_files:
-            # We need to move generated files from `bazel-out/.../bin` to the package directory
-            if f.startswith("bazel-out"):
-                f = os.path.join(*split_path(f)[3:])
-            manifest_in.write("include {}\n".format(f))
+            # We need to move generated files from `bazel-out/.../bin/python` to the package directory
+            if re.fullmatch(r"bazel-out[/\\][^/\\]*[/\\]bin[/\\]python[/\\](.*)", f):
+                f = re.sub(r"bazel-out[/\\][^/\\]*[/\\]bin[/\\]python[/\\](.*)", r"\1", f)
+            # We do not need other files from `bazel-out`
+            if not f.startswith("bazel-out"):
+                manifest_in.write("include {}\n".format(f))
 
 setup_py = os.path.join(pkg_dir, 'setup.py')
 readme = os.path.join(pkg_dir, 'README.md')
