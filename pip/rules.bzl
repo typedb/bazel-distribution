@@ -83,18 +83,18 @@ def _assemble_pip_impl(ctx):
     python_source_files = []
 
     imports = []
-    for j in ctx.attr.target[PyInfo].imports.to_list():
-        if 'pypi' not in j:
-            imports.append(j)
+    for file in ctx.attr.target[PyInfo].imports.to_list():
+        if 'pypi' not in file:
+            imports.append(file)
 
-    for i in ctx.attr.target[PyInfo].transitive_sources.to_list():
-        if 'pypi' not in i.path and 'external' not in i.path:
-            python_source_files.append(i)
+    for file in ctx.attr.target[PyInfo].transitive_sources.to_list():
+        if 'pypi' not in file.path and 'external' not in file.path:
+            python_source_files.append(file)
 
     data_files = []
-    for i in ctx.attr.target[DefaultInfo].data_runfiles.files.to_list():
-         if 'pypi' not in i.path and 'external' not in i.path and i.extension != "py":
-            data_files.append(i)
+    for file in ctx.attr.target[DefaultInfo].data_runfiles.files.to_list():
+        if 'pypi' not in file.path and 'external' not in file.path and file.extension != "py":
+            data_files.append(file)
 
     if ctx.attr.python_requires.startswith(">2.") or ctx.attr.python_requires.startswith("=2."):
         fail("This rule only supports Python 3.x, was given 'python_requires = " + ctx.attr.python_requires + "'.")
