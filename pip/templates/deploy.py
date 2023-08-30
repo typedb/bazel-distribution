@@ -51,14 +51,20 @@ def upload_command(repo_type_key, package_file, wheel_file):
         raise Exception(f"Selected repository must be one of: {list(repositories.keys())}")
 
     if repo_type_key == PYPIRC_KEY:
-        return [package_file, wheel_file, '--repository', repositories[repo_type_key]]
+        if package_file:
+            return [package_file, wheel_file, '--repository', repositories[repo_type_key]]
+        else:
+            return [wheel_file, '--repository', repositories[repo_type_key]]
     elif repo_type_key == SNAPSHOT_KEY or repo_type_key == RELEASE_KEY:
         pip_username, pip_password = (os.getenv(ENV_DEPLOY_PIP_USERNAME), os.getenv(ENV_DEPLOY_PIP_PASSWORD))
         if not pip_username:
             raise Exception(f"username should be passed via the {ENV_DEPLOY_PIP_USERNAME} environment variable")
         if not pip_password:
             raise Exception(f"password should be passed via the {ENV_DEPLOY_PIP_PASSWORD} environment variable")
-        return [package_file, wheel_file, '-u', pip_username, '-p', pip_password, '--repository-url', repositories[repo_type_key]]
+        if package_file:
+            return [package_file, wheel_file, '-u', pip_username, '-p', pip_password, '--repository-url', repositories[repo_type_key]]
+        else:
+            return [wheel_file, '-u', pip_username, '-p', pip_password, '--repository-url', repositories[repo_type_key]]
     else:
         raise Exception(f"Unrecognised repository selector: {repo_type_key}")
 
@@ -88,6 +94,10 @@ try:
     shutil.copy("{package_file}", new_package_file)
     shutil.copy("{wheel_file}", new_wheel_pep491)
 
-    twine.commands.upload.main(upload_command(repo_type_key, new_package_file, new_wheel_pep491))
+    # Do not upload a package file if we build for specific platform, because we use a precompiled library
+    if "{distribution_tag}".endswith("any"):
+        twine.commands.upload.main(upload_command(repo_type_key, new_package_file, new_wheel_pep491))
+    else:
+        twine.commands.upload.main(upload_command(repo_type_key, None, new_wheel_pep491))
 finally:
     shutil.rmtree(dist_dir)
