@@ -20,6 +20,7 @@ pkginfo==1.9.6
 pycparser==2.21
 pygments==2.14.0
 pyparsing==3.0.9
+pywin32-ctypes==0.2.2; sys_platform == 'win32'
 readme-renderer==37.3
 requests==2.28.2
 requests-toolbelt==0.10.1
