@@ -78,6 +78,9 @@ class PomGenerator : Callable<Unit> {
     @Option(names = ["--target_deps_coordinates"])
     lateinit var dependencyCoordinates: String
 
+    @Option(names = ["--packaging"])
+    var packaging = ""
+
     fun getLicenseInfo(license_id: String): Pair<String, String> {
         return when {
             license_id.equals("apache") -> {
@@ -251,6 +254,12 @@ class PomGenerator : Callable<Unit> {
         val versionElem = pom.createElement("version")
         versionElem.appendChild(pom.createTextNode(version))
         rootElement.appendChild(versionElem)
+
+        if (packaging.isNotEmpty() && packaging != "jar") {
+            val packagingElem = pom.createElement("packaging")
+            packagingElem.appendChild(pom.createTextNode(packaging))
+            rootElement.appendChild(packagingElem)
+        }
 
         // add dependency information
         rootElement.appendChild(dependencies(pom, version, workspace_refs))
