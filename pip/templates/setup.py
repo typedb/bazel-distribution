@@ -22,11 +22,14 @@ from setuptools import find_namespace_packages
 
 packages = find_namespace_packages()
 
+with open('README.md') as f:
+    readme = f.read()
+
 setup(
     name = "{name}",
     version = "{version}",
     description = "{description}",
-    long_description = open('README.md').read(),
+    long_description = readme,
     long_description_content_type="text/markdown",
     classifiers = {classifiers},
     keywords = "{keywords}",
