@@ -130,8 +130,8 @@ if args.data_files:
             if not f.startswith("bazel-out"):
                 manifest_in.write("include {}\n".format(f))
 
-setup_py = os.path.join(pkg_dir, 'setup.py')
-readme = os.path.join(pkg_dir, 'README.md')
+setup_py = os.path.join(pkg_dir, f'setup{args.suffix}.py')
+readme = os.path.join(pkg_dir, f'README{args.suffix}.md')
 
 with open(args.setup_py) as setup_py_template:
     install_requires = []

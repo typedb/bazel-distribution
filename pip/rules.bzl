@@ -107,8 +107,8 @@ def _assemble_pip_impl(ctx):
     args.add('--suffix', ctx.attr.suffix)
 
     # Final 'setup.py' is generated in 2 steps
-    setup_py = ctx.actions.declare_file("setup.py")
-    preprocessed_setup_py = ctx.actions.declare_file("_setup.py")
+    setup_py = ctx.actions.declare_file("setup" + ctx.attr.suffix + ".py")
+    preprocessed_setup_py = ctx.actions.declare_file("_setup" + ctx.attr.suffix + ".py")
 
     # Step 1: fill in everything except version
     ctx.actions.expand_template(
@@ -125,6 +125,7 @@ def _assemble_pip_impl(ctx):
           "{license}": ctx.attr.license,
           "{long_description_file}": ctx.file.long_description_file.path,
           "{python_requires}": ctx.attr.python_requires,
+          "{suffix}": ctx.attr.suffix,
       },
     )
 
