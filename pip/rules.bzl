@@ -133,7 +133,7 @@ def _assemble_pip_impl(ctx):
 
         if len(version) == 40:
             # this is a commit SHA, most likely
-            version = "0.0.0.{}".format(version)
+            version = "0.0.0+{}".format(version)
 
         ctx.actions.run_shell(
             inputs = [],
