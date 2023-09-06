@@ -78,6 +78,9 @@ class PomGenerator : Callable<Unit> {
     @Option(names = ["--target_deps_coordinates"])
     lateinit var dependencyCoordinates: String
 
+    @Option(names = ["--profiles"])
+    var profilesSpec: String = ""
+
     fun getLicenseInfo(license_id: String): Pair<String, String> {
         return when {
             license_id.equals("apache") -> {
@@ -165,9 +168,9 @@ class PomGenerator : Callable<Unit> {
         return scm
     }
 
-    fun dependencies(pom: Document, version: String, workspace_refs: JsonObject): Element {
+    fun dependencies(pom: Document, version: String, workspace_refs: JsonObject, dependencies: String): Element {
         val dependenciesElem = pom.createElement("dependencies")
-        val coordinates = if (dependencyCoordinates.length == 0) emptyArray<String>() else dependencyCoordinates.split(";").toTypedArray()
+        val coordinates = if (dependencies.isEmpty()) emptyArray() else dependencies.split(";").toTypedArray()
         for (dep in coordinates) {
             val depCoordinates = parseMavenCoordinate(dep)
             val dependencyElem = pom.createElement("dependency")
@@ -185,6 +188,39 @@ class PomGenerator : Callable<Unit> {
             dependenciesElem.appendChild(dependencyElem)
         }
         return dependenciesElem
+    }
+
+    fun profiles(pom: Document, version: String, workspace_refs: JsonObject): Element {
+        val profilesElem = pom.createElement("profiles")
+        val profiles = if (profilesSpec.isEmpty()) emptyArray() else profilesSpec.split(";").toTypedArray()
+        for (profile in profiles) {
+            val (id, dependencies) = profile.split("#", limit = 2)
+            val (os, arch) = id.split(",", limit = 2)
+            val profileElem = pom.createElement("profile")
+
+            val idElem = pom.createElement("id")
+            idElem.appendChild(pom.createTextNode("$os-$arch"))
+            profileElem.appendChild(idElem)
+
+            val activationElem = pom.createElement("activation")
+            val osElem = pom.createElement("os")
+
+            val familyElem = pom.createElement("family")
+            familyElem.appendChild(pom.createTextNode(os))
+            osElem.appendChild(familyElem)
+
+            val archElem = pom.createElement("arch")
+            archElem.appendChild(pom.createTextNode(arch))
+            osElem.appendChild(archElem)
+
+            activationElem.appendChild(osElem)
+            profileElem.appendChild(activationElem)
+
+            profileElem.appendChild(dependencies(pom, version, workspace_refs, dependencies))
+
+            profilesElem.appendChild(profileElem)
+        }
+        return profilesElem
     }
 
     private fun outputDocumentToFile(pom: Document) {
@@ -253,7 +289,9 @@ class PomGenerator : Callable<Unit> {
         rootElement.appendChild(versionElem)
 
         // add dependency information
-        rootElement.appendChild(dependencies(pom, version, workspace_refs))
+        rootElement.appendChild(dependencies(pom, version, workspace_refs, dependencyCoordinates))
+
+        rootElement.appendChild(profiles(pom, version, workspace_refs))
 
         // write the final result
         outputDocumentToFile(pom)

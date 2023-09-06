@@ -45,15 +45,30 @@ def _generate_version_file(ctx):
         )
     return version_file
 
+def _platform_id_to_activation(id):
+    OS_FAMILY = { "linux": "linux", "macosx": "mac", "windows": "windows" }
+    OS_ARCH = { "aarch64": "aarch64", "x86_64": "x86_64" }
+
+    id_family, id_arch = id.split("-", 1)
+    return OS_FAMILY[id_family], OS_ARCH[id_arch]
+
 def _generate_pom_file(ctx, version_file):
-    target = ctx.attr.target
-    maven_coordinates = _parse_maven_coordinates(target[JarInfo].name)
-    pom_file = ctx.actions.declare_file("{}_pom.xml".format(ctx.attr.name))
+    overridden = []
+    profiles = {}
+    for target, overrides in ctx.attr.profile_overrides.items():
+        overridden_dependency = target[JarInfo].name
+        overridden.append(overridden_dependency)
+        for platform, maven_coordinates in json.decode(overrides).items():
+            activation = _platform_id_to_activation(platform)
+            profiles.setdefault(activation, [])
+            profiles[activation].append(maven_coordinates)
 
     pom_deps = []
-    for pom_dependency in [dep for dep in target[JarInfo].deps.to_list() if dep.type == 'pom']:
+    for pom_dependency in [dep for dep in ctx.attr.target[JarInfo].deps.to_list() if dep.type == 'pom']:
         pom_dependency = pom_dependency.maven_coordinates
-        if pom_dependency == target[JarInfo].name:
+        if pom_dependency in overridden:
+            continue
+        if pom_dependency == ctx.attr.target[JarInfo].name:
             continue
         pom_dependency_coordinates = _parse_maven_coordinates(pom_dependency, False)
         pom_dependency_artifact = pom_dependency_coordinates.group_id + ":" + pom_dependency_coordinates.artifact_id
@@ -61,6 +76,9 @@ def _generate_pom_file(ctx, version_file):
 
         version = ctx.attr.version_overrides.get(pom_dependency_artifact, pom_dependency_version)
         pom_deps.append(pom_dependency_artifact + ":" + version)
+
+    maven_coordinates = _parse_maven_coordinates(ctx.attr.target[JarInfo].name)
+    pom_file = ctx.actions.declare_file("{}_pom.xml".format(ctx.attr.name))
 
     ctx.actions.run(
         executable = ctx.executable._pom_generator,
@@ -79,6 +97,7 @@ def _generate_pom_file(ctx, version_file):
             "--version_file=" + version_file.path,
             "--output_file=" + pom_file.path,
             "--workspace_refs_file=" + ctx.file.workspace_refs.path,
+            "--profiles=" + ";".join(["%s,%s#%s" % (os, arch, ",".join(deps)) for (os, arch), deps in profiles.items()])
         ],
     )
 
@@ -282,6 +301,13 @@ assemble_maven = rule(
         "developers": attr.string_list_dict(
             default = {},
             doc = "Project developers to fill into pom.xml",
+        ),
+        "profile_overrides": attr.label_keyed_string_dict(
+            default = {},
+            aspects = [
+                aggregate_dependency_info,
+            ],
+            doc = "TODO",
         ),
         "_pom_generator": attr.label(
             default = "@vaticle_bazel_distribution//maven:pom-generator",
