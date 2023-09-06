@@ -104,6 +104,7 @@ def _assemble_pip_impl(ctx):
     args.add('--output_sdist', ctx.outputs.pip_package.path)
     args.add('--output_wheel', ctx.outputs.pip_wheel.path)
     args.add('--readme', ctx.file.long_description_file.path)
+    args.add('--suffix', ctx.attr.suffix)
 
     # Final 'setup.py' is generated in 2 steps
     setup_py = ctx.actions.declare_file("setup.py")
@@ -180,6 +181,7 @@ def _deploy_pip_impl(ctx):
             "{snapshot}": ctx.attr.snapshot,
             "{release}": ctx.attr.release,
             "{distribution_tag}": ctx.attr.distribution_tag,
+            "{suffix}": ctx.attr.suffix,
         }
     )
 
@@ -239,6 +241,10 @@ assemble_pip = rule(
             mandatory = True,
             doc = "A string with Python pip package name"
         ),
+        "suffix": attr.string(
+            default = "",
+            doc = "A suffix that has to be removed from the filenames",
+        ),
         "description": attr.string(
             mandatory = True,
             doc="A string with the short description of the package",
@@ -293,8 +299,8 @@ assemble_pip = rule(
     },
     implementation = _assemble_pip_impl,
     outputs = {
-        "pip_package": "%{package_name}.tar.gz",
-        "pip_wheel": "%{package_name}.whl"
+        "pip_package": "%{package_name}%{suffix}.tar.gz",
+        "pip_wheel": "%{package_name}%{suffix}.whl"
     },
 )
 
@@ -321,6 +327,10 @@ deploy_pip = rule(
         "distribution_tag": attr.string(
             default = "py3-none-any",
             doc = "Specify tag for the package name. Format: {python tag}-{abi tag}-{platform tag} (PEP 425)",
+        ),
+        "suffix": attr.string(
+            default = "39",
+            doc = "Python version suffix to be used in the package name",
         ),
         "_deploy_py_template": attr.label(
             allow_single_file = True,

@@ -74,6 +74,7 @@ parser.add_argument('--readme', help="README file")
 parser.add_argument('--files', nargs='+', help='Python files to pack into archive')
 parser.add_argument('--data_files', nargs='+', default=[], help='Data files to pack into archive')
 parser.add_argument('--imports', nargs='+', help='Folders considered to be source code roots')
+parser.add_argument('--suffix', help="Suffix that has to be removed from the filenames")
 
 args = parser.parse_args()
 
@@ -95,8 +96,10 @@ if not args.files:
 for f in args.files + args.data_files:
     fn = f
     # We need to move generated files from `bazel-out/.../bin/python` to the package directory
-    if re.fullmatch(r"bazel-out[/\\][^/\\]*[/\\]bin[/\\]python[/\\](.*)", fn):
-        fn = re.sub(r"bazel-out[/\\][^/\\]*[/\\]bin[/\\]python[/\\](.*)", r"\1", fn)
+    fn = re.sub(r"bazel-out[/\\][^/\\]*[/\\]bin[/\\]python[/\\](typedb[/\\])(.*)", r"\1\2", fn)
+    # Remove python version suffix from the file name
+    fn = re.sub(r"(.*)" + args.suffix + r"(\..*)", r"\1\2", fn)
+
     for _imp in args.imports:
         match = _imp.match(fn)
         if match:
@@ -119,9 +122,10 @@ if args.data_files:
     manifest_in_path = os.path.join(pkg_dir, 'MANIFEST.in')
     with open(manifest_in_path, 'w') as manifest_in:
         for f in args.data_files:
-            # We need to move generated files from `bazel-out/.../bin/python` to the package directory
-            if re.fullmatch(r"bazel-out[/\\][^/\\]*[/\\]bin[/\\]python[/\\](.*)", f):
-                f = re.sub(r"bazel-out[/\\][^/\\]*[/\\]bin[/\\]python[/\\](.*)", r"\1", f)
+            # We need to move generated files from `bazel-out/.../bin/python/typedb` to the package directory
+            f = re.sub(r"bazel-out[/\\][^/\\]*[/\\]bin[/\\]python[/\\](typedb[/\\])(.*)", r"\1\2", f)
+            # Remove python version suffix from the file name
+            f = re.sub(r"(.*)" + args.suffix + r"(\..*)", r"\1\2", f)
             # We do not need other files from `bazel-out`
             if not f.startswith("bazel-out"):
                 manifest_in.write("include {}\n".format(f))
