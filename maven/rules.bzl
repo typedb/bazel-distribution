@@ -47,7 +47,7 @@ def _generate_version_file(ctx):
 
 def _platform_id_to_activation(id):
     OS_FAMILY = { "linux": "linux", "macosx": "mac", "windows": "windows" }
-    OS_ARCH = { "aarch64": "aarch64", "x86_64": "x86_64" }
+    OS_ARCH = { "aarch64": "aarch64", "x86_64": "amd64" }
 
     id_family, id_arch = id.split("-", 1)
     return OS_FAMILY[id_family], OS_ARCH[id_arch]
