@@ -131,6 +131,7 @@ if args.data_files:
                 manifest_in.write("include {}\n".format(f))
 
 setup_py = os.path.join(pkg_dir, f'setup{args.suffix}.py')
+setup_py_final = os.path.join(pkg_dir, f'setup.py')
 readme = os.path.join(pkg_dir, f'README{args.suffix}.md')
 
 with open(args.setup_py) as setup_py_template:
@@ -144,6 +145,7 @@ with open(args.setup_py) as setup_py_template:
             setup_py_template.read().replace("INSTALL_REQUIRES_PLACEHOLDER", str(install_requires))
         )
 
+os.rename(setup_py, setup_py_final)
 shutil.copy(args.readme, readme)
 
 # change directory into new package root
@@ -153,7 +155,7 @@ os.chdir(pkg_dir)
 create_init_files(pkg_dir)
 
 # pack sources
-run_setup(setup_py, ['sdist', 'bdist_wheel'])
+run_setup(setup_py_final, ['sdist', 'bdist_wheel'])
 
 sdist_archives = glob.glob('dist/*.tar.gz')
 if len(sdist_archives) != 1:
