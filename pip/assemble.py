@@ -167,4 +167,4 @@ if len(wheel_archives) != 1:
 
 shutil.copy(sdist_archives[0], args.output_sdist)
 shutil.copy(wheel_archives[0], args.output_wheel)
-shutil.rmtree(pkg_dir, onerror=onerror)
+# shutil.rmtree(pkg_dir, onerror=onerror)
