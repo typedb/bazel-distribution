@@ -22,7 +22,7 @@ from setuptools import find_namespace_packages
 
 packages = find_namespace_packages()
 
-with open('README{suffix}.md') as f:
+with open('README.md') as f:
     readme = f.read()
 
 setup(

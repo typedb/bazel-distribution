@@ -132,7 +132,7 @@ if args.data_files:
 
 setup_py = os.path.join(pkg_dir, f'setup{args.suffix}.py')
 setup_py_final = os.path.join(pkg_dir, f'setup.py')
-readme = os.path.join(pkg_dir, f'README{args.suffix}.md')
+readme = os.path.join(pkg_dir, f'README.md')
 
 with open(args.setup_py) as setup_py_template:
     install_requires = []
