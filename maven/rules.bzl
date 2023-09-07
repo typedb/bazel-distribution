@@ -113,7 +113,7 @@ def _generate_class_jar(ctx, pom_file):
     else:
         fail("Could not find JAR file to deploy in {}".format(target))
 
-    output_jar = ctx.actions.declare_file("{}:{}.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
+    output_jar = ctx.actions.declare_file("{}-{}.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
 
     class_jar_deps = [dep.class_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar']
     class_jar_paths = [jar.path] + [target.path for target in class_jar_deps]
@@ -150,7 +150,7 @@ def _generate_source_jar(ctx):
     if not srcjar:
         return None
 
-    output_jar = ctx.actions.declare_file("{}:{}-sources.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
+    output_jar = ctx.actions.declare_file("{}-{}-sources.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
 
     source_jar_deps = [dep.source_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar' and dep.source_jar]
     source_jar_paths = [srcjar.path] + [target.path for target in source_jar_deps]
