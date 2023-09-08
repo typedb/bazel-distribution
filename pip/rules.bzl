@@ -207,14 +207,19 @@ def _deploy_pip_script_impl(ctx):
         output = deployment_script,
         is_executable = True,
         substitutions = {
-            "{deploy_py}": ctx.attr.target.short_path,
+            "{deploy_py}": ctx.files.target[0].short_path,
         }
     )
+
+    all_python_files = []
+    for dep in ctx.attr._deps:
+        all_python_files.extend(dep.data_runfiles.files.to_list())
+        all_python_files.extend(dep.default_runfiles.files.to_list())
 
     return DefaultInfo(
             executable = deployment_script,
             runfiles = ctx.runfiles(
-                    files=[ctx.files.target]
+                    files = all_python_files
             )
         )
 
@@ -404,6 +409,27 @@ deploy_pip_script = rule(
             allow_single_file = True,
             default = "//pip/templates:deploy_script.bat",
         ),
+        "_deps": attr.label_list(
+            default = [
+                vaticle_bazel_distribution_requirement("twine"),
+                vaticle_bazel_distribution_requirement("setuptools"),
+                vaticle_bazel_distribution_requirement("wheel"),
+                vaticle_bazel_distribution_requirement("requests"),
+                vaticle_bazel_distribution_requirement("urllib3"),
+                vaticle_bazel_distribution_requirement("chardet"),
+                vaticle_bazel_distribution_requirement("certifi"),
+                vaticle_bazel_distribution_requirement("idna"),
+                vaticle_bazel_distribution_requirement("tqdm"),
+                vaticle_bazel_distribution_requirement("requests_toolbelt"),
+                vaticle_bazel_distribution_requirement("pkginfo"),
+                vaticle_bazel_distribution_requirement("readme_renderer"),
+                vaticle_bazel_distribution_requirement("Pygments"),
+                vaticle_bazel_distribution_requirement("docutils"),
+                vaticle_bazel_distribution_requirement("bleach"),
+                vaticle_bazel_distribution_requirement("webencodings"),
+                vaticle_bazel_distribution_requirement("packaging")
+            ]
+        )
     },
     executable = True,
     implementation = _deploy_pip_script_impl,
