@@ -29,6 +29,7 @@ import subprocess as sp
 import sys
 import tempfile
 from posixpath import join as urljoin
+from pathlib import Path
 
 
 def sha1(fn):
@@ -148,34 +149,34 @@ if os.path.exists(srcjar_path):
 with tempfile.NamedTemporaryFile(mode='wt', delete=True, dir=os.getcwd()) as pom_md5:
     pom_md5.write(md5(pom_file_path))
     pom_md5.flush()
-    upload(maven_url, username, password, pom_md5.name, filename_base + '.pom.md5')
+    upload(maven_url, username, password, Path(pom_md5.name).name, filename_base + '.pom.md5')
 
 with tempfile.NamedTemporaryFile(mode='wt', delete=True, dir=os.getcwd()) as pom_sha1:
     pom_sha1.write(sha1(pom_file_path))
     pom_sha1.flush()
-    upload(maven_url, username, password, pom_sha1.name, filename_base + '.pom.sha1')
+    upload(maven_url, username, password, Path(pom_sha1.name).name, filename_base + '.pom.sha1')
 
 with tempfile.NamedTemporaryFile(mode='wt', delete=True, dir=os.getcwd()) as jar_md5:
     jar_md5.write(md5(jar_path))
     jar_md5.flush()
-    upload(maven_url, username, password, jar_md5.name, filename_base + '.jar.md5')
+    upload(maven_url, username, password, Path(jar_md5.name).name, filename_base + '.jar.md5')
 
 with tempfile.NamedTemporaryFile(mode='wt', delete=True, dir=os.getcwd()) as jar_sha1:
     jar_sha1.write(sha1(jar_path))
     jar_sha1.flush()
-    upload(maven_url, username, password, jar_sha1.name, filename_base + '.jar.sha1')
+    upload(maven_url, username, password, Path(jar_sha1.name).name, filename_base + '.jar.sha1')
 
 if os.path.exists(srcjar_path):
     with tempfile.NamedTemporaryFile(mode='wt', delete=True, dir=os.getcwd()) as srcjar_md5:
         srcjar_md5.write(md5(srcjar_path))
         srcjar_md5.flush()
-        upload(maven_url, username, password, srcjar_md5.name, filename_base + '-sources.jar.md5')
+        upload(maven_url, username, password, Path(srcjar_md5.name).name, filename_base + '-sources.jar.md5')
         # TODO(vmax): use checksum of real Javadoc instead of srcjar
-        upload(maven_url, username, password, srcjar_md5.name, filename_base + '-javadoc.jar.md5')
+        upload(maven_url, username, password, Path(srcjar_md5.name).name, filename_base + '-javadoc.jar.md5')
 
     with tempfile.NamedTemporaryFile(mode='wt', delete=True, dir=os.getcwd()) as srcjar_sha1:
         srcjar_sha1.write(sha1(srcjar_path))
         srcjar_sha1.flush()
-        upload(maven_url, username, password, srcjar_sha1.name, filename_base + '-sources.jar.sha1')
+        upload(maven_url, username, password, Path(srcjar_sha1.name).name, filename_base + '-sources.jar.sha1')
         # TODO(vmax): use checksum of real Javadoc instead of srcjar
-        upload(maven_url, username, password, srcjar_sha1.name, filename_base + '-javadoc.jar.sha1')
+        upload(maven_url, username, password, Path(srcjar_sha1.name).name, filename_base + '-javadoc.jar.sha1')
