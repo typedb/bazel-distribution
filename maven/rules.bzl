@@ -367,7 +367,7 @@ def _deploy_maven_impl(ctx):
         runfiles = ctx.runfiles(files=files, symlinks = symlinks)
     )
 
-deploy_maven = rule(
+deploy_maven_inner = rule(
     attrs = {
         "target": attr.label(
             mandatory = True,
@@ -395,3 +395,19 @@ deploy_maven = rule(
     Select deployment to `snapshot` or `release` repository with `bazel run //:some-deploy-maven -- [snapshot|release]
     """
 )
+
+def deploy_maven(name, target, snapshot, release, **kwargs):
+    target_name = name + "_gen"
+
+    deploy_maven_inner(
+        name = target_name,
+        target = target,
+        snapshot = snapshot,
+        release = release,
+        **kwargs
+    )
+
+    native.py_binary(
+        name = name,
+        srcs = [target_name],
+    )
