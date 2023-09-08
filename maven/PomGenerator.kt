@@ -193,7 +193,7 @@ class PomGenerator : Callable<Unit> {
     fun profiles(pom: Document, version: String, workspace_refs: JsonObject): Element {
         val ARCH_LIST = mapOf(
                 "x86_64" to arrayOf("x86_64", "x86-64", "amd64"),
-                "arm64" to arrayOf("arm64", "aarch64"),
+                "aarch64" to arrayOf("arm64", "aarch64"),
         )
 
         val profilesElem = pom.createElement("profiles")
