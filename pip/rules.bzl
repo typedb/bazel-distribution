@@ -168,7 +168,7 @@ def _assemble_pip_impl(ctx):
 
 
 def _deploy_pip_impl(ctx):
-    deployment_script = ctx.actions.declare_file("{}_deploy.py".format(ctx.attr.name))
+    deployment_script = ctx.actions.declare_file("{}.py".format(ctx.attr.name))
 
     ctx.actions.expand_template(
         template = ctx.file._deploy_py_template,
@@ -197,32 +197,6 @@ def _deploy_pip_impl(ctx):
                 files=[ctx.attr.target[PyDeploymentInfo].package, ctx.attr.target[PyDeploymentInfo].wheel, ctx.attr.target[PyDeploymentInfo].version_file] + all_python_files
             )
         )
-
-
-def _deploy_pip_script_impl(ctx):
-    deployment_script = ctx.actions.declare_file("{}.bat".format(ctx.attr.name))
-
-    ctx.actions.expand_template(
-        template = ctx.file._deploy_script_template,
-        output = deployment_script,
-        is_executable = True,
-        substitutions = {
-            "{deploy_py}": ctx.files.target[0].path,
-        }
-    )
-
-    all_python_files = []
-    for dep in ctx.attr._deps:
-        all_python_files.extend(dep.data_runfiles.files.to_list())
-        all_python_files.extend(dep.default_runfiles.files.to_list())
-
-    return DefaultInfo(
-            executable = deployment_script,
-            runfiles = ctx.runfiles(
-                    files = [ctx.attr.assemble_target[PyDeploymentInfo].package, ctx.attr.assemble_target[PyDeploymentInfo].wheel, ctx.attr.assemble_target[PyDeploymentInfo].version_file] + ctx.attr.target[DefaultInfo].files.to_list() + all_python_files
-            )
-        )
-
 
 python_repackage = rule(
     attrs = {
@@ -331,7 +305,7 @@ assemble_pip = rule(
 )
 
 
-deploy_pip = rule(
+_deploy_pip = rule(
     attrs = {
         "target": attr.label(
             mandatory = True,
@@ -399,50 +373,9 @@ deploy_pip = rule(
         """
 )
 
-deploy_pip_script = rule(
-    attrs = {
-        "target": attr.label(
-            mandatory = True,
-            doc = "`deploy_pip` label to be used in the script",
-        ),
-        "assemble_target": attr.label(
-            mandatory = True,
-            providers = [PyDeploymentInfo],
-            doc = "`assemble_pip` label to be included in the package",
-        ),
-        "_deploy_script_template": attr.label(
-            allow_single_file = True,
-            default = "//pip/templates:deploy_script.bat",
-        ),
-        "_deps": attr.label_list(
-            default = [
-                vaticle_bazel_distribution_requirement("twine"),
-                vaticle_bazel_distribution_requirement("setuptools"),
-                vaticle_bazel_distribution_requirement("wheel"),
-                vaticle_bazel_distribution_requirement("requests"),
-                vaticle_bazel_distribution_requirement("urllib3"),
-                vaticle_bazel_distribution_requirement("chardet"),
-                vaticle_bazel_distribution_requirement("certifi"),
-                vaticle_bazel_distribution_requirement("idna"),
-                vaticle_bazel_distribution_requirement("tqdm"),
-                vaticle_bazel_distribution_requirement("requests_toolbelt"),
-                vaticle_bazel_distribution_requirement("pkginfo"),
-                vaticle_bazel_distribution_requirement("readme_renderer"),
-                vaticle_bazel_distribution_requirement("Pygments"),
-                vaticle_bazel_distribution_requirement("docutils"),
-                vaticle_bazel_distribution_requirement("bleach"),
-                vaticle_bazel_distribution_requirement("webencodings"),
-                vaticle_bazel_distribution_requirement("packaging")
-            ]
-        )
-    },
-    executable = True,
-    implementation = _deploy_pip_script_impl,
-)
-
-def deploy_pip_with_script(name, target, snapshot, release, suffix, distribution_tag, create_batch="false"):
-    deploy_pip(
-        name = name,
+def deploy_pip(name, target, snapshot, release, suffix, distribution_tag, create_batch="false"):
+    _deploy_pip(
+        name = name + "_deploy",
         target = target,
         snapshot = snapshot,
         release = release,
@@ -450,14 +383,8 @@ def deploy_pip_with_script(name, target, snapshot, release, suffix, distribution
         distribution_tag = distribution_tag,
     )
 
-    deploy_pip_script(
-        name = name + "_batch",
-        target = ":" + name,
-        assemble_target = target,
-    )
-
     native.py_binary(
-        name = name + "_py",
-        srcs = [name],
+        name = name,
+        srcs = [name + "_deploy"],
         main = name + "_deploy.py",
     )

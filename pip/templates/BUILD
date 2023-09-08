@@ -17,4 +17,4 @@
 # under the License.
 #
 
-exports_files(["setup.py", "deploy.py", "deploy_script.bat"])
+exports_files(["setup.py", "deploy.py"])
