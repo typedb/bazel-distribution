@@ -419,8 +419,7 @@ def deploy_pip_with_script(name, target, snapshot, release, suffix, distribution
         distribution_tag = distribution_tag,
     )
 
-    if create_batch == "true":
-        deploy_pip_script(
-            name = name + "_batch",
-            target = ":" + name,
-        )
+    deploy_pip_script(
+        name = name + "_batch",
+        target = ":" + name,
+    )
