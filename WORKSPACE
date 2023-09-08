@@ -30,12 +30,8 @@ rules_jvm_external()
 rules_rust()
 
 # Load @rules_python
-load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
+load("@rules_python//python:repositories.bzl", "py_repositories")
 py_repositories()
-#python_register_toolchains(
-#    name = "python39",
-#    python_version = "3.9",
-#)
 
 # Load @io_bazel_rules_kotlin
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")

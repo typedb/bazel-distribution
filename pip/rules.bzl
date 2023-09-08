@@ -455,3 +455,9 @@ def deploy_pip_with_script(name, target, snapshot, release, suffix, distribution
         target = ":" + name,
         assemble_target = target,
     )
+
+    native.py_binary(
+        name = name + "_py",
+        srcs = [name],
+        main = name + "_deploy.py",
+    )
