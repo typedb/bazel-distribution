@@ -57,6 +57,7 @@ def upload_command(repo_type_key, package_file, wheel_file):
             return [wheel_file, '--repository', repositories[repo_type_key]]
     elif repo_type_key == SNAPSHOT_KEY or repo_type_key == RELEASE_KEY:
         pip_username, pip_password = (os.getenv(ENV_DEPLOY_PIP_USERNAME), os.getenv(ENV_DEPLOY_PIP_PASSWORD))
+        print("-------", pip_username, pip_password)
         if not pip_username:
             raise Exception(f"username should be passed via the {ENV_DEPLOY_PIP_USERNAME} environment variable")
         if not pip_password:
