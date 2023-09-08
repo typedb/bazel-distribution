@@ -145,35 +145,35 @@ if os.path.exists(srcjar_path):
     if should_sign:
         upload(maven_url, username, password, sign(srcjar_path), filename_base + '-javadoc.jar.asc')
 
-with tempfile.NamedTemporaryFile(mode='wt', delete=True) as pom_md5:
+with tempfile.NamedTemporaryFile(mode='wt', delete=True, dir=os.getcwd()) as pom_md5:
     pom_md5.write(md5(pom_file_path))
     pom_md5.flush()
     upload(maven_url, username, password, pom_md5.name, filename_base + '.pom.md5')
 
-with tempfile.NamedTemporaryFile(mode='wt', delete=True) as pom_sha1:
+with tempfile.NamedTemporaryFile(mode='wt', delete=True, dir=os.getcwd()) as pom_sha1:
     pom_sha1.write(sha1(pom_file_path))
     pom_sha1.flush()
     upload(maven_url, username, password, pom_sha1.name, filename_base + '.pom.sha1')
 
-with tempfile.NamedTemporaryFile(mode='wt', delete=True) as jar_md5:
+with tempfile.NamedTemporaryFile(mode='wt', delete=True, dir=os.getcwd()) as jar_md5:
     jar_md5.write(md5(jar_path))
     jar_md5.flush()
     upload(maven_url, username, password, jar_md5.name, filename_base + '.jar.md5')
 
-with tempfile.NamedTemporaryFile(mode='wt', delete=True) as jar_sha1:
+with tempfile.NamedTemporaryFile(mode='wt', delete=True, dir=os.getcwd()) as jar_sha1:
     jar_sha1.write(sha1(jar_path))
     jar_sha1.flush()
     upload(maven_url, username, password, jar_sha1.name, filename_base + '.jar.sha1')
 
 if os.path.exists(srcjar_path):
-    with tempfile.NamedTemporaryFile(mode='wt', delete=True) as srcjar_md5:
+    with tempfile.NamedTemporaryFile(mode='wt', delete=True, dir=os.getcwd()) as srcjar_md5:
         srcjar_md5.write(md5(srcjar_path))
         srcjar_md5.flush()
         upload(maven_url, username, password, srcjar_md5.name, filename_base + '-sources.jar.md5')
         # TODO(vmax): use checksum of real Javadoc instead of srcjar
         upload(maven_url, username, password, srcjar_md5.name, filename_base + '-javadoc.jar.md5')
 
-    with tempfile.NamedTemporaryFile(mode='wt', delete=True) as srcjar_sha1:
+    with tempfile.NamedTemporaryFile(mode='wt', delete=True, dir=os.getcwd()) as srcjar_sha1:
         srcjar_sha1.write(sha1(srcjar_path))
         srcjar_sha1.flush()
         upload(maven_url, username, password, srcjar_sha1.name, filename_base + '-sources.jar.sha1')
