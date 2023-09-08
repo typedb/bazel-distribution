@@ -58,11 +58,9 @@ def upload_str(url, username, password, string, remote_fn):
         'curl', '--silent',
         '--write-out', '%{http_code}',
         '-u', '{}:{}'.format(username, password),
-        '-X', 'PUT',
-        '-H', 'Content-Type: text/plain;'
-        '-d', string,
+        '--upload-file', '-',
         urljoin(url, remote_fn)
-    ]).decode().strip()
+    ], input=string.encode()).decode().strip()
 
     if upload_status_code not in {'200', '201'}:
         raise Exception('upload_str of "{}" failed, got HTTP status code {}'.format(
