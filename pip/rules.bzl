@@ -207,7 +207,7 @@ def _deploy_pip_script_impl(ctx):
         output = deployment_script,
         is_executable = True,
         substitutions = {
-            "{deploy_py}": ctx.files.target[0].short_path,
+            "{deploy_py}": ctx.files.target[0].path,
         }
     )
 
@@ -219,7 +219,7 @@ def _deploy_pip_script_impl(ctx):
     return DefaultInfo(
             executable = deployment_script,
             runfiles = ctx.runfiles(
-                    files = all_python_files
+                    files = [ctx.attr.assemble_target[PyDeploymentInfo].package, ctx.attr.assemble_target[PyDeploymentInfo].wheel, ctx.attr.assemble_target[PyDeploymentInfo].version_file] + ctx.attr.target[DefaultInfo].files.to_list() + all_python_files
             )
         )
 
@@ -405,6 +405,11 @@ deploy_pip_script = rule(
             mandatory = True,
             doc = "`deploy_pip` label to be used in the script",
         ),
+        "assemble_target": attr.label(
+            mandatory = True,
+            providers = [PyDeploymentInfo],
+            doc = "`assemble_pip` label to be included in the package",
+        ),
         "_deploy_script_template": attr.label(
             allow_single_file = True,
             default = "//pip/templates:deploy_script.bat",
@@ -448,4 +453,5 @@ def deploy_pip_with_script(name, target, snapshot, release, suffix, distribution
     deploy_pip_script(
         name = name + "_batch",
         target = ":" + name,
+        assemble_target = target,
     )
