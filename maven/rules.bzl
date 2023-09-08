@@ -45,13 +45,6 @@ def _generate_version_file(ctx):
         )
     return version_file
 
-def _platform_id_to_activation(id):
-    OS_FAMILY = { "linux": "linux", "macosx": "mac", "windows": "windows" }
-    OS_ARCH = { "aarch64": "aarch64", "x86_64": "amd64" }
-
-    id_family, id_arch = id.split("-", 1)
-    return OS_FAMILY[id_family], OS_ARCH[id_arch]
-
 def _generate_pom_file(ctx, version_file):
     overridden = []
     profiles = {}
@@ -59,9 +52,8 @@ def _generate_pom_file(ctx, version_file):
         overridden_dependency = target[JarInfo].name
         overridden.append(overridden_dependency)
         for platform, maven_coordinates in json.decode(overrides).items():
-            activation = _platform_id_to_activation(platform)
-            profiles.setdefault(activation, [])
-            profiles[activation].append(maven_coordinates)
+            profiles.setdefault(platform, [])
+            profiles[platform].append(maven_coordinates)
 
     pom_deps = []
     for pom_dependency in [dep for dep in ctx.attr.target[JarInfo].deps.to_list() if dep.type == 'pom']:
@@ -97,7 +89,7 @@ def _generate_pom_file(ctx, version_file):
             "--version_file=" + version_file.path,
             "--output_file=" + pom_file.path,
             "--workspace_refs_file=" + ctx.file.workspace_refs.path,
-            "--profiles=" + ";".join(["%s,%s#%s" % (os, arch, ",".join(deps)) for (os, arch), deps in profiles.items()])
+            "--profiles=" + ";".join([platform + "#" + ",".join(deps) for platform, deps in profiles.items()])
         ],
     )
 

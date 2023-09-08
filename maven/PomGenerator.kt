@@ -191,34 +191,41 @@ class PomGenerator : Callable<Unit> {
     }
 
     fun profiles(pom: Document, version: String, workspace_refs: JsonObject): Element {
+        val ARCH_LIST = mapOf(
+                "x86_64" to arrayOf("x86_64", "x86-64", "amd64"),
+                "arm64" to arrayOf("arm64", "aarch64"),
+        )
+
         val profilesElem = pom.createElement("profiles")
         val profiles = if (profilesSpec.isEmpty()) emptyArray() else profilesSpec.split(";").toTypedArray()
         for (profile in profiles) {
             val (id, dependencies) = profile.split("#", limit = 2)
-            val (os, arch) = id.split(",", limit = 2)
-            val profileElem = pom.createElement("profile")
+            val (os, baseArch) = id.split("-", limit = 2)
+            for (arch in ARCH_LIST[baseArch]!!) {
+                val profileElem = pom.createElement("profile")
 
-            val idElem = pom.createElement("id")
-            idElem.appendChild(pom.createTextNode("$os-$arch"))
-            profileElem.appendChild(idElem)
+                val idElem = pom.createElement("id")
+                idElem.appendChild(pom.createTextNode("$os-$arch"))
+                profileElem.appendChild(idElem)
 
-            val activationElem = pom.createElement("activation")
-            val osElem = pom.createElement("os")
+                val activationElem = pom.createElement("activation")
+                val osElem = pom.createElement("os")
 
-            val familyElem = pom.createElement("family")
-            familyElem.appendChild(pom.createTextNode(os))
-            osElem.appendChild(familyElem)
+                val familyElem = pom.createElement("family")
+                familyElem.appendChild(pom.createTextNode(os))
+                osElem.appendChild(familyElem)
 
-            val archElem = pom.createElement("arch")
-            archElem.appendChild(pom.createTextNode(arch))
-            osElem.appendChild(archElem)
+                val archElem = pom.createElement("arch")
+                archElem.appendChild(pom.createTextNode(arch))
+                osElem.appendChild(archElem)
 
-            activationElem.appendChild(osElem)
-            profileElem.appendChild(activationElem)
+                activationElem.appendChild(osElem)
+                profileElem.appendChild(activationElem)
 
-            profileElem.appendChild(dependencies(pom, version, workspace_refs, dependencies))
+                profileElem.appendChild(dependencies(pom, version, workspace_refs, dependencies))
 
-            profilesElem.appendChild(profileElem)
+                profilesElem.appendChild(profileElem)
+            }
         }
         return profilesElem
     }
