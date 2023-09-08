@@ -139,5 +139,8 @@ if len(wheel_archives) != 1:
 shutil.copy(sdist_archives[0], args.output_sdist)
 shutil.copy(wheel_archives[0], args.output_wheel)
 
-# Disabled because of permission errors in Windows
-# shutil.rmtree(pkg_dir)
+# Ignore permission errors (for Windows)
+try:
+    shutil.rmtree(pkg_dir)
+except PermissionError:
+    pass

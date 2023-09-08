@@ -100,4 +100,7 @@ try:
     else:
         twine.commands.upload.main(upload_command(repo_type_key, None, new_wheel_pep491))
 finally:
-    shutil.rmtree(dist_dir)
+    try:
+        shutil.rmtree(dist_dir)
+    except PermissionError:
+        pass
