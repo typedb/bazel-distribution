@@ -397,7 +397,7 @@ deploy_maven_inner = rule(
 )
 
 def deploy_maven(name, target, snapshot, release, **kwargs):
-    target_name = name + "_gen"
+    target_name = name + "__gen"
 
     deploy_maven_inner(
         name = target_name,
@@ -410,4 +410,5 @@ def deploy_maven(name, target, snapshot, release, **kwargs):
     native.py_binary(
         name = name,
         srcs = [target_name],
+        main = target_name + "-deploy.py",
     )
