@@ -199,6 +199,26 @@ def _deploy_pip_impl(ctx):
         )
 
 
+def _deploy_pip_script_impl(ctx):
+    deployment_script = ctx.actions.declare_file("{}.bat".format(ctx.attr.name))
+
+    ctx.actions.expand_template(
+        template = ctx.file._deploy_script_template,
+        output = deployment_script,
+        is_executable = True,
+        substitutions = {
+            "{deploy_py}": ctx.attr.target.short_path,
+        }
+    )
+
+    return DefaultInfo(
+            executable = deployment_script,
+            runfiles = ctx.runfiles(
+                    files=[ctx.files.target]
+            )
+        )
+
+
 python_repackage = rule(
     attrs = {
         "src": attr.label(
@@ -373,3 +393,34 @@ deploy_pip = rule(
         ```bazel run //:some-deploy-pip -- [pypirc|snapshot|release]```
         """
 )
+
+deploy_pip_script = rule(
+    attrs = {
+        "target": attr.label(
+            mandatory = True,
+            doc = "`deploy_pip` label to be used in the script",
+        ),
+        "_deploy_script_template": attr.label(
+            allow_single_file = True,
+            default = "//pip/templates:deploy_script.bat",
+        ),
+    },
+    executable = True,
+    implementation = _deploy_pip_script_impl,
+)
+
+def deploy_pip_with_script(name, target, snapshot, release, suffix, distribution_tag, create_batch="false"):
+    deploy_pip(
+        name = name,
+        target = target,
+        snapshot = snapshot,
+        release = release,
+        suffix = suffix,
+        distribution_tag = distribution_tag,
+    )
+
+    if create_batch == "true":
+        deploy_pip_script(
+            name = name + "_batch",
+            target = ":" + name,
+        )
