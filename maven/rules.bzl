@@ -299,7 +299,22 @@ assemble_maven = rule(
             aspects = [
                 aggregate_dependency_info,
             ],
-            doc = "TODO",
+            doc = """
+Per-profile overrides for a dependency. Expects a dict of bazel labels to a JSON-encoded dictionary of platform to maven coordinates.
+Ex.:
+assemble_maven(
+    ...
+    profile_overrides = {
+        ":bazel-dependency": json.encode({
+            "windows-x86_64": "org.company:dependency-windows-x86_64:{pom_version}",
+            "linux-aarch64": "org.company:dependency-linux-aarch64:{pom_version}",
+            "linux-x86_64": "org.company:dependency-linux-x86_64:{pom_version}",
+            "mac-aarch64": "org.company:dependency-macosx-aarch64:{pom_version}",
+            "mac-x86_64": "org.company:dependency-macosx-x86_64:{pom_version}",
+        })
+    }
+)
+            """,
         ),
         "_pom_generator": attr.label(
             default = "@vaticle_bazel_distribution//maven:pom-generator",
