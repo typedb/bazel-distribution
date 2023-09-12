@@ -301,6 +301,8 @@ assemble_maven = rule(
             ],
             doc = """
 Per-profile overrides for a dependency. Expects a dict of bazel labels to a JSON-encoded dictionary of platform to maven coordinates.
+Supported OS: windows, linux, mac
+Supported architectures: x86_64, aarch64
 Ex.:
 assemble_maven(
     ...
