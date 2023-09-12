@@ -46,14 +46,21 @@ def _generate_version_file(ctx):
     return version_file
 
 def _generate_pom_file(ctx, version_file):
-    target = ctx.attr.target
-    maven_coordinates = _parse_maven_coordinates(target[JarInfo].name)
-    pom_file = ctx.actions.declare_file("{}_pom.xml".format(ctx.attr.name))
+    overridden = []
+    profiles = {}
+    for target, overrides in ctx.attr.profile_overrides.items():
+        overridden_dependency = target[JarInfo].name
+        overridden.append(overridden_dependency)
+        for platform, maven_coordinates in json.decode(overrides).items():
+            profiles.setdefault(platform, [])
+            profiles[platform].append(maven_coordinates)
 
     pom_deps = []
-    for pom_dependency in [dep for dep in target[JarInfo].deps.to_list() if dep.type == 'pom']:
+    for pom_dependency in [dep for dep in ctx.attr.target[JarInfo].deps.to_list() if dep.type == 'pom']:
         pom_dependency = pom_dependency.maven_coordinates
-        if pom_dependency == target[JarInfo].name:
+        if pom_dependency in overridden:
+            continue
+        if pom_dependency == ctx.attr.target[JarInfo].name:
             continue
         pom_dependency_coordinates = _parse_maven_coordinates(pom_dependency, False)
         pom_dependency_artifact = pom_dependency_coordinates.group_id + ":" + pom_dependency_coordinates.artifact_id
@@ -61,6 +68,9 @@ def _generate_pom_file(ctx, version_file):
 
         version = ctx.attr.version_overrides.get(pom_dependency_artifact, pom_dependency_version)
         pom_deps.append(pom_dependency_artifact + ":" + version)
+
+    maven_coordinates = _parse_maven_coordinates(ctx.attr.target[JarInfo].name)
+    pom_file = ctx.actions.declare_file("{}_pom.xml".format(ctx.attr.name))
 
     ctx.actions.run(
         executable = ctx.executable._pom_generator,
@@ -79,6 +89,7 @@ def _generate_pom_file(ctx, version_file):
             "--version_file=" + version_file.path,
             "--output_file=" + pom_file.path,
             "--workspace_refs_file=" + ctx.file.workspace_refs.path,
+            "--profiles=" + ";".join([platform + "#" + ",".join(deps) for platform, deps in profiles.items()])
         ],
     )
 
@@ -94,7 +105,7 @@ def _generate_class_jar(ctx, pom_file):
     else:
         fail("Could not find JAR file to deploy in {}".format(target))
 
-    output_jar = ctx.actions.declare_file("{}:{}.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
+    output_jar = ctx.actions.declare_file("{}-{}.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
 
     class_jar_deps = [dep.class_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar']
     class_jar_paths = [jar.path] + [target.path for target in class_jar_deps]
@@ -131,7 +142,7 @@ def _generate_source_jar(ctx):
     if not srcjar:
         return None
 
-    output_jar = ctx.actions.declare_file("{}:{}-sources.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
+    output_jar = ctx.actions.declare_file("{}-{}-sources.jar".format(maven_coordinates.group_id, maven_coordinates.artifact_id))
 
     source_jar_deps = [dep.source_jar for dep in target[JarInfo].deps.to_list() if dep.type == 'jar' and dep.source_jar]
     source_jar_paths = [srcjar.path] + [target.path for target in source_jar_deps]
@@ -283,6 +294,30 @@ assemble_maven = rule(
             default = {},
             doc = "Project developers to fill into pom.xml",
         ),
+        "profile_overrides": attr.label_keyed_string_dict(
+            default = {},
+            aspects = [
+                aggregate_dependency_info,
+            ],
+            doc = """
+Per-profile overrides for a dependency. Expects a dict of bazel labels to a JSON-encoded dictionary of platform to maven coordinates.
+Supported OS: windows, linux, mac
+Supported architectures: x86_64, aarch64
+Ex.:
+assemble_maven(
+    ...
+    profile_overrides = {
+        ":bazel-dependency": json.encode({
+            "windows-x86_64": "org.company:dependency-windows-x86_64:{pom_version}",
+            "linux-aarch64": "org.company:dependency-linux-aarch64:{pom_version}",
+            "linux-x86_64": "org.company:dependency-linux-x86_64:{pom_version}",
+            "mac-aarch64": "org.company:dependency-macosx-aarch64:{pom_version}",
+            "mac-x86_64": "org.company:dependency-macosx-x86_64:{pom_version}",
+        })
+    }
+)
+            """,
+        ),
         "_pom_generator": attr.label(
             default = "@vaticle_bazel_distribution//maven:pom-generator",
             executable = True,
@@ -349,7 +384,7 @@ def _deploy_maven_impl(ctx):
         runfiles = ctx.runfiles(files=files, symlinks = symlinks)
     )
 
-deploy_maven = rule(
+_deploy_maven = rule(
     attrs = {
         "target": attr.label(
             mandatory = True,
@@ -377,3 +412,20 @@ deploy_maven = rule(
     Select deployment to `snapshot` or `release` repository with `bazel run //:some-deploy-maven -- [snapshot|release]
     """
 )
+
+def deploy_maven(name, target, snapshot, release, **kwargs):
+    target_name = name + "__deploy"
+
+    _deploy_maven(
+        name = target_name,
+        target = target,
+        snapshot = snapshot,
+        release = release,
+        **kwargs
+    )
+
+    native.py_binary(
+        name = name,
+        srcs = [target_name],
+        main = target_name + "-deploy.py",
+    )
