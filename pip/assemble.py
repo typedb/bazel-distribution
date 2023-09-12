@@ -36,10 +36,27 @@ def create_init_files(directory):
             open(join(dirName, "__init__.py"), "w").close()
 
 
+def split_path(path: str) -> list[str]:
+    head, tail = os.path.split(path)
+    dirs = [tail]
+    while head:
+        head, tail = os.path.split(head)
+        dirs.append(tail)
+    return dirs[::-1]
+
+
+def remove_file_suffix(file: str, suffix: str) -> str:
+    path, ext = os.path.splitext(file)
+    if path.endswith(suffix):
+        path = path[:-len(suffix)]
+    return path + ext
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--output_sdist', help="Output targz archive")
 parser.add_argument('--output_wheel', help="Output wheel archive")
-parser.add_argument('--setup_py', help="setup.py")
+parser.add_argument('--package_root', help="bazel package root")
+parser.add_argument('--setup_py_template', help="setup.py")
 parser.add_argument('--requirements_file', help="install_requires")
 parser.add_argument('--readme', help="README file")
 parser.add_argument('--files', nargs='+', help='Python files to pack into archive')
@@ -64,48 +81,58 @@ pkg_dir = tempfile.mkdtemp()
 if not args.files:
     raise Exception("Cannot create an archive without any files")
 
-for f in args.files + args.data_files:
-    fn = f
-    # We need to move generated files from `bazel-out/.../bin/python` to the package directory
-    fn = re.sub(r"bazel-out[/\\][^/\\]*[/\\]bin[/\\]python[/\\](typedb[/\\])(.*)", r"\1\2", fn)
+package_root = split_path(args.package_root)
+
+for input_file in args.files + args.data_files:
+    packaged_file = input_file
+
+    # We need to move generated files from `bazel-out/.../bin/{package_root}` to the package directory
+    if packaged_file.startswith("bazel-out"):
+        packaged_file = os.path.join(*split_path(packaged_file)[3:])
+        if not packaged_file.startswith(args.package_root):
+            # We don't need other files from `bazel-out`
+            continue
+    if packaged_file.startswith(args.package_root):
+        packaged_file = os.path.join(*split_path(packaged_file)[len(package_root):])
+
     # Remove python version suffix from the file name
-    fn = re.sub(r"(.*)" + args.suffix + r"(\..*)", r"\1\2", fn)
+    packaged_file = remove_file_suffix(packaged_file, args.suffix)
 
     for _imp in args.imports:
-        match = _imp.match(fn)
+        match = _imp.match(packaged_file)
         if match:
-            fn = match.group('fn')
+            packaged_file = match.group('fn')
             break
-    # We do not need other files from `bazel-out`
-    if not fn.startswith("bazel-out"):
-        # Remove `python` from the beginning of the path
-        fn = re.sub(r"(python[/\\]|)(.*)", r"\2", fn)
-        try:
-            e = os.path.join(pkg_dir, os.path.dirname(fn))
-            os.makedirs(e)
-        except OSError:
-            # directory already exists
-            pass
-        shutil.copy(f, os.path.join(pkg_dir, fn))
+
+    try:
+        e = os.path.join(pkg_dir, os.path.dirname(packaged_file))
+        os.makedirs(e)
+    except OSError:
+        # directory already exists
+        pass
+    shutil.copy(input_file, os.path.join(pkg_dir, packaged_file))
 
 # MANIFEST.in is needed for data files that are not included in version control
 if args.data_files:
     manifest_in_path = os.path.join(pkg_dir, 'MANIFEST.in')
     with open(manifest_in_path, 'w') as manifest_in:
-        for f in args.data_files:
-            # We need to move generated files from `bazel-out/.../bin/python/typedb` to the package directory
-            f = re.sub(r"bazel-out[/\\][^/\\]*[/\\]bin[/\\]python[/\\](typedb[/\\])(.*)", r"\1\2", f)
+        for data_file in args.data_files:
+            # We need to move generated files from `bazel-out/.../bin/{package_root}` to the package directory
+            if data_file.startswith("bazel-out"):
+                data_file = os.path.join(*split_path(data_file)[3:])
+                if not data_file.startswith(args.package_root):
+                    # We don't need other files from `bazel-out`
+                    continue
+            if data_file.startswith(args.package_root):
+                data_file = os.path.join(*split_path(data_file)[len(package_root):])
             # Remove python version suffix from the file name
-            f = re.sub(r"(.*)" + args.suffix + r"(\..*)", r"\1\2", f)
-            # We do not need other files from `bazel-out`
-            if not f.startswith("bazel-out"):
-                manifest_in.write("include {}\n".format(f))
+            data_file = remove_file_suffix(data_file, args.suffix)
+            manifest_in.write("include {}\n".format(data_file))
 
-setup_py = os.path.join(pkg_dir, f'setup{args.suffix}.py')
-setup_py_final = os.path.join(pkg_dir, f'setup.py')
-readme = os.path.join(pkg_dir, f'README.md')
+setup_py = os.path.join(pkg_dir, 'setup.py')
+readme = os.path.join(pkg_dir, 'README.md')
 
-with open(args.setup_py) as setup_py_template:
+with open(args.setup_py_template) as setup_py_template:
     install_requires = []
     with open(args.requirements_file) as requirements_file:
         for line in requirements_file.readlines():
@@ -116,7 +143,6 @@ with open(args.setup_py) as setup_py_template:
             setup_py_template.read().replace("INSTALL_REQUIRES_PLACEHOLDER", str(install_requires))
         )
 
-os.rename(setup_py, setup_py_final)
 shutil.copy(args.readme, readme)
 
 # change directory into new package root
@@ -126,7 +152,7 @@ os.chdir(pkg_dir)
 create_init_files(pkg_dir)
 
 # pack sources
-run_setup(setup_py_final, ['sdist', 'bdist_wheel'])
+run_setup(setup_py, ['sdist', 'bdist_wheel'])
 
 sdist_archives = glob.glob('dist/*.tar.gz')
 if len(sdist_archives) != 1:

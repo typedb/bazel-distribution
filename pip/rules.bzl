@@ -103,6 +103,7 @@ def _assemble_pip_impl(ctx):
     args.add_all('--data_files', data_files)
     args.add('--output_sdist', ctx.outputs.pip_package.path)
     args.add('--output_wheel', ctx.outputs.pip_wheel.path)
+    args.add('--package_root', ctx.build_file_path.rsplit('/', 1)[0])
     args.add('--readme', ctx.file.long_description_file.path)
     args.add('--suffix', ctx.attr.suffix)
 
@@ -154,7 +155,7 @@ def _assemble_pip_impl(ctx):
     )
 
     args.add("--requirements_file", ctx.file.requirements_file.path)
-    args.add("--setup_py", setup_py.path)
+    args.add("--setup_py_template", setup_py.path)
     args.add_all("--imports", imports)
 
     ctx.actions.run(
@@ -197,6 +198,7 @@ def _deploy_pip_impl(ctx):
                 files=[ctx.attr.target[PyDeploymentInfo].package, ctx.attr.target[PyDeploymentInfo].wheel, ctx.attr.target[PyDeploymentInfo].version_file] + all_python_files
             )
         )
+
 
 python_repackage = rule(
     attrs = {
