@@ -367,7 +367,7 @@ def _deploy_maven_impl(ctx):
         runfiles = ctx.runfiles(files=files, symlinks = symlinks)
     )
 
-deploy_maven_inner = rule(
+_deploy_maven = rule(
     attrs = {
         "target": attr.label(
             mandatory = True,
@@ -397,9 +397,9 @@ deploy_maven_inner = rule(
 )
 
 def deploy_maven(name, target, snapshot, release, **kwargs):
-    target_name = name + "__gen"
+    target_name = name + "__deploy"
 
-    deploy_maven_inner(
+    _deploy_maven(
         name = target_name,
         target = target,
         snapshot = snapshot,
