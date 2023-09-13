@@ -375,7 +375,7 @@ _deploy_pip = rule(
         """
 )
 
-def deploy_pip(name, target, snapshot, release, suffix, distribution_tag, create_batch="false"):
+def deploy_pip(name, target, snapshot, release, suffix, distribution_tag):
     _deploy_pip(
         name = name + "_deploy",
         target = target,
