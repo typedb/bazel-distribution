@@ -331,7 +331,7 @@ _deploy_pip = rule(
             doc = "Specify tag for the package name. Format: {python tag}-{abi tag}-{platform tag} (PEP 425)",
         ),
         "suffix": attr.string(
-            default = "39",
+            default = "",
             doc = "Python version suffix to be used in the package name",
         ),
         "_deploy_py_template": attr.label(
