@@ -24,6 +24,7 @@ import glob
 import os
 import re
 import shutil
+import sys
 import tempfile
 from setuptools.sandbox import run_setup
 
@@ -45,15 +46,24 @@ def split_path(path: str) -> list[str]:
     return dirs[::-1]
 
 
+def remove_file_suffix(file: str, suffix: str) -> str:
+    path, ext = os.path.splitext(file)
+    if path.endswith(suffix):
+        path = path[:-len(suffix)]
+    return path + ext
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--output_sdist', help="Output targz archive")
 parser.add_argument('--output_wheel', help="Output wheel archive")
-parser.add_argument('--setup_py', help="setup.py")
+parser.add_argument('--package_root', help="bazel package root")
+parser.add_argument('--setup_py_template', help="setup.py")
 parser.add_argument('--requirements_file', help="install_requires")
 parser.add_argument('--readme', help="README file")
 parser.add_argument('--files', nargs='+', help='Python files to pack into archive')
 parser.add_argument('--data_files', nargs='+', default=[], help='Data files to pack into archive')
 parser.add_argument('--imports', nargs='+', help='Folders considered to be source code roots')
+parser.add_argument('--suffix', help="Suffix that has to be removed from the filenames")
 
 args = parser.parse_args()
 
@@ -72,38 +82,58 @@ pkg_dir = tempfile.mkdtemp()
 if not args.files:
     raise Exception("Cannot create an archive without any files")
 
-for f in args.files + args.data_files:
-    fn = f
-    # We need to move generated files from `bazel-out/.../bin` to the package directory
-    if fn.startswith("bazel-out"):
-        fn = os.path.join(*split_path(fn)[3:])
+package_root = split_path(args.package_root)
+
+for input_file in args.files + args.data_files:
+    packaged_file = input_file
+
+    # We need to move generated files from `bazel-out/.../bin/{package_root}` to the package directory
+    if packaged_file.startswith("bazel-out"):
+        packaged_file = os.path.join(*split_path(packaged_file)[3:])
+        if not packaged_file.startswith(args.package_root):
+            # We don't need other files from `bazel-out`
+            continue
+    if packaged_file.startswith(args.package_root):
+        packaged_file = os.path.join(*split_path(packaged_file)[len(package_root):])
+
+    # Remove python version suffix from the file name
+    packaged_file = remove_file_suffix(packaged_file, args.suffix)
+
     for _imp in args.imports:
-        match = _imp.match(fn)
+        match = _imp.match(packaged_file)
         if match:
-            fn = match.group('fn')
+            packaged_file = match.group('fn')
             break
+
     try:
-        e = os.path.join(pkg_dir, os.path.dirname(fn))
+        e = os.path.join(pkg_dir, os.path.dirname(packaged_file))
         os.makedirs(e)
     except OSError:
         # directory already exists
         pass
-    shutil.copy(f, os.path.join(pkg_dir, fn))
+    shutil.copy(input_file, os.path.join(pkg_dir, packaged_file))
 
 # MANIFEST.in is needed for data files that are not included in version control
 if args.data_files:
     manifest_in_path = os.path.join(pkg_dir, 'MANIFEST.in')
     with open(manifest_in_path, 'w') as manifest_in:
-        for f in args.data_files:
-            # We need to move generated files from `bazel-out/.../bin` to the package directory
-            if f.startswith("bazel-out"):
-                f = os.path.join(*split_path(f)[3:])
-            manifest_in.write("include {}\n".format(f))
+        for data_file in args.data_files:
+            # We need to move generated files from `bazel-out/.../bin/{package_root}` to the package directory
+            if data_file.startswith("bazel-out"):
+                data_file = os.path.join(*split_path(data_file)[3:])
+                if not data_file.startswith(args.package_root):
+                    # We don't need other files from `bazel-out`
+                    continue
+            if data_file.startswith(args.package_root):
+                data_file = os.path.join(*split_path(data_file)[len(package_root):])
+            # Remove python version suffix from the file name
+            data_file = remove_file_suffix(data_file, args.suffix)
+            manifest_in.write("include {}\n".format(data_file))
 
 setup_py = os.path.join(pkg_dir, 'setup.py')
 readme = os.path.join(pkg_dir, 'README.md')
 
-with open(args.setup_py) as setup_py_template:
+with open(args.setup_py_template) as setup_py_template:
     install_requires = []
     with open(args.requirements_file) as requirements_file:
         for line in requirements_file.readlines():
@@ -135,4 +165,9 @@ if len(wheel_archives) != 1:
 
 shutil.copy(sdist_archives[0], args.output_sdist)
 shutil.copy(wheel_archives[0], args.output_wheel)
-shutil.rmtree(pkg_dir)
+
+# Ignore permission errors (for Windows)
+try:
+    shutil.rmtree(pkg_dir)
+except PermissionError as err:
+    sys.stderr.write(f"WARNING: unable to delete temporary package directory {pkg_dir}: {str(err)}\n")

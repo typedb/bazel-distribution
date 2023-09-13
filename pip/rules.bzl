@@ -83,18 +83,18 @@ def _assemble_pip_impl(ctx):
     python_source_files = []
 
     imports = []
-    for j in ctx.attr.target[PyInfo].imports.to_list():
-        if 'pypi' not in j:
-            imports.append(j)
+    for file in ctx.attr.target[PyInfo].imports.to_list():
+        if 'pypi' not in file:
+            imports.append(file)
 
-    for i in ctx.attr.target[PyInfo].transitive_sources.to_list():
-        if 'pypi' not in i.path and 'external' not in i.path:
-            python_source_files.append(i)
+    for file in ctx.attr.target[PyInfo].transitive_sources.to_list():
+        if 'pypi' not in file.path and 'external' not in file.path:
+            python_source_files.append(file)
 
     data_files = []
-    for i in ctx.attr.target[DefaultInfo].data_runfiles.files.to_list():
-         if 'pypi' not in i.path and 'external' not in i.path and i.extension != "py":
-            data_files.append(i)
+    for file in ctx.attr.target[DefaultInfo].data_runfiles.files.to_list():
+        if 'pypi' not in file.path and 'external' not in file.path and file.extension != "py":
+            data_files.append(file)
 
     if ctx.attr.python_requires.startswith(">2.") or ctx.attr.python_requires.startswith("=2."):
         fail("This rule only supports Python 3.x, was given 'python_requires = " + ctx.attr.python_requires + "'.")
@@ -103,11 +103,13 @@ def _assemble_pip_impl(ctx):
     args.add_all('--data_files', data_files)
     args.add('--output_sdist', ctx.outputs.pip_package.path)
     args.add('--output_wheel', ctx.outputs.pip_wheel.path)
+    args.add('--package_root', ctx.build_file_path.rsplit('/', 1)[0])
     args.add('--readme', ctx.file.long_description_file.path)
+    args.add('--suffix', ctx.attr.suffix)
 
     # Final 'setup.py' is generated in 2 steps
-    setup_py = ctx.actions.declare_file("setup.py")
-    preprocessed_setup_py = ctx.actions.declare_file("_setup.py")
+    setup_py = ctx.actions.declare_file("setup" + ctx.attr.suffix + ".py")
+    preprocessed_setup_py = ctx.actions.declare_file("_setup" + ctx.attr.suffix + ".py")
 
     # Step 1: fill in everything except version
     ctx.actions.expand_template(
@@ -124,6 +126,7 @@ def _assemble_pip_impl(ctx):
           "{license}": ctx.attr.license,
           "{long_description_file}": ctx.file.long_description_file.path,
           "{python_requires}": ctx.attr.python_requires,
+          "{suffix}": ctx.attr.suffix,
       },
     )
 
@@ -133,7 +136,7 @@ def _assemble_pip_impl(ctx):
 
         if len(version) == 40:
             # this is a commit SHA, most likely
-            version = "0.0.0-{}".format(version)
+            version = "0.0.0+{}".format(version)
 
         ctx.actions.run_shell(
             inputs = [],
@@ -152,7 +155,7 @@ def _assemble_pip_impl(ctx):
     )
 
     args.add("--requirements_file", ctx.file.requirements_file.path)
-    args.add("--setup_py", setup_py.path)
+    args.add("--setup_py_template", setup_py.path)
     args.add_all("--imports", imports)
 
     ctx.actions.run(
@@ -166,19 +169,21 @@ def _assemble_pip_impl(ctx):
 
 
 def _deploy_pip_impl(ctx):
-    deployment_script = ctx.actions.declare_file("{}_deploy.py".format(ctx.attr.name))
+    deployment_script = ctx.actions.declare_file("{}.py".format(ctx.attr.name))
 
     ctx.actions.expand_template(
         template = ctx.file._deploy_py_template,
         output = deployment_script,
         is_executable = True,
         substitutions = {
-            "{package_file}": ctx.attr.target[PyDeploymentInfo].package.short_path,
-            "{wheel_file}": ctx.attr.target[PyDeploymentInfo].wheel.short_path,
+            "{source_package}": ctx.attr.target[PyDeploymentInfo].package.short_path,
+            "{wheel_package}": ctx.attr.target[PyDeploymentInfo].wheel.short_path,
             "{version_file}": ctx.attr.target[PyDeploymentInfo].version_file.short_path,
             "{pypirc_repository}": ctx.attr.pypirc_repository,
             "{snapshot}": ctx.attr.snapshot,
             "{release}": ctx.attr.release,
+            "{distribution_tag}": ctx.attr.distribution_tag,
+            "{suffix}": ctx.attr.suffix,
         }
     )
 
@@ -238,6 +243,10 @@ assemble_pip = rule(
             mandatory = True,
             doc = "A string with Python pip package name"
         ),
+        "suffix": attr.string(
+            default = "",
+            doc = "A suffix that has to be removed from the filenames",
+        ),
         "description": attr.string(
             mandatory = True,
             doc="A string with the short description of the package",
@@ -292,13 +301,13 @@ assemble_pip = rule(
     },
     implementation = _assemble_pip_impl,
     outputs = {
-        "pip_package": "%{package_name}.tar.gz",
-        "pip_wheel": "%{package_name}.whl"
+        "pip_package": "%{package_name}%{suffix}.tar.gz",
+        "pip_wheel": "%{package_name}%{suffix}.whl"
     },
 )
 
 
-deploy_pip = rule(
+_deploy_pip = rule(
     attrs = {
         "target": attr.label(
             mandatory = True,
@@ -316,6 +325,14 @@ deploy_pip = rule(
         "pypirc_repository": attr.string(
             default = "",
             doc = "Repository name in the .pypirc profile to deploy to"
+        ),
+        "distribution_tag": attr.string(
+            default = "py3-none-any",
+            doc = "Specify tag for the package name. Format: {python tag}-{abi tag}-{platform tag} (PEP 425)",
+        ),
+        "suffix": attr.string(
+            default = "",
+            doc = "Python version suffix to be used in the package name",
         ),
         "_deploy_py_template": attr.label(
             allow_single_file = True,
@@ -357,3 +374,19 @@ deploy_pip = rule(
         ```bazel run //:some-deploy-pip -- [pypirc|snapshot|release]```
         """
 )
+
+def deploy_pip(name, target, snapshot, release, suffix, distribution_tag):
+    _deploy_pip(
+        name = name + "_deploy",
+        target = target,
+        snapshot = snapshot,
+        release = release,
+        suffix = suffix,
+        distribution_tag = distribution_tag,
+    )
+
+    native.py_binary(
+        name = name,
+        srcs = [name + "_deploy"],
+        main = name + "_deploy.py",
+    )
