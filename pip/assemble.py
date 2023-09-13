@@ -24,6 +24,7 @@ import glob
 import os
 import re
 import shutil
+import sys
 import tempfile
 from setuptools.sandbox import run_setup
 
@@ -168,5 +169,5 @@ shutil.copy(wheel_archives[0], args.output_wheel)
 # Ignore permission errors (for Windows)
 try:
     shutil.rmtree(pkg_dir)
-except PermissionError:
-    pass
+except PermissionError as err:
+    sys.stderr.write(f"WARNING: unable to delete temporary package directory {pkg_dir}: {str(err)}\n")

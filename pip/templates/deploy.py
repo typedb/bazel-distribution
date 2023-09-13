@@ -46,34 +46,29 @@ repositories = {
 parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')
 
-def upload_command(repo_type_key, package_file, wheel_file):
+
+def upload_command(repo_type_key, packages):
     if repo_type_key not in repositories:
         raise Exception(f"Selected repository must be one of: {list(repositories.keys())}")
 
     if repo_type_key == PYPIRC_KEY:
-        if package_file:
-            return [package_file, wheel_file, '--repository', repositories[repo_type_key]]
-        else:
-            return [wheel_file, '--repository', repositories[repo_type_key]]
+        return packages + ['--repository', repositories[repo_type_key]]
     elif repo_type_key == SNAPSHOT_KEY or repo_type_key == RELEASE_KEY:
         pip_username, pip_password = (os.getenv(ENV_DEPLOY_PIP_USERNAME), os.getenv(ENV_DEPLOY_PIP_PASSWORD))
         if not pip_username:
             raise Exception(f"username should be passed via the {ENV_DEPLOY_PIP_USERNAME} environment variable")
         if not pip_password:
             raise Exception(f"password should be passed via the {ENV_DEPLOY_PIP_PASSWORD} environment variable")
-        if package_file:
-            return [package_file, wheel_file, '-u', pip_username, '-p', pip_password, '--repository-url', repositories[repo_type_key]]
-        else:
-            return [wheel_file, '-u', pip_username, '-p', pip_password, '--repository-url', repositories[repo_type_key]]
+        return packages + ['-u', pip_username, '-p', pip_password, '--repository-url', repositories[repo_type_key]]
     else:
         raise Exception(f"Unrecognised repository selector: {repo_type_key}")
 
 
-if not os.path.exists("{package_file}"):
-    raise Exception("Cannot find expected distribution .tar.gz to deploy at '{package_file}'")
+if not os.path.exists("{source_package}"):
+    raise Exception("Cannot find expected distribution .tar.gz to deploy at '{source_package}'")
 
-if not os.path.exists("{wheel_file}"):
-    raise Exception("Cannot find expected distribution wheel to deploy at '{wheel_file}'")
+if not os.path.exists("{wheel_package}"):
+    raise Exception("Cannot find expected distribution wheel to deploy at '{wheel_package}'")
 
 args = parser.parse_args()
 repo_type_key = args.repo_type
@@ -82,25 +77,26 @@ dist_dir = "./dist"
 with open("{version_file}") as version_file:
     version = version_file.read().strip()
 try:
-    new_package_file = dist_dir + "/{package_file}".replace("{suffix}", "").replace(".tar.gz", "-{}.tar.gz".format(version))
-    new_wheel_pep491 = dist_dir + "/{wheel_file}".replace("{suffix}", "").replace("-", "_").replace(".whl", "-{}-{distribution_tag}.whl".format(version))
+    source_package_name = dist_dir + "/{source_package}".replace("{suffix}", "").replace(".tar.gz", "-{}.tar.gz".format(version))
+    wheel_package_name = dist_dir + "/{wheel_package}".replace("{suffix}", "").replace("-", "_").replace(".whl", "-{}-{distribution_tag}.whl".format(version))
 
-    if not os.path.exists(os.path.dirname(new_package_file)):
-        os.makedirs(os.path.dirname(new_package_file))
+    if not os.path.exists(os.path.dirname(source_package_name)):
+        os.makedirs(os.path.dirname(source_package_name))
 
-    if not os.path.exists(os.path.dirname(new_wheel_pep491)):
-        os.makedirs(os.path.dirname(new_wheel_pep491))
+    if not os.path.exists(os.path.dirname(wheel_package_name)):
+        os.makedirs(os.path.dirname(wheel_package_name))
 
-    shutil.copy("{package_file}", new_package_file)
-    shutil.copy("{wheel_file}", new_wheel_pep491)
+    shutil.copy("{source_package}", source_package_name)
+    shutil.copy("{wheel_package}", wheel_package_name)
 
     # Do not upload a package file if we build for specific platform, because we use a precompiled library
     if "{distribution_tag}".endswith("any"):
-        twine.commands.upload.main(upload_command(repo_type_key, new_package_file, new_wheel_pep491))
+        packages = [source_package_name, wheel_package_name]
     else:
-        twine.commands.upload.main(upload_command(repo_type_key, None, new_wheel_pep491))
+        packages = [wheel_package_name]
+    twine.commands.upload.main(upload_command(repo_type_key, packages))
 finally:
     try:
         shutil.rmtree(dist_dir)
-    except PermissionError:
-        pass
+    except PermissionError as err:
+        sys.stderr.write(f"WARNING: unable to delete temporary distribution directory {dist_dir}: {str(err)}\n")

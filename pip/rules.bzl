@@ -176,8 +176,8 @@ def _deploy_pip_impl(ctx):
         output = deployment_script,
         is_executable = True,
         substitutions = {
-            "{package_file}": ctx.attr.target[PyDeploymentInfo].package.short_path,
-            "{wheel_file}": ctx.attr.target[PyDeploymentInfo].wheel.short_path,
+            "{source_package}": ctx.attr.target[PyDeploymentInfo].package.short_path,
+            "{wheel_package}": ctx.attr.target[PyDeploymentInfo].wheel.short_path,
             "{version_file}": ctx.attr.target[PyDeploymentInfo].version_file.short_path,
             "{pypirc_repository}": ctx.attr.pypirc_repository,
             "{snapshot}": ctx.attr.snapshot,
