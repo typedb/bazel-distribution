@@ -159,7 +159,7 @@ then
     unzip -qq {artifact_location} -d $tmp_dir
     mv -v $tmp_dir/*/* $BUILD_WORKSPACE_DIRECTORY/$1/
 else
-    tar -xzf {artifact_location} -C $BUILD_WORKSPACE_DIRECTORY/$1 --strip-components=2
+    tar -xzf {artifact_location} -C $BUILD_WORKSPACE_DIRECTORY/$1 --strip-components=1
 fi
 """
 
