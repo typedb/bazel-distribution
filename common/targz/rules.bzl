@@ -53,7 +53,8 @@ def assemble_targz(name,
                    permissions = {},
                    append_version = True,
                    visibility = ["//visibility:private"],
-                   tags = []):
+                   tags = [],
+                   target_compatible_with = []):
     """Assemble distribution archive (.tar.gz)
 
     Args:
@@ -75,6 +76,7 @@ def assemble_targz(name,
         empty_dirs = empty_directories,
         modes = permissions,
         tags = tags,
+        target_compatible_with = target_compatible_with,
     )
 
     _assemble_targz_package_dir_file(

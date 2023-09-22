@@ -27,7 +27,8 @@ def assemble_zip(
         permissions = {},
         append_version = True,
         visibility = ["//visibility:private"],
-        tags = []):
+        tags = [],
+        target_compatible_with = []):
     """Assemble distribution archive (.zip)
 
     Args:
@@ -50,6 +51,7 @@ def assemble_zip(
         permissions = permissions,
         append_version = append_version,
         visibility = ["//visibility:private"],
+        target_compatible_with = target_compatible_with,
     )
     tgz2zip(
         name = name,
