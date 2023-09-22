@@ -18,6 +18,7 @@
 #
 
 load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_deb")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs")
 
 def _assemble_apt_version_file_impl(ctx):
     version = ctx.var.get('version', '0.0.0')
@@ -49,6 +50,7 @@ def assemble_apt(name,
                  workspace_refs = None,
                  archives = [],
                  empty_dirs = [],
+                 empty_dirs_permission = "0777",
                  files = {},
                  depends = [],
                  symlinks = {},
@@ -73,23 +75,33 @@ def assemble_apt(name,
         workspace_refs: JSON file with other Bazel workspace references
         archives: Bazel labels of archives that go into .deb package
         empty_dirs: list of empty directories created at package installation
+        empty_dirs_permission: UNIXy permission for the empty directories to be created
         files: mapping between Bazel labels of archives that go into .deb package
             and their resulting location on .deb package installation
         depends: list of Debian packages this package depends on
             https://www.debian.org/doc/debian-policy/ch-relationships.htm
         symlinks: mapping between source and target of symbolic links
             created at installation
-        permissions: mapping between paths and UNIX permissions
+        permissions: mapping between paths and UNIXy permissions
     """
     tar_name = "_{}-deb-tar".format(package_name)
     deb_data = None
     if installation_dir:
+        empty_dirs_name = "_{}-empty-dirs".format(package_name)
+        pkg_mkdirs(
+            name = empty_dirs_name,
+            attributes = pkg_attributes(
+                mode = empty_dirs_permission
+            ),
+            dirs = empty_dirs
+        )
+
         pkg_tar(
             name = tar_name,
             extension = "tar.gz",
             deps = archives,
             package_dir = installation_dir,
-            empty_dirs = empty_dirs,
+            srcs = [empty_dirs_name],
             files = files,
             mode = "0755",
             symlinks = symlinks,
