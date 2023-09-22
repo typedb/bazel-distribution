@@ -54,7 +54,8 @@ def assemble_apt(name,
                  files = {},
                  depends = [],
                  symlinks = {},
-                 permissions = {}):
+                 permissions = {},
+                 architecture = 'all'):
     """Assemble package for installation with APT
 
     Args:
@@ -83,11 +84,12 @@ def assemble_apt(name,
         symlinks: mapping between source and target of symbolic links
             created at installation
         permissions: mapping between paths and UNIXy permissions
+        architecture: package architecture (default option: 'all', common other options: 'amd64', 'arm64')
     """
-    tar_name = "_{}-deb-tar".format(package_name)
+    tar_name = "_{}-deb-tar".format(name)
     deb_data = None
     if installation_dir:
-        empty_dirs_name = "_{}-empty-dirs".format(package_name)
+        empty_dirs_name = "_{}-empty-dirs".format(name)
         pkg_mkdirs(
             name = empty_dirs_name,
             attributes = pkg_attributes(
@@ -149,7 +151,8 @@ def assemble_apt(name,
         depends_file = depends_file_target_name,
         maintainer = maintainer,
         version_file = version_file,
-        description = description
+        description = description,
+        architecture = architecture
     )
 
 
