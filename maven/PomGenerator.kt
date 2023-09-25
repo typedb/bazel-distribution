@@ -78,9 +78,6 @@ class PomGenerator : Callable<Unit> {
     @Option(names = ["--target_deps_coordinates"])
     lateinit var dependencyCoordinates: String
 
-    @Option(names = ["--profiles"])
-    var profilesSpec: String = ""
-
     fun getLicenseInfo(license_id: String): Pair<String, String> {
         return when {
             license_id.equals("apache") -> {
@@ -190,46 +187,6 @@ class PomGenerator : Callable<Unit> {
         return dependenciesElem
     }
 
-    fun profiles(pom: Document, version: String, workspace_refs: JsonObject): Element {
-        val ARCH_LIST = mapOf(
-                "x86_64" to arrayOf("x86_64", "x86-64", "amd64"),
-                "aarch64" to arrayOf("arm64", "aarch64"),
-        )
-
-        val profilesElem = pom.createElement("profiles")
-        val profiles = if (profilesSpec.isEmpty()) emptyArray() else profilesSpec.split(";").toTypedArray()
-        for (profile in profiles) {
-            val (id, dependencies) = profile.split("#", limit = 2)
-            val (os, baseArch) = id.split("-", limit = 2)
-            for (arch in ARCH_LIST[baseArch]!!) {
-                val profileElem = pom.createElement("profile")
-
-                val idElem = pom.createElement("id")
-                idElem.appendChild(pom.createTextNode("$os-$arch"))
-                profileElem.appendChild(idElem)
-
-                val activationElem = pom.createElement("activation")
-                val osElem = pom.createElement("os")
-
-                val familyElem = pom.createElement("family")
-                familyElem.appendChild(pom.createTextNode(os))
-                osElem.appendChild(familyElem)
-
-                val archElem = pom.createElement("arch")
-                archElem.appendChild(pom.createTextNode(arch))
-                osElem.appendChild(archElem)
-
-                activationElem.appendChild(osElem)
-                profileElem.appendChild(activationElem)
-
-                profileElem.appendChild(dependencies(pom, version, workspace_refs, dependencies))
-
-                profilesElem.appendChild(profileElem)
-            }
-        }
-        return profilesElem
-    }
-
     private fun outputDocumentToFile(pom: Document) {
         val transformer = TransformerFactory.newInstance().newTransformer()
         transformer.setOutputProperty(OutputKeys.INDENT, "yes")
@@ -297,8 +254,6 @@ class PomGenerator : Callable<Unit> {
 
         // add dependency information
         rootElement.appendChild(dependencies(pom, version, workspace_refs, dependencyCoordinates))
-
-        rootElement.appendChild(profiles(pom, version, workspace_refs))
 
         // write the final result
         outputDocumentToFile(pom)

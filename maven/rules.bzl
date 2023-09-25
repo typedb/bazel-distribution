@@ -47,15 +47,14 @@ def _generate_version_file(ctx):
 
 def _generate_pom_file(ctx, version_file):
     overridden = []
-    profiles = {}
-    for target, overrides in ctx.attr.profile_overrides.items():
+    override_dependencies = []
+    for target, overrides in ctx.attr.platform_overrides.items():
         overridden_dependency = target[JarInfo].name
         overridden.append(overridden_dependency)
-        for platform, maven_coordinates in json.decode(overrides).items():
-            profiles.setdefault(platform, [])
-            profiles[platform].append(maven_coordinates)
+        for maven_coordinate in json.decode(overrides):
+            override_dependencies.append(maven_coordinate)
 
-    pom_deps = []
+    pom_deps = [] + override_dependencies
     for pom_dependency in [dep for dep in ctx.attr.target[JarInfo].deps.to_list() if dep.type == 'pom']:
         pom_dependency = pom_dependency.maven_coordinates
         if pom_dependency in overridden:
@@ -89,7 +88,6 @@ def _generate_pom_file(ctx, version_file):
             "--version_file=" + version_file.path,
             "--output_file=" + pom_file.path,
             "--workspace_refs_file=" + ctx.file.workspace_refs.path,
-            "--profiles=" + ";".join([platform + "#" + ",".join(deps) for platform, deps in profiles.items()])
         ],
     )
 
@@ -294,26 +292,24 @@ assemble_maven = rule(
             default = {},
             doc = "Project developers to fill into pom.xml",
         ),
-        "profile_overrides": attr.label_keyed_string_dict(
+        "platform_overrides": attr.label_keyed_string_dict(
             default = {},
             aspects = [
                 aggregate_dependency_info,
             ],
             doc = """
-Per-profile overrides for a dependency. Expects a dict of bazel labels to a JSON-encoded dictionary of platform to maven coordinates.
-Supported OS: windows, linux, mac
-Supported architectures: x86_64, aarch64
+Per-platform overrides for a dependency. Expects a dict of bazel labels to a JSON-encoded list of maven coordinates.
 Ex.:
 assemble_maven(
     ...
-    profile_overrides = {
-        ":bazel-dependency": json.encode({
-            "windows-x86_64": "org.company:dependency-windows-x86_64:{pom_version}",
-            "linux-aarch64": "org.company:dependency-linux-aarch64:{pom_version}",
-            "linux-x86_64": "org.company:dependency-linux-x86_64:{pom_version}",
-            "mac-aarch64": "org.company:dependency-macosx-aarch64:{pom_version}",
-            "mac-x86_64": "org.company:dependency-macosx-x86_64:{pom_version}",
-        })
+    platform_overrides = {
+        ":bazel-dependency": json.encode([
+            "org.company:dependency-windows-x86_64:{pom_version}",
+            "org.company:dependency-linux-aarch64:{pom_version}",
+            "org.company:dependency-linux-x86_64:{pom_version}",
+            "org.company:dependency-macosx-aarch64:{pom_version}",
+            "org.company:dependency-macosx-x86_64:{pom_version}",
+        ])
     }
 )
             """,
