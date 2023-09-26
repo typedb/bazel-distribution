@@ -174,7 +174,6 @@ def _deploy_pip_impl(ctx):
     ctx.actions.expand_template(
         template = ctx.file._deploy_script_template,
         output = deployment_script,
-        is_executable = True,
         substitutions = {
             "{source_package}": ctx.attr.target[PyDeploymentInfo].package.short_path,
             "{wheel_package}": ctx.attr.target[PyDeploymentInfo].wheel.short_path,
@@ -384,7 +383,7 @@ def deploy_pip(name, target, snapshot, release, suffix, distribution_tag):
     deploy_pip_script = deploy_script_target_name + "-deploy.py"
     _deploy_pip(
         name = deploy_script_target_name,
-        deploy_script_name = deploy_script_target_name,
+        deploy_script_name = deploy_pip_script,
         target = target,
         snapshot = snapshot,
         release = release,
@@ -394,6 +393,6 @@ def deploy_pip(name, target, snapshot, release, suffix, distribution_tag):
 
     native.py_binary(
         name = name,
-        srcs = [deploy_pip_script],
+        srcs = [deploy_script_target_name],
         main = deploy_pip_script,
     )
