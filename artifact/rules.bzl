@@ -20,7 +20,7 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 
 def _deploy_artifact_impl(ctx):
-    _deploy_script = ctx.actions.declare_file("{}_deploy.py".format(ctx.attr.name))
+    _deploy_script = ctx.actions.declare_file(ctx.attr.deploy_script_name)
 
     version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
     version = ctx.var.get('version', '0.0.0')
@@ -32,7 +32,7 @@ def _deploy_artifact_impl(ctx):
     )
     
     ctx.actions.expand_template(
-        template = ctx.file._deploy_script,
+        template = ctx.file._deploy_script_template,
         output = _deploy_script,
         substitutions = {
             "{version_file}": version_file.short_path,
@@ -61,7 +61,7 @@ def _deploy_artifact_impl(ctx):
     )
 
 
-deploy_artifact = rule(
+_deploy_artifact = rule(
     attrs = {
         "target": attr.label(
             allow_single_file = True,
@@ -84,9 +84,13 @@ deploy_artifact = rule(
             doc = "The artifact filename, automatic from the target file if not specified",
             default = '',
         ),
-        "_deploy_script": attr.label(
+        "_deploy_script_template": attr.label(
             allow_single_file = True,
             default = "//artifact/templates:deploy.py",
+        ),
+        "deploy_script_name": attr.string(
+            mandatory = True,
+            doc = 'Name of instantiated deployment script'
         ),
         "release": attr.string(
             mandatory = True,
@@ -101,6 +105,26 @@ deploy_artifact = rule(
     implementation = _deploy_artifact_impl,
     doc = "Deploy archive target into a raw repo",
 )
+
+def deploy_artifact(name, target, snapshot, release, **kwargs):
+    deploy_script_target_name = name + "__deploy"
+    deploy_script_name = deploy_script_target_name + "-deploy.py"
+
+    _deploy_artifact(
+        name = deploy_script_target_name,
+        deploy_script_name = deploy_script_name,
+        target = target,
+        snapshot = snapshot,
+        release = release,
+        **kwargs
+    )
+
+    native.py_binary(
+        name = name,
+        srcs = [deploy_script_target_name],
+        main = deploy_script_name,
+    )
+
 
 
 def artifact_file(name,

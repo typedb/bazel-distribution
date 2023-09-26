@@ -169,10 +169,10 @@ def _assemble_pip_impl(ctx):
 
 
 def _deploy_pip_impl(ctx):
-    deployment_script = ctx.actions.declare_file("{}.py".format(ctx.attr.name))
+    deployment_script = ctx.actions.declare_file(ctx.attr.deploy_script_name)
 
     ctx.actions.expand_template(
-        template = ctx.file._deploy_py_template,
+        template = ctx.file._deploy_script_template,
         output = deployment_script,
         is_executable = True,
         substitutions = {
@@ -334,9 +334,13 @@ _deploy_pip = rule(
             default = "",
             doc = "Python version suffix to be used in the package name",
         ),
-        "_deploy_py_template": attr.label(
+        "_deploy_script_template": attr.label(
             allow_single_file = True,
             default = "//pip/templates:deploy.py",
+        ),
+        "deploy_script_name": attr.string(
+            mandatory = True,
+            doc = 'Name of instantiated deployment script'
         ),
         "_deps": attr.label_list(
             default = [
@@ -376,8 +380,11 @@ _deploy_pip = rule(
 )
 
 def deploy_pip(name, target, snapshot, release, suffix, distribution_tag):
+    deploy_script_target_name = name + "__deploy"
+    deploy_pip_script = deploy_script_target_name + "-deploy.py"
     _deploy_pip(
-        name = name + "_deploy",
+        name = deploy_script_target_name,
+        deploy_script_name = deploy_script_target_name,
         target = target,
         snapshot = snapshot,
         release = release,
@@ -387,6 +394,6 @@ def deploy_pip(name, target, snapshot, release, suffix, distribution_tag):
 
     native.py_binary(
         name = name,
-        srcs = [name + "_deploy"],
-        main = name + "_deploy.py",
+        srcs = [deploy_script_target_name],
+        main = deploy_pip_script,
     )

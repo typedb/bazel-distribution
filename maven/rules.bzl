@@ -343,16 +343,15 @@ MavenDeploymentInfo = provider(
     }
 )
 
-
 def _deploy_maven_impl(ctx):
-    deploy_maven_script = ctx.actions.declare_file("%s-deploy.py" % ctx.attr.name)
+    deploy_maven_script = ctx.actions.declare_file(ctx.attr.deploy_script_name)
 
     lib_jar_link = "lib.jar"
     src_jar_link = "lib.srcjar"
     pom_xml_link = ctx.attr.target[MavenDeploymentInfo].pom.basename
 
     ctx.actions.expand_template(
-        template = ctx.file._deployment_script,
+        template = ctx.file._deploy_script_template,
         output = deploy_maven_script,
         substitutions = {
             "$JAR_PATH": lib_jar_link,
@@ -395,10 +394,14 @@ _deploy_maven = rule(
             mandatory = True,
             doc = 'Release repository to release maven artifact to'
         ),
-        "_deployment_script": attr.label(
+        "_deploy_script_template": attr.label(
             allow_single_file = True,
-            default = "@vaticle_bazel_distribution//maven/templates:deploy.py",
+            default = "//maven/templates:deploy.py",
         ),
+        "deploy_script_name": attr.string(
+            mandatory = True,
+            doc = 'Name of instantiated deployment script'
+        )
     },
     executable = True,
     implementation = _deploy_maven_impl,
@@ -410,10 +413,12 @@ _deploy_maven = rule(
 )
 
 def deploy_maven(name, target, snapshot, release, **kwargs):
-    target_name = name + "__deploy"
+    deploy_script_target_name = name + "__deploy"
+    deploy_script_name = deploy_script_target_name + "-deploy.py"
 
     _deploy_maven(
-        name = target_name,
+        name = deploy_script_target_name,
+        deploy_script_name = deploy_script_name,
         target = target,
         snapshot = snapshot,
         release = release,
@@ -422,6 +427,6 @@ def deploy_maven(name, target, snapshot, release, **kwargs):
 
     native.py_binary(
         name = name,
-        srcs = [target_name],
-        main = target_name + "-deploy.py",
+        srcs = [deploy_script_target_name],
+        main = deploy_script_name
     )
