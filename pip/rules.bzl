@@ -394,6 +394,6 @@ def deploy_pip(name, target, snapshot, release, suffix, distribution_tag):
 
     native.py_binary(
         name = name,
-        srcs = [deploy_script_target_name],
+        srcs = [deploy_pip_script],
         main = deploy_pip_script,
     )
