@@ -55,7 +55,8 @@ def assemble_apt(name,
                  depends = [],
                  symlinks = {},
                  permissions = {},
-                 architecture = 'all'):
+                 architecture = 'all',
+                 target_compatible_with = []):
     """Assemble package for installation with APT
 
     Args:
@@ -152,7 +153,8 @@ def assemble_apt(name,
         maintainer = maintainer,
         version_file = version_file,
         description = description,
-        architecture = architecture
+        architecture = architecture,
+        target_compatible_with = target_compatible_with
     )
 
 
