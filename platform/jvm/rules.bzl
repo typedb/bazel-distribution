@@ -307,12 +307,13 @@ _assemble_zip_to_jvm_platform = rule(
 )
 
 
-# TODO: upgrade all to JDK17
-def native_jdk16():
+def native_jdk17():
     return select({
-        "@vaticle_dependencies//util/platform:is_mac": "@jdk16_mac//file",
-        "@vaticle_dependencies//util/platform:is_linux": "@jdk16_linux//file",
-        "@vaticle_dependencies//util/platform:is_windows": "@jdk16_windows//file",
+        "@vaticle_bazel_distribution//platform:is_linux_arm64": "@jdk17_linux_arm64//file",
+        "@vaticle_bazel_distribution//platform:is_linux_x86_64": "@jdk17_linux_x86_64//file",
+        "@vaticle_bazel_distribution//platform:is_mac_arm64": "@jdk17_mac_arm64//file",
+        "@vaticle_bazel_distribution//platform:is_mac_x86_64": "@jdk17_mac_x86_64//file",
+        "@vaticle_bazel_distribution//platform:is_windows_x86_64": "@jdk17_windows_x86_64//file",
     })
 
 def assemble_jvm_platform(name,
@@ -328,7 +329,7 @@ def assemble_jvm_platform(name,
                           main_jar_path,
                           main_class,
                           icon = None,
-                          jdk = native_jdk16(),
+                          jdk = native_jdk17(),
                           additional_files = {},
                           verbose = False,
                           log_sensitive_data = False,
@@ -367,9 +368,9 @@ def assemble_jvm_platform(name,
         main_class = main_class,
         jdk = jdk,
         os = select({
-            "@vaticle_dependencies//util/platform:is_mac": "Mac",
-            "@vaticle_dependencies//util/platform:is_linux": "Linux",
-            "@vaticle_dependencies//util/platform:is_windows": "Windows",
+            "@vaticle_bazel_distribution//platform:is_mac": "Mac",
+            "@vaticle_bazel_distribution//platform:is_linux": "Linux",
+            "@vaticle_bazel_distribution//platform:is_windows": "Windows",
         }),
         verbose = verbose,
         log_sensitive_data = log_sensitive_data,
@@ -385,7 +386,7 @@ def assemble_jvm_platform(name,
         mac_deep_sign_jars_regex = mac_deep_sign_jars_regex,
         windows_menu_group = windows_menu_group,
         windows_wix_toolset = select({
-            "@vaticle_dependencies//util/platform:is_windows": windows_wix_toolset,
+            "@vaticle_bazel_distribution//platform:is_windows": windows_wix_toolset,
             "//conditions:default": None,
         }),
     )

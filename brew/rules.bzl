@@ -23,15 +23,18 @@ def _deploy_brew_impl(ctx):
     elif ctx.attr.type == "cask":
         brew_formula_folder = "Casks"
 
+    substitution_files = {key: file.files.to_list()[0].path for file, key in ctx.attr.file_substitutions.items()}
+
     ctx.actions.expand_template(
         template = ctx.file._deploy_brew_template,
         output = ctx.outputs.deployment_script,
-         substitutions = {
+        substitutions = {
             '{brew_folder}': brew_formula_folder,
             '{snapshot}' : ctx.attr.snapshot,
-            '{release}' : ctx.attr.release
+            '{release}' : ctx.attr.release,
+            '{substitution_files}': json.encode(substitution_files),
         },
-        is_executable = True
+        is_executable = True,
     )
 
     if not ctx.attr.version_file:
@@ -49,31 +52,28 @@ def _deploy_brew_impl(ctx):
     files = [
         ctx.file.formula,
         version_file,
-    ]
+    ] + [file.files.to_list()[0] for file in ctx.attr.file_substitutions]
 
     symlinks = {
         'formula': ctx.file.formula,
         'VERSION': version_file,
     }
 
-    if ctx.file.checksum:
-        files.append(ctx.file.checksum)
-        symlinks['checksum.sha256'] = ctx.file.checksum
-
     return DefaultInfo(
-        runfiles = ctx.runfiles(
-            files = files,
-            symlinks = symlinks
-        ),
+        runfiles = ctx.runfiles(files = files),
         executable = ctx.outputs.deployment_script
     )
 
 
 deploy_brew = rule(
     attrs = {
-        "checksum": attr.label(
-            allow_single_file = True,
-            doc = 'Checksum of deployed artifact'
+        "file_substitutions": attr.label_keyed_string_dict(
+            allow_files = True,
+            doc = """
+            Substitute file contents into the formula.
+            Key: file to read the substitution from.
+            Value: placeholder in the formula template to substitute.
+            """
         ),
         "type": attr.string(
             values = ["brew", "cask"],
