@@ -70,7 +70,7 @@ def _assemble_crate_impl(ctx):
     validate_keywords(ctx.attr.keywords)
     version_file = _generate_version_file(ctx)
     args = [
-        "--srcs", ";".join([x.path for x in ctx.attr.target[CrateInfo].srcs.to_list()]),
+        "--srcs", ";".join([x.path for x in ctx.attr.target[CrateInfo].srcs.to_list()] + [x.path for x in ctx.attr.target[CrateInfo].compile_data.to_list()]),
         "--output-crate", ctx.outputs.crate_package.path,
         "--output-metadata-json", ctx.outputs.metadata_json.path,
         "--root", ctx.attr.target[CrateInfo].root.path,
@@ -106,7 +106,7 @@ def _assemble_crate_impl(ctx):
         args.append(ctx.file.readme_file.path)
         inputs.append(ctx.file.readme_file)
     ctx.actions.run(
-        inputs = inputs + ctx.attr.target[CrateInfo].srcs.to_list() + ctx.files.universe_manifests,
+        inputs = inputs + ctx.attr.target[CrateInfo].srcs.to_list() + ctx.attr.target[CrateInfo].compile_data.to_list() + ctx.files.universe_manifests,
         outputs = [ctx.outputs.crate_package, ctx.outputs.metadata_json],
         executable = ctx.executable._crate_assembler_tool,
         arguments = args,
