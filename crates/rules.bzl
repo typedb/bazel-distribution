@@ -60,11 +60,19 @@ def validate_keywords(keywords):
 
 def _assemble_crate_impl(ctx):
     deps = {}
+    deps_workspaces = {}
     dep_features = {}
     for dependency in ctx.attr.target[CrateSummary].deps:
         deps[dependency[CrateSummary].name] = dependency[CrateSummary].version
+        deps_workspaces[dependency[CrateSummary].name] = dependency[CrateSummary].workspace
         if dependency[CrateSummary].enabled_features:
             dep_features[dependency[CrateSummary].name] = ",".join(dependency[CrateSummary].enabled_features)
+
+    print("DEPS: ")
+    print(deps)
+    print("DEPS_WORKPACES: ")
+    print(deps_workspaces)
+
     validate_url('homepage', ctx.attr.homepage)
     validate_url('repository', ctx.attr.repository)
     validate_keywords(ctx.attr.keywords)
@@ -72,7 +80,7 @@ def _assemble_crate_impl(ctx):
     args = [
         "--srcs", ";".join([x.path for x in ctx.attr.target[CrateInfo].srcs.to_list()] + [x.path for x in ctx.attr.target[CrateInfo].compile_data.to_list()]),
         "--output-crate", ctx.outputs.crate_package.path,
-        "--output-metadata-json", ctx.outputs.metadata_json.path,
+#        "--output-metadata-json", ctx.outputs.metadata_json.path,
         "--root", ctx.attr.target[CrateInfo].root.path,
         "--edition", ctx.attr.target[CrateInfo].edition,
         "--name", ctx.attr.target[CrateSummary].name,
@@ -86,6 +94,8 @@ def _assemble_crate_impl(ctx):
         "--repository", ctx.attr.repository,
         "--deps", ";".join(["{}={}".format(k, v) for k, v in deps.items()]),
         "--dep-features", ";".join(["{}={}".format(k, v) for k, v in dep_features.items()]),
+        "--dep-workspaces", ";".join(["{}={}".format(k, v) for k, v in deps_workspaces.items()]),
+        "--workspace-refs-file=" + ctx.file.workspace_refs.path,
     ]
     if ctx.attr.documentation != "":
         validate_url('documentation', ctx.attr.documentation)
@@ -106,15 +116,15 @@ def _assemble_crate_impl(ctx):
         args.append(ctx.file.readme_file.path)
         inputs.append(ctx.file.readme_file)
     ctx.actions.run(
-        inputs = inputs + ctx.attr.target[CrateInfo].srcs.to_list() + ctx.attr.target[CrateInfo].compile_data.to_list() + ctx.files.universe_manifests,
-        outputs = [ctx.outputs.crate_package, ctx.outputs.metadata_json],
+        inputs = inputs + ctx.attr.target[CrateInfo].srcs.to_list() + ctx.attr.target[CrateInfo].compile_data.to_list() + ctx.files.universe_manifests + [ctx.file.workspace_refs],
+        outputs = [ctx.outputs.crate_package],#, ctx.outputs.metadata_json],
         executable = ctx.executable._crate_assembler_tool,
         arguments = args,
     )
     return [
         CrateDeploymentInfo(
             crate = ctx.outputs.crate_package,
-            metadata = ctx.outputs.metadata_json,
+#            metadata = ctx.outputs.metadata_json,
         ),
     ]
 
@@ -122,6 +132,7 @@ CrateSummary = provider(
     fields = {
         "name": "Crate name",
         "version": "Crate version",
+        "workspace": "Bazel workspace name containing the target",
         "deps": "Crate dependencies",
         "enabled_features": "Enabled features",
     },
@@ -144,6 +155,7 @@ def _aggregate_crate_summary_impl(target, ctx):
     return CrateSummary(
         name = name,
         version = ctx.rule.attr.version,
+        workspace = target.label.workspace_root.replace("external/", ""),
         deps = [target for target in getattr(ctx.rule.attr, "deps", []) + getattr(ctx.rule.attr, "proc_macro_deps", [])],
         enabled_features = getattr(ctx.rule.attr, "crate_features", []),
     )
@@ -175,6 +187,11 @@ assemble_crate = rule(
             Alternatively, pass --define version=VERSION to Bazel invocation.
             Not specifying version at all defaults to '0.0.0'
             """,
+        ),
+        "workspace_refs": attr.label(
+            allow_single_file = True,
+            mandatory = False, # TODO: make mandatory
+            doc = "JSON file describing dependencies to other Bazel workspaces",
         ),
         "universe_manifests": attr.label_list(
             doc = """
@@ -245,7 +262,7 @@ assemble_crate = rule(
     },
     outputs = {
         "crate_package": "%{name}.crate",
-        "metadata_json": "%{name}.json",
+#        "metadata_json": "%{name}.json",
     },
 )
 
@@ -263,7 +280,7 @@ def _deploy_crate_impl(ctx):
         output = deploy_crate_script,
         substitutions = {
             "$CRATE_PATH": ctx.attr.target[CrateDeploymentInfo].crate.short_path,
-            "$METADATA_JSON_PATH": ctx.attr.target[CrateDeploymentInfo].metadata.short_path,
+#            "$METADATA_JSON_PATH": ctx.attr.target[CrateDeploymentInfo].metadata.short_path,
             "$SNAPSHOT_REPO": ctx.attr.snapshot,
             "$RELEASE_REPO": ctx.attr.release,
             "$DEPLOYER_PATH": ctx.file._crate_deployer.short_path,

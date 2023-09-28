@@ -97,15 +97,15 @@ class PomGenerator : Callable<Unit> {
         return Triple(groupId, artifactId, version)
     }
 
-    fun version(originalVersion: String, version: String, workspace_refs: JsonObject): String {
+    fun version(originalVersion: String, version: String, workspaceRefs: JsonObject): String {
         if (originalVersion.equals("{pom_version}")) {
             return version
         }
-        val versionCommit = workspace_refs.get("commits").asObject().get(originalVersion)
+        val versionCommit = workspaceRefs.get("commits").asObject().get(originalVersion)
         if (versionCommit != null) {
             return versionCommit.asString()
         }
-        val tagCommit = workspace_refs.get("tags").asObject().get(originalVersion)
+        val tagCommit = workspaceRefs.get("tags").asObject().get(originalVersion)
         if (tagCommit != null) {
             return tagCommit.asString()
         }
@@ -165,7 +165,7 @@ class PomGenerator : Callable<Unit> {
         return scm
     }
 
-    fun dependencies(pom: Document, version: String, workspace_refs: JsonObject, dependencies: String): Element {
+    fun dependencies(pom: Document, version: String, workspaceRefs: JsonObject, dependencies: String): Element {
         val dependenciesElem = pom.createElement("dependencies")
         val coordinates = if (dependencies.isEmpty()) emptyArray() else dependencies.split(";").toTypedArray()
         for (dep in coordinates) {
@@ -177,7 +177,7 @@ class PomGenerator : Callable<Unit> {
             val dependencyArtifactId = pom.createElement("artifactId")
             dependencyArtifactId.appendChild(pom.createTextNode(depCoordinates.second))
             val dependencyVersion = pom.createElement("version")
-            dependencyVersion.appendChild(pom.createTextNode(version(depCoordinates.third, version, workspace_refs)))
+            dependencyVersion.appendChild(pom.createTextNode(version(depCoordinates.third, version, workspaceRefs)))
 
             dependencyElem.appendChild(dependencyGroupId)
             dependencyElem.appendChild(dependencyArtifactId)
@@ -196,7 +196,7 @@ class PomGenerator : Callable<Unit> {
 
     override fun call() {
         val version = versionFile.readText()
-        val workspace_refs = Json.parse(workspaceRefsFile.readText()).asObject()
+        val workspaceRefs = Json.parse(workspaceRefsFile.readText()).asObject()
 
         // Create an XML document for constructing the POM
         val pom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument()
@@ -253,7 +253,7 @@ class PomGenerator : Callable<Unit> {
         rootElement.appendChild(versionElem)
 
         // add dependency information
-        rootElement.appendChild(dependencies(pom, version, workspace_refs, dependencyCoordinates))
+        rootElement.appendChild(dependencies(pom, version, workspaceRefs, dependencyCoordinates))
 
         // write the final result
         outputDocumentToFile(pom)
