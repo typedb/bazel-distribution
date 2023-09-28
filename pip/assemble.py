@@ -26,6 +26,8 @@ import re
 import shutil
 import sys
 import tempfile
+from typing import List
+
 from setuptools.sandbox import run_setup
 
 
@@ -37,7 +39,7 @@ def create_init_files(directory):
             open(join(dirName, "__init__.py"), "w").close()
 
 
-def split_path(path: str) -> list[str]:
+def split_path(path: str) -> List[str]:
     head, tail = os.path.split(path)
     dirs = [tail]
     while head:
