@@ -326,11 +326,11 @@ _deploy_pip = rule(
             doc = "Repository name in the .pypirc profile to deploy to"
         ),
         "distribution_tag": attr.string(
-            default = "py3-none-any",
+            mandatory = True,
             doc = "Specify tag for the package name. Format: {python tag}-{abi tag}-{platform tag} (PEP 425)",
         ),
         "suffix": attr.string(
-            default = "",
+            mandatory = True,
             doc = "Python version suffix to be used in the package name",
         ),
         "_deploy_script_template": attr.label(
@@ -378,12 +378,12 @@ _deploy_pip = rule(
         """
 )
 
-def deploy_pip(name, target, snapshot, release, suffix, distribution_tag):
+def deploy_pip(name, target, snapshot, release, suffix = "", distribution_tag = "py3-none-any"):
     deploy_script_target_name = name + "__deploy"
-    deploy_pip_script = deploy_script_target_name + "-deploy.py"
+    deploy_script_name = deploy_script_target_name + "-deploy.py"
     _deploy_pip(
         name = deploy_script_target_name,
-        deploy_script_name = deploy_pip_script,
+        deploy_script_name = deploy_script_name,
         target = target,
         snapshot = snapshot,
         release = release,
@@ -394,5 +394,5 @@ def deploy_pip(name, target, snapshot, release, suffix, distribution_tag):
     native.py_binary(
         name = name,
         srcs = [deploy_script_target_name],
-        main = deploy_pip_script,
+        main = deploy_script_name,
     )

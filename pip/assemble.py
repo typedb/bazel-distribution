@@ -47,6 +47,8 @@ def split_path(path: str) -> list[str]:
 
 
 def remove_file_suffix(file: str, suffix: str) -> str:
+    if len(suffix) == 0:
+        return file
     path, ext = os.path.splitext(file)
     if path.endswith(suffix):
         path = path[:-len(suffix)]
