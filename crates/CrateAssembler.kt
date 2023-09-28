@@ -22,7 +22,6 @@
 package com.vaticle.bazeldistribution.crates
 
 import com.eclipsesource.json.Json
-import com.eclipsesource.json.JsonArray
 import com.eclipsesource.json.JsonObject
 import com.electronwill.nightconfig.core.Config
 import com.electronwill.nightconfig.toml.TomlParser
@@ -36,7 +35,6 @@ import picocli.CommandLine.Option
 import java.io.BufferedOutputStream
 import java.io.ByteArrayInputStream
 import java.io.File
-import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.util.concurrent.Callable
 import java.util.zip.GZIPOutputStream
@@ -96,8 +94,11 @@ class CrateAssembler : Callable<Unit> {
     @Option(names = ["--categories"], split = ";")
     lateinit var categories: Array<String>
 
-    @Option(names = ["--license"], required = false)
+    @Option(names = ["--license"], required = true)
     lateinit var license: String
+
+    @Option(names = ["--license-file"], required = false)
+    var licenseFile: File? = null
 
     @Option(names = ["--repository"], required = true)
     lateinit var repository: String
@@ -111,10 +112,10 @@ class CrateAssembler : Callable<Unit> {
     @Option(names = ["--workspace-refs-file"], required = false)
     var workspaceRefsFile: File? = null;
 
-    @Option(names = ["--readme-file"])
+    @Option(names = ["--readme-file"], required = false)
     var readmeFile: File? = null
 
-    @Option(names = ["--version-file"])
+    @Option(names = ["--version-file"], required = true)
     lateinit var versionFile: File
 
     override fun call() {
@@ -186,9 +187,27 @@ class CrateAssembler : Callable<Unit> {
                         val cargoTomlText = generateCargoToml(crateRootPath, externalDepsVersions, otherDepsVersions).toByteArray()
                         cargoToml.size = cargoTomlText.size.toLong()
                         tarOutputStream.putArchiveEntry(cargoToml)
-
                         IOUtils.copy(ByteArrayInputStream(cargoTomlText), tarOutputStream)
                         tarOutputStream.closeArchiveEntry()
+
+                        if (licenseFile != null) {
+                            println("writing license file")
+                            tarOutputStream.putArchiveEntry(TarArchiveEntry(
+                                    licenseFile,
+                                    "$prefix/" + licenseFile?.name
+                            ))
+                            IOUtils.copy(licenseFile, tarOutputStream)
+                            tarOutputStream.closeArchiveEntry()
+                        }
+
+                        if (readmeFile != null) {
+                            tarOutputStream.putArchiveEntry(TarArchiveEntry(
+                                    readmeFile,
+                                    "$prefix/" + readmeFile?.name
+                            ))
+                            IOUtils.copy(readmeFile, tarOutputStream)
+                            tarOutputStream.closeArchiveEntry()
+                        }
                     }
                 }
             }
@@ -210,6 +229,8 @@ class CrateAssembler : Callable<Unit> {
             }
             set<String>("description", description)
             set<String>("readme", readmeFile?.toPath()?.fileName?.toString() ?: "")
+            set<String>("license", license)
+            set<String>("licenseFile", licenseFile?.toPath()?.fileName?.toString() ?: "")
         }
         cargoToml.createSubConfig().apply {
             cargoToml.set<Config>("lib", this)

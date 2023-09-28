@@ -115,6 +115,10 @@ def _assemble_crate_impl(ctx):
         args.append("--readme-file")
         args.append(ctx.file.readme_file.path)
         inputs.append(ctx.file.readme_file)
+    if ctx.file.license_file:
+        args.append("--license-file")
+        args.append(ctx.file.license_file.path)
+        inputs.append(ctx.file.license_file)
     ctx.actions.run(
         inputs = inputs + ctx.attr.target[CrateInfo].srcs.to_list() + ctx.attr.target[CrateInfo].compile_data.to_list() + ctx.files.universe_manifests + [ctx.file.workspace_refs],
         outputs = [ctx.outputs.crate_package],#, ctx.outputs.metadata_json],
@@ -249,6 +253,11 @@ assemble_crate = rule(
             The license field contains the name of the software license that the package is released under.
             https://doc.rust-lang.org/cargo/reference/manifest.html#the-license-and-license-file-fields
             """,
+        ),
+        "license_file": attr.label(
+            allow_single_file = True,
+            mandatory = False,
+            doc = "License file for the crate.",
         ),
         "repository": attr.string(
             mandatory = True,
