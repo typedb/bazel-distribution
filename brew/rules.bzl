@@ -23,7 +23,15 @@ def _deploy_brew_impl(ctx):
     elif ctx.attr.type == "cask":
         brew_formula_folder = "Casks"
 
-    substitution_files = {key: file.files.to_list()[0].path for file, key in ctx.attr.file_substitutions.items()}
+    substitution_files = {}
+    for file, key in ctx.attr.file_substitutions.items():
+        if len(file.files.to_list()) != 1:
+            fail(
+                "deploy_brew() expects single files as keys in the `file_substitutions` parameter, " +
+                "received {} files in {}".format(len(file.files.to_list()), file)
+            )
+        else:
+            substitution_files[key] = file.files.to_list()[0]
 
     ctx.actions.expand_template(
         template = ctx.file._deploy_brew_template,
@@ -32,7 +40,7 @@ def _deploy_brew_impl(ctx):
             '{brew_folder}': brew_formula_folder,
             '{snapshot}' : ctx.attr.snapshot,
             '{release}' : ctx.attr.release,
-            '{substitution_files}': json.encode(substitution_files),
+            '{substitution_files}': json.encode({key: file.path for key, file in substitution_files.items()}),
         },
         is_executable = True,
     )
@@ -52,7 +60,7 @@ def _deploy_brew_impl(ctx):
     files = [
         ctx.file.formula,
         version_file,
-    ] + [file.files.to_list()[0] for file in ctx.attr.file_substitutions]
+    ] + list(substitution_files.values())
 
     symlinks = {
         'formula': ctx.file.formula,
