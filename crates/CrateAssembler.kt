@@ -22,6 +22,7 @@
 package com.vaticle.bazeldistribution.crates
 
 import com.eclipsesource.json.Json
+import com.eclipsesource.json.JsonArray
 import com.eclipsesource.json.JsonObject
 import com.electronwill.nightconfig.core.Config
 import com.electronwill.nightconfig.toml.TomlParser
@@ -35,8 +36,10 @@ import picocli.CommandLine.Option
 import java.io.BufferedOutputStream
 import java.io.ByteArrayInputStream
 import java.io.File
+import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.util.concurrent.Callable
+import java.util.stream.Stream
 import java.util.zip.GZIPOutputStream
 import kotlin.system.exitProcess
 
@@ -63,6 +66,9 @@ class CrateAssembler : Callable<Unit> {
 
     @Option(names = ["--output-crate"], required = true)
     lateinit var outputCrateFile: File
+
+    @Option(names = ["--output-metadata-json"], required = true)
+    lateinit var outputMetadataFile: File
 
     @Option(names = ["--root"], required = true)
     lateinit var crateRoot: Path
@@ -109,15 +115,16 @@ class CrateAssembler : Callable<Unit> {
     @Option(names = ["--workspace-refs-file"], required = false)
     var workspaceRefsFile: File? = null;
 
-    @Option(names = ["--readme-file"], required = false)
+    @Option(names = ["--readme-file"])
     var readmeFile: File? = null
 
-    @Option(names = ["--version-file"], required = true)
+    @Option(names = ["--version-file"])
     lateinit var versionFile: File
 
     override fun call() {
         val (externalDepsVersions: Map<String, String>, otherDepsVersions: Map<String, String>) = getDeps()
         writeCrateArchive(externalDepsVersions, otherDepsVersions)
+        writeMetadataFile(externalDepsVersions, otherDepsVersions)
     }
 
     private fun getDeps(): Pair<MutableMap<String, String>, MutableMap<String, String>> {
@@ -270,6 +277,62 @@ class CrateAssembler : Callable<Unit> {
         }
 
         return TomlWriter().writeToString(cargoToml.unmodifiable())
+    }
+
+    private fun writeMetadataFile(externalDepsVersions: MutableMap<String, String>, otherDepsVersions: MutableMap<String, String>) {
+        outputMetadataFile.outputStream().use {
+            it.write(constructMetadata(externalDepsVersions, otherDepsVersions).toByteArray(StandardCharsets.UTF_8))
+        }
+    }
+
+    private fun constructMetadata(externalDepsVersions: MutableMap<String, String>, otherDepsVersions: MutableMap<String, String>): String {
+        return JsonObject().apply {
+            set("name", name)
+            set("vers", versionFile.readText())
+            val depsArray = JsonArray()
+            Stream.concat(externalDepsVersions.entries.stream(), otherDepsVersions.entries.stream()).forEach { entry ->
+                val depName = entry.key
+                val depVer = entry.value
+                val obj = JsonObject()
+                obj.set("optional", false)
+                obj.set("default_features", false)
+                obj.set("name", depName)
+                obj.set("features", JsonArray())
+                obj.set("version_req", depVer)
+                obj.set("target", Json.NULL)
+                obj.set("kind", "normal")
+                obj.set("registry", "")
+                depsArray.add(obj)
+            }
+            set("deps", depsArray)
+            set("features", JsonObject())
+            set("authors", JsonArray().apply { authors.filter { it != "" }.forEach { add(it) } })
+            set("description", description)
+            if (documentation != null) {
+                set("documentation", documentation)
+            }
+            set("homepage", homepage)
+            readmeFile?.let {
+                set("readme", readmeFile?.readText())
+                set("readme_file", it.toPath().fileName.toString())
+            } ?: run {
+                set("readme", Json.NULL)
+                set("readme_file", Json.NULL)
+            }
+            set("keywords", JsonArray().apply { keywords.filter { it != "" }.forEach { add(it) } })
+            set("categories", JsonArray().apply { categories.filter { it != "" }.forEach { add(it) } })
+            set("license", license)
+            licenseFile?.let {
+                set("license_file", it.toPath().fileName.toString())
+            } ?: run {
+                set("license_file", Json.NULL)
+            }
+            set("repository", repository)
+            // https://doc.rust-lang.org/cargo/reference/manifest.html#the-badges-section
+            // as docs state all badges should go to README, so it's safe to keep it empty
+            set("badges", JsonObject())
+            set("links", Json.NULL)
+        }.toString()
     }
 }
 

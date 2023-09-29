@@ -22,6 +22,7 @@ load("@rules_rust//rust:rust_common.bzl", "CrateInfo")
 CrateDeploymentInfo = provider(
     fields = {
         "crate": "Crate file to deploy",
+        "metadata": "File containing package metadata",
     },
 )
 
@@ -74,6 +75,7 @@ def _assemble_crate_impl(ctx):
     args = [
         "--srcs", ";".join([x.path for x in ctx.attr.target[CrateInfo].srcs.to_list()] + [x.path for x in ctx.attr.target[CrateInfo].compile_data.to_list()]),
         "--output-crate", ctx.outputs.crate_package.path,
+        "--output-metadata-json", ctx.outputs.metadata_json.path,
         "--root", ctx.attr.target[CrateInfo].root.path,
         "--edition", ctx.attr.target[CrateInfo].edition,
         "--name", ctx.attr.target[CrateSummary].name,
@@ -116,13 +118,14 @@ def _assemble_crate_impl(ctx):
         inputs.append(ctx.file.workspace_refs)
     ctx.actions.run(
         inputs = inputs + ctx.attr.target[CrateInfo].srcs.to_list() + ctx.attr.target[CrateInfo].compile_data.to_list() + ctx.files.universe_manifests,
-        outputs = [ctx.outputs.crate_package],
+        outputs = [ctx.outputs.crate_package, ctx.outputs.metadata_json],
         executable = ctx.executable._crate_assembler_tool,
         arguments = args,
     )
     return [
         CrateDeploymentInfo(
             crate = ctx.outputs.crate_package,
+            metadata = ctx.outputs.metadata_json,
         ),
     ]
 
@@ -265,6 +268,7 @@ assemble_crate = rule(
     },
     outputs = {
         "crate_package": "%{name}.crate",
+        "metadata_json": "%{name}.json",
     },
 )
 
@@ -273,6 +277,7 @@ def _deploy_crate_impl(ctx):
 
     files = [
         ctx.attr.target[CrateDeploymentInfo].crate,
+        ctx.attr.target[CrateDeploymentInfo].metadata,
         ctx.file._crate_deployer,
     ]
 
@@ -281,6 +286,7 @@ def _deploy_crate_impl(ctx):
         output = deploy_crate_script,
         substitutions = {
             "$CRATE_PATH": ctx.attr.target[CrateDeploymentInfo].crate.short_path,
+            "$METADATA_JSON_PATH": ctx.attr.target[CrateDeploymentInfo].metadata.short_path,
             "$SNAPSHOT_REPO": ctx.attr.snapshot,
             "$RELEASE_REPO": ctx.attr.release,
             "$DEPLOYER_PATH": ctx.file._crate_deployer.short_path,

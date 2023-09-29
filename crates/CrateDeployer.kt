@@ -46,6 +46,9 @@ class CrateDeployer : Callable<Unit> {
     @Option(names = ["--crate"], required = true)
     lateinit var crate: File
 
+    @Option(names = ["--metadata-json"], required = true)
+    lateinit var metadataJson: File
+
     @Option(names = ["--snapshot-repo"], required = true)
     lateinit var snapshotRepo: String
 
@@ -66,9 +69,17 @@ class CrateDeployer : Callable<Unit> {
     )
 
     override fun call() {
+        val metadataJsonContent = metadataJson.readBytes()
         val crateContent = crate.readBytes()
-        val payload = ByteBuffer.allocate(Int.SIZE_BYTES + crateContent.size)
+        /*
+         * Cargo repository expects a single-part body containing both metadata in JSON
+         * and the actual crate in a tarball. Each part is prefixed with a
+         * 32-bit little-endian length identifier.
+         */
+        val payload = ByteBuffer.allocate(Int.SIZE_BYTES + metadataJsonContent.size + Int.SIZE_BYTES + crateContent.size)
             .order(ByteOrder.LITTLE_ENDIAN)
+            .putInt(metadataJsonContent.size)
+            .put(metadataJsonContent)
             .putInt(crateContent.size)
             .put(crateContent)
             .array()
