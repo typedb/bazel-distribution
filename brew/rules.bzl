@@ -23,16 +23,15 @@ def _deploy_brew_impl(ctx):
     elif ctx.attr.type == "cask":
         brew_formula_folder = "Casks"
 
-    ctx.actions.expand_template(
-        template = ctx.file._deploy_brew_template,
-        output = ctx.outputs.deployment_script,
-         substitutions = {
-            '{brew_folder}': brew_formula_folder,
-            '{snapshot}' : ctx.attr.snapshot,
-            '{release}' : ctx.attr.release
-        },
-        is_executable = True
-    )
+    substitution_files = {}
+    for file, key in ctx.attr.file_substitutions.items():
+        if len(file.files.to_list()) != 1:
+            fail(
+                "deploy_brew() expects single files as keys in the `file_substitutions` parameter, " +
+                "received {} files in {}".format(len(file.files.to_list()), file)
+            )
+        else:
+            substitution_files[key] = file.files.to_list()[0]
 
     if not ctx.attr.version_file:
         version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
@@ -46,34 +45,45 @@ def _deploy_brew_impl(ctx):
     else:
         version_file = ctx.file.version_file
 
+    ctx.actions.expand_template(
+        template = ctx.file._deploy_brew_template,
+        output = ctx.outputs.deployment_script,
+        substitutions = {
+            '{brew_folder}': brew_formula_folder,
+            '{snapshot}' : ctx.attr.snapshot,
+            '{release}' : ctx.attr.release,
+            '{substitution_files}': json.encode({key: file.short_path for key, file in substitution_files.items()}),
+            '{formula_template}': ctx.file.formula.short_path,
+            '{version_file}': version_file.path,
+        },
+        is_executable = True,
+    )
+
     files = [
         ctx.file.formula,
         version_file,
-    ]
+    ] + list(substitution_files.values())
 
     symlinks = {
         'formula': ctx.file.formula,
         'VERSION': version_file,
     }
 
-    if ctx.file.checksum:
-        files.append(ctx.file.checksum)
-        symlinks['checksum.sha256'] = ctx.file.checksum
-
     return DefaultInfo(
-        runfiles = ctx.runfiles(
-            files = files,
-            symlinks = symlinks
-        ),
+        runfiles = ctx.runfiles(files = files),
         executable = ctx.outputs.deployment_script
     )
 
 
 deploy_brew = rule(
     attrs = {
-        "checksum": attr.label(
-            allow_single_file = True,
-            doc = 'Checksum of deployed artifact'
+        "file_substitutions": attr.label_keyed_string_dict(
+            allow_files = True,
+            doc = """
+            Substitute file contents into the formula.
+            Key: file to read the substitution from.
+            Value: placeholder in the formula template to substitute.
+            """
         ),
         "type": attr.string(
             values = ["brew", "cask"],

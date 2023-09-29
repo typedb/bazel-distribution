@@ -21,7 +21,7 @@ def _checksum(ctx):
     ctx.actions.run_shell(
         inputs = [ctx.file.archive],
         outputs = [ctx.outputs.checksum_file],
-        command = 'mkdir tmp; unzip {} -d tmp; shasum -a 256 tmp/* > {}; rm -rf tmp/'.format(ctx.file.archive.path, ctx.outputs.checksum_file.path)
+        command = 'shasum -a 256 {} | cut -d" " -f1 > {}'.format(ctx.file.archive.path, ctx.outputs.checksum_file.path)
     )
 
 checksum = rule(

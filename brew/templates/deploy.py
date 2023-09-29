@@ -21,6 +21,7 @@
 
 from __future__ import print_function
 import hashlib
+import json
 import os
 import shutil
 import subprocess as sp
@@ -29,27 +30,25 @@ import tempfile
 import zipfile
 
 
-def get_distribution_url_from_formula(content):
-    url_line = next(iter(filter(lambda l: l.lstrip().startswith('url'), content.split('\n'))))
-    url = url_line.strip().split(' ')[1].replace('"', '')
-    return url
+def get_distribution_urls_from_formula(content):
+    return [
+        line[1].strip('"')
+        for line in map(lambda line: line.strip().split(), content.split('\n'))
+        if len(line) == 2 and line[0] == 'url'
+    ]
+
+
+def get_checksums_from_formula(content):
+    return [
+        line[1].strip('"')
+        for line in map(lambda line: line.strip().split(), content.split('\n'))
+        if len(line) == 2 and line[0] == 'sha256'
+    ]
 
 
 def url_with_credential(url, credential):
     scheme, rest = url.split('://')
     return scheme + '://"' + credential + '"@' + rest
-
-
-def get_checksum():
-    if os.path.isfile('checksum.sha256'):
-        with open('checksum.sha256') as checksum_file:
-            return checksum_file.read().strip().split(' ')[0]
-    elif 'DEPLOY_BREW_CHECKSUM' in os.environ:
-        return os.getenv('DEPLOY_BREW_CHECKSUM')
-    else:
-        raise ValueError('Error - checksum should either be defined '
-                         'in checksum.sha256 file or '
-                         '$DEPLOY_BREW_CHECKSUM env variable')
 
 
 def verify_zip_file(fn):
@@ -66,19 +65,32 @@ def verify_environment():
             sys.exit(1)
 
 
+def expand_formula_template(formula_template: str, substitution_files: dict[str, str]) -> str:
+    expanded = formula_template
+    for key, filename in substitution_files.items():
+        if os.path.isfile(filename):
+            with open(filename) as file:
+                expanded = expanded.replace(key, file.read().strip())
+        else:
+            raise ValueError(f'Error - {filename} substitution for key "{key}" not found (or not a regular file)')
+    return expanded
+
+
 if len(sys.argv) != 2:
     print('Error - needs an argument: <snapshot|release>')
     sys.exit(1)
 
 verify_environment()
 
+substitution_files = json.loads('{substitution_files}')
+
 # configurations #
 git_username = os.getenv('DEPLOY_BREW_USERNAME')
 git_email = os.getenv('DEPLOY_BREW_EMAIL')
-formula_filename = os.path.basename(os.readlink('formula'))
-with open('formula') as formula_file:
+formula_filename = os.path.basename('{formula_template}')
+with open('{formula_template}') as formula_file:
     formula_template = formula_file.read()
-with open('VERSION') as version_file:
+with open('{version_file}') as version_file:
     version = version_file.read().strip()
 tap_type = sys.argv[1]
 
@@ -88,8 +100,6 @@ tap_repositories = {
 }
 tap_url = tap_repositories[tap_type]
 
-checksum_of_distribution_local = get_checksum()
-
 tap_localpath = tempfile.mkdtemp()
 try:
     print('Cloning brew tap: "{}"...'.format(tap_url))
@@ -97,28 +107,39 @@ try:
     sp.check_call(["git", "config", "user.email", git_email], cwd=tap_localpath)
     sp.check_call(["git", "config", "user.name", git_username], cwd=tap_localpath)
     sp.check_call(['mkdir', '-p', '{brew_folder}'], cwd=tap_localpath)
-    formula_content = formula_template.replace('{version}', version).replace('{sha256}', checksum_of_distribution_local)
-    distribution_url = get_distribution_url_from_formula(formula_content)
-    print('Attempting to match the checksums of local distribution and Github distribution from "{}"...'.format(distribution_url))
-    _, ext = os.path.splitext(distribution_url)
-    filename = 'distribution-github' + ext
-    sp.check_call([
-        'curl',
-        distribution_url,
-        '--fail',
-        '--location',
-        '--output',
-        filename
-    ])
-    if ext == '.zip':
-        verify_zip_file(filename)
-    checksum_of_distribution_github = hashlib.sha256(open(filename, 'rb').read()).hexdigest()
-    if checksum_of_distribution_local != checksum_of_distribution_github:
-        print('Error - unable to proceed with deploying to brew! The checksums do not match:')
-        print('- The checksum of local distribution: {}'.format(checksum_of_distribution_local))
-        print('- The checksum of Github distribution: {}'.format(checksum_of_distribution_github))
+
+    formula_content = expand_formula_template(formula_template.replace('{version}', version), substitution_files)
+    checksums = get_checksums_from_formula(formula_content)
+    distribution_urls = get_distribution_urls_from_formula(formula_content)
+
+    if len(checksums) != len(distribution_urls):
+        print('Error - unable to proceed with deploying to brew! The number of checksums does not match the number of URLs:')
+        print('- found {} checksums'.format(len(checksums)))
+        print('- found {} distribution URLs'.format(len(distribution_urls)))
         sys.exit(1)
-    print('The checksums matched. Proceeding with deploying to brew...')
+
+    for (checksum, distribution_url) in zip(checksums, distribution_urls):
+        print('Attempting to match the checksums of local distribution and Github distribution from "{}"...'.format(distribution_url))
+        _, ext = os.path.splitext(distribution_url)
+        filename = 'distribution-github' + ext
+        sp.check_call([
+            'curl',
+            distribution_url,
+            '--fail',
+            '--location',
+            '--output',
+            filename
+        ])
+        if ext == '.zip':
+            verify_zip_file(filename)
+        checksum_of_distribution_github = hashlib.sha256(open(filename, 'rb').read()).hexdigest()
+        if checksum != checksum_of_distribution_github:
+            print('Error - unable to proceed with deploying to brew! The checksums do not match:')
+            print('- The checksum of local distribution: {}'.format(checksum))
+            print('- The checksum of Github distribution: {}'.format(checksum_of_distribution_github))
+            sys.exit(1)
+    print('All checksums matched. Proceeding with deploying to brew...')
+
     with open(os.path.join(tap_localpath, '{brew_folder}', formula_filename), 'w') as f:
         f.write(formula_content)
     sp.check_call(['git', 'add', '.'], cwd=tap_localpath)
