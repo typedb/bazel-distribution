@@ -123,7 +123,7 @@ class CrateAssembler : Callable<Unit> {
     private fun getDeps(): Pair<MutableMap<String, String>, MutableMap<String, String>> {
         val externalDepsVersions: MutableMap<String, String> = HashMap<String, String>().toMutableMap();
         val otherDepsVersions: MutableMap<String, String> = HashMap<String, String>().toMutableMap();
-        val deps: Map<String, String> = if (deps.isEmpty()) {
+        val parsedDeps: Map<String, String> = if (deps.isEmpty()) {
             emptyMap()
         } else {
             deps.split(";").associate { it.split("=").let { (dep, version) -> dep to version } }
@@ -132,7 +132,7 @@ class CrateAssembler : Callable<Unit> {
         if (workspaceRefsFile != null) {
             val workspaceRefs = Json.parse(workspaceRefsFile?.readText()).asObject();
             val bazelDepWorkspace = depWorkspaceList.associate { it.split("=").let { (dep, workspace) -> dep to workspace } }
-            for (entry in deps.entries) {
+            for (entry in parsedDeps.entries) {
                 if (isExternalDep(entry.key, bazelDepWorkspace, workspaceRefs)) {
                     externalDepsVersions[entry.key] = externalDepVersion(entry.key, bazelDepWorkspace, workspaceRefs);
                 } else {
@@ -140,7 +140,7 @@ class CrateAssembler : Callable<Unit> {
                 }
             }
         } else {
-            otherDepsVersions.putAll(deps);
+            otherDepsVersions.putAll(parsedDeps);
         }
         return Pair(externalDepsVersions, otherDepsVersions)
     }

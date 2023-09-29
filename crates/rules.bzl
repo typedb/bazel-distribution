@@ -93,7 +93,6 @@ def _assemble_crate_impl(ctx):
         "--deps", ";".join(["{}={}".format(k, v) for k, v in deps.items()]),
         "--dep-features", ";".join(["{}={}".format(k, v) for k, v in dep_features.items()]),
         "--dep-workspaces", ";".join(["{}={}".format(k, v) for k, v in deps_workspaces.items()]),
-        "--workspace-refs-file=" + ctx.file.workspace_refs.path,
     ]
     if ctx.attr.documentation != "":
         validate_url('documentation', ctx.attr.documentation)
@@ -117,6 +116,9 @@ def _assemble_crate_impl(ctx):
         args.append("--license-file")
         args.append(ctx.file.license_file.path)
         inputs.append(ctx.file.license_file)
+    if ctx.file.workspace_refs:
+        args.append("--workspace-refs-file=" + ctx.file.workspace_refs.path)
+        inputs.append(ctx.file.workspace_refs)
     ctx.actions.run(
         inputs = inputs + ctx.attr.target[CrateInfo].srcs.to_list() + ctx.attr.target[CrateInfo].compile_data.to_list() + ctx.files.universe_manifests + [ctx.file.workspace_refs],
         outputs = [ctx.outputs.crate_package],
