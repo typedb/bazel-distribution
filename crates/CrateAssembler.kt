@@ -64,9 +64,6 @@ class CrateAssembler : Callable<Unit> {
     @Option(names = ["--output-crate"], required = true)
     lateinit var outputCrateFile: File
 
-//    @Option(names = ["--output-metadata-json"], required = true)
-//    lateinit var outputMetadataFile: File
-
     @Option(names = ["--root"], required = true)
     lateinit var crateRoot: Path
 
@@ -121,7 +118,6 @@ class CrateAssembler : Callable<Unit> {
     override fun call() {
         val (externalDepsVersions: Map<String, String>, otherDepsVersions: Map<String, String>) = getDeps()
         writeCrateArchive(externalDepsVersions, otherDepsVersions)
-//        writeMetadataFile(externalDepsVersions, otherDepsVersions)
     }
 
     private fun getDeps(): Pair<MutableMap<String, String>, MutableMap<String, String>> {
@@ -276,58 +272,6 @@ class CrateAssembler : Callable<Unit> {
 
         return TomlWriter().writeToString(cargoToml.unmodifiable())
     }
-
-//    private fun writeMetadataFile(externalDepsVersions: MutableMap<String, String>, otherDepsVersions: MutableMap<String, String>) {
-//        outputMetadataFile.outputStream().use {
-//            it.write(constructMetadata(externalDepsVersions, otherDepsVersions).toByteArray(StandardCharsets.UTF_8))
-//        }
-//    }
-//
-//    private fun constructMetadata(): String {
-//        val features = JsonArray();
-//        return JsonObject().apply {
-//            set("name", name)
-//            set("vers", versionFile.readText())
-//            val depsArray = JsonArray()
-//            for (dep in depsList) {
-//                val (depName, depVer) = dep.split("=")
-//                val obj = JsonObject()
-//                obj.set("optional", false)
-//                obj.set("default_features", false)
-//                obj.set("name", depName)
-//                obj.set("features", JsonArray())
-//                obj.set("version_req", depVer)
-//                obj.set("target", Json.NULL)
-//                obj.set("kind", "normal")
-//                obj.set("registry", "")
-//                depsArray.add(obj)
-//            }
-//            set("deps", depsArray)
-//            set("features", JsonObject())
-//            set("authors", JsonArray().apply { authors.filter { it != "" }.forEach { add(it) } })
-//            set("description", description)
-//            if (documentation != null) {
-//                set("documentation", documentation)
-//            }
-//            set("homepage", homepage)
-//            readmeFile?.let {
-//                set("readme", readmeFile?.readText())
-//                set("readme_file", it.toPath().fileName.toString())
-//            } ?: run {
-//                set("readme", Json.NULL)
-//                set("readme_file", Json.NULL)
-//            }
-//            set("keywords", JsonArray().apply { keywords.filter { it != "" }.forEach { add(it) } })
-//            set("categories", JsonArray().apply { categories.filter { it != "" }.forEach { add(it) } })
-//            set("license", license)
-//            set("license_file", Json.NULL)
-//            set("repository", repository)
-//            // https://doc.rust-lang.org/cargo/reference/manifest.html#the-badges-section
-//            // as docs state all badges should go to README, so it's safe to keep it empty
-//            set("badges", JsonObject())
-//            set("links", Json.NULL)
-//        }.toString()
-//    }
 }
 
 fun main(args: Array<String>): Unit = exitProcess(CommandLine(CrateAssembler()).execute(*args))
