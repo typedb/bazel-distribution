@@ -67,11 +67,6 @@ def _assemble_crate_impl(ctx):
         if dependency[CrateSummary].enabled_features:
             dep_features[dependency[CrateSummary].name] = ",".join(dependency[CrateSummary].enabled_features)
 
-    print("DEPS: ")
-    print(deps)
-    print("DEPS_WORKPACES: ")
-    print(deps_workspaces)
-
     validate_url('homepage', ctx.attr.homepage)
     validate_url('repository', ctx.attr.repository)
     validate_keywords(ctx.attr.keywords)

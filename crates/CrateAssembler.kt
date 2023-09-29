@@ -187,7 +187,6 @@ class CrateAssembler : Callable<Unit> {
                         tarOutputStream.closeArchiveEntry()
 
                         if (licenseFile != null) {
-                            println("writing license file")
                             tarOutputStream.putArchiveEntry(TarArchiveEntry(
                                     licenseFile,
                                     "$prefix/" + licenseFile?.name
