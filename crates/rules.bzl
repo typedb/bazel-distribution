@@ -120,7 +120,7 @@ def _assemble_crate_impl(ctx):
         args.append("--workspace-refs-file=" + ctx.file.workspace_refs.path)
         inputs.append(ctx.file.workspace_refs)
     ctx.actions.run(
-        inputs = inputs + ctx.attr.target[CrateInfo].srcs.to_list() + ctx.attr.target[CrateInfo].compile_data.to_list() + ctx.files.universe_manifests + [ctx.file.workspace_refs],
+        inputs = inputs + ctx.attr.target[CrateInfo].srcs.to_list() + ctx.attr.target[CrateInfo].compile_data.to_list() + ctx.files.universe_manifests,
         outputs = [ctx.outputs.crate_package],
         executable = ctx.executable._crate_assembler_tool,
         arguments = args,
