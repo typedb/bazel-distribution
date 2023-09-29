@@ -32,17 +32,17 @@ import zipfile
 
 def get_distribution_urls_from_formula(content):
     return [
-        line[1]
+        line[1].strip('"')
         for line in map(lambda line: line.strip().split(), content.split('\n'))
-        if line[0] == 'url'
+        if len(line) == 2 and line[0] == 'url'
     ]
 
 
 def get_checksums_from_formula(content):
     return [
-        line[1]
+        line[1].strip('"')
         for line in map(lambda line: line.strip().split(), content.split('\n'))
-        if line[0] == 'sha256'
+        if len(line) == 2 and line[0] == 'sha256'
     ]
 
 
@@ -70,9 +70,9 @@ def expand_formula_template(formula_template: str, substitution_files: dict[str,
     for key, filename in substitution_files.items():
         if os.path.isfile(filename):
             with open(filename) as file:
-                expanded = expanded.replace(key, file.read())
+                expanded = expanded.replace(key, file.read().strip())
         else:
-            raise ValueError(f'Error - {file} substitution for key "{key}" not found (or not a regular file)')
+            raise ValueError(f'Error - {filename} substitution for key "{key}" not found (or not a regular file)')
     return expanded
 
 
@@ -87,10 +87,10 @@ substitution_files = json.loads('{substitution_files}')
 # configurations #
 git_username = os.getenv('DEPLOY_BREW_USERNAME')
 git_email = os.getenv('DEPLOY_BREW_EMAIL')
-formula_filename = os.path.basename(os.readlink('formula'))
-with open('formula') as formula_file:
+formula_filename = os.path.basename('{formula_template}')
+with open('{formula_template}') as formula_file:
     formula_template = formula_file.read()
-with open('VERSION') as version_file:
+with open('{version_file}') as version_file:
     version = version_file.read().strip()
 tap_type = sys.argv[1]
 

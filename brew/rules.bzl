@@ -33,18 +33,6 @@ def _deploy_brew_impl(ctx):
         else:
             substitution_files[key] = file.files.to_list()[0]
 
-    ctx.actions.expand_template(
-        template = ctx.file._deploy_brew_template,
-        output = ctx.outputs.deployment_script,
-        substitutions = {
-            '{brew_folder}': brew_formula_folder,
-            '{snapshot}' : ctx.attr.snapshot,
-            '{release}' : ctx.attr.release,
-            '{substitution_files}': json.encode({key: file.path for key, file in substitution_files.items()}),
-        },
-        is_executable = True,
-    )
-
     if not ctx.attr.version_file:
         version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
         version = ctx.var.get('version', '0.0.0')
@@ -56,6 +44,20 @@ def _deploy_brew_impl(ctx):
         )
     else:
         version_file = ctx.file.version_file
+
+    ctx.actions.expand_template(
+        template = ctx.file._deploy_brew_template,
+        output = ctx.outputs.deployment_script,
+        substitutions = {
+            '{brew_folder}': brew_formula_folder,
+            '{snapshot}' : ctx.attr.snapshot,
+            '{release}' : ctx.attr.release,
+            '{substitution_files}': json.encode({key: file.short_path for key, file in substitution_files.items()}),
+            '{formula_template}': ctx.file.formula.short_path,
+            '{version_file}': version_file.path,
+        },
+        is_executable = True,
+    )
 
     files = [
         ctx.file.formula,
