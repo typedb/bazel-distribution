@@ -25,6 +25,7 @@ import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonArray
 import com.eclipsesource.json.JsonObject
 import com.electronwill.nightconfig.core.Config
+import com.electronwill.nightconfig.core.UnmodifiableConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import com.electronwill.nightconfig.toml.TomlWriter
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
@@ -39,7 +40,6 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.util.concurrent.Callable
-import java.util.stream.Stream
 import java.util.zip.GZIPOutputStream
 import kotlin.system.exitProcess
 
@@ -123,8 +123,11 @@ class CrateAssembler : Callable<Unit> {
 
     override fun call() {
         val (externalDepsVersions: Map<String, String>, otherDepsVersions: Map<String, String>) = getDeps()
-        writeCrateArchive(externalDepsVersions, otherDepsVersions)
-        writeMetadataFile(externalDepsVersions, otherDepsVersions)
+        val libraryRoot = crateRoot.toAbsolutePath().parent
+        val crateRootPath = "src/" + libraryRoot.relativize(crateRoot.toAbsolutePath()).toString()
+        val config = generateConfig(crateRootPath, externalDepsVersions, otherDepsVersions);
+        writeCrateArchive(config)
+        writeMetadataFile(generateMetadata(config))
     }
 
     private fun getDeps(): Pair<MutableMap<String, String>, MutableMap<String, String>> {
@@ -167,7 +170,7 @@ class CrateAssembler : Callable<Unit> {
         throw IllegalStateException();
     }
 
-    private fun writeCrateArchive(externalDepsVersions: Map<String, String>, otherDepsVersions: Map<String, String>) {
+    private fun writeCrateArchive(config: UnmodifiableConfig) {
         val prefix = "$name-${versionFile.readText()}"
         outputCrateFile.outputStream().use { fos ->
             BufferedOutputStream(fos).use { bos ->
@@ -186,8 +189,7 @@ class CrateAssembler : Callable<Unit> {
                         }
 
                         val cargoToml = TarArchiveEntry("$prefix/Cargo.toml")
-                        val crateRootPath = "src/" + libraryRoot.relativize(crateRoot.toAbsolutePath()).toString()
-                        val cargoTomlText = generateCargoToml(crateRootPath, externalDepsVersions, otherDepsVersions).toByteArray()
+                        val cargoTomlText = generateCargoToml(config).toByteArray()
                         cargoToml.size = cargoTomlText.size.toLong()
                         tarOutputStream.putArchiveEntry(cargoToml)
                         IOUtils.copy(ByteArrayInputStream(cargoTomlText), tarOutputStream)
@@ -216,7 +218,9 @@ class CrateAssembler : Callable<Unit> {
         }
     }
 
-    private fun generateCargoToml(crateRootPath: String, externalDepsVersions: Map<String, String>, otherDepsVersions: Map<String, String>): String {
+    private fun generateConfig(
+        crateRootPath: String, externalDepsVersions: Map<String, String>, otherDepsVersions: Map<String, String>
+    ): UnmodifiableConfig {
         val cargoToml = Config.inMemory()
         cargoToml.createSubConfig().apply {
             cargoToml.set<Config>("package", this)
@@ -230,9 +234,9 @@ class CrateAssembler : Callable<Unit> {
                 set<String>("documentation", documentation)
             }
             set<String>("description", description)
-            set<String>("readme", readmeFile?.toPath()?.fileName?.toString() ?: "")
+            set<String>("readme", readmeFile?.toPath()?.fileName?.toString())
             set<String>("license", license)
-            set<String>("licenseFile", licenseFile?.toPath()?.fileName?.toString() ?: "")
+            set<String>("licenseFile", licenseFile?.toPath()?.fileName?.toString())
         }
         cargoToml.createSubConfig().apply {
             cargoToml.set<Config>("lib", this)
@@ -242,7 +246,13 @@ class CrateAssembler : Callable<Unit> {
         val universeDeps = universeManifests.flatMap {
             TomlParser().parse(it.inputStream())
                     .getOrElse("dependencies", Config.inMemory()).entrySet().asSequence()
-        }.associate { it.key to it.getValue<String>() }
+        }.associate {
+            if (it.getValue<Any>() is Config) {
+                it.key to it.getValue()
+            } else {
+                it.key to Config.inMemory().apply { set("version", it.getValue<String>()) }
+            }
+        }
 
         val externalDepFeatures = depFeaturesList.associate { it.split("=").let { (dep, feats) -> dep to feats } }
                 .mapValues { (_, feats) -> feats.split(",") }
@@ -260,7 +270,7 @@ class CrateAssembler : Callable<Unit> {
                 if (universeDeps.contains(dep))
                     set<String>(dep, universeDeps[dep])
                 else
-                    set<String>(dep, "=$version")
+                    set<String>(dep, Config.inMemory().apply { set("version", "=$version") })
             }
         }
 
@@ -275,64 +285,72 @@ class CrateAssembler : Callable<Unit> {
                 }.forEach { (feature, implied) -> set(feature, implied) }
             }
         }
-
-        return TomlWriter().writeToString(cargoToml.unmodifiable())
+        return cargoToml.unmodifiable();
     }
 
-    private fun writeMetadataFile(externalDepsVersions: MutableMap<String, String>, otherDepsVersions: MutableMap<String, String>) {
+    private fun generateCargoToml(cargoToml: UnmodifiableConfig): String {
+        return TomlWriter().writeToString(cargoToml)
+    }
+
+    private fun writeMetadataFile(metadata: JsonObject) {
         outputMetadataFile.outputStream().use {
-            it.write(constructMetadata(externalDepsVersions, otherDepsVersions).toByteArray(StandardCharsets.UTF_8))
+            it.write(metadata.toString().toByteArray(StandardCharsets.UTF_8))
         }
     }
 
-    private fun constructMetadata(externalDepsVersions: MutableMap<String, String>, otherDepsVersions: MutableMap<String, String>): String {
+    private fun generateMetadata(cargoToml: UnmodifiableConfig): JsonObject {
         return JsonObject().apply {
-            set("name", name)
-            set("vers", versionFile.readText())
+            set("name", cargoToml.get<String>("package.name"))
+            set("vers", cargoToml.get<String>("package.version"))
+
             val depsArray = JsonArray()
-            Stream.concat(externalDepsVersions.entries.stream(), otherDepsVersions.entries.stream()).forEach { entry ->
+            cargoToml.get<Config>("dependencies").entrySet().forEach { entry ->
                 val depName = entry.key
-                val depVer = entry.value
-                val obj = JsonObject()
-                obj.set("optional", false)
-                obj.set("default_features", false)
-                obj.set("name", depName)
-                obj.set("features", JsonArray())
-                obj.set("version_req", depVer)
-                obj.set("target", Json.NULL)
-                obj.set("kind", "normal")
-                obj.set("registry", "")
-                depsArray.add(obj)
+                val depConfig = entry.getValue<Config>();
+                depsArray.add(JsonObject().apply {
+                    set("name", depName)
+                    set("version_req", depConfig.get<String>("version"))
+                    set("features", JsonArray().apply { depConfig.get<List<String>>("features")?.forEach { add(it) } })
+                    set("optional", depConfig.get("optional") ?: false)
+                    set("default_features", depConfig.get("default-features") ?: true)
+                    set("target", Json.NULL)
+                    set("kind", "normal")
+                    set("registry", Json.NULL)
+                })
             }
             set("deps", depsArray)
-            set("features", JsonObject())
-            set("authors", JsonArray().apply { authors.filter { it != "" }.forEach { add(it) } })
-            set("description", description)
-            if (documentation != null) {
-                set("documentation", documentation)
-            }
-            set("homepage", homepage)
-            readmeFile?.let {
+
+            set("features", JsonObject().apply {
+                cargoToml.get<Config>("features")?.entrySet()?.forEach { entry ->
+                    set(entry.key, JsonArray().apply { entry.getValue<List<String>>().forEach { add(it) } })
+                }
+            })
+
+            set("authors", JsonArray().apply { cargoToml.get<List<String>>("package.authors")?.forEach { add(it) } })
+            set("description", cargoToml.get<String>("package.description"))
+            set("documentation", cargoToml.get<String>("package.documentation"))
+            set("homepage", cargoToml.get<String>("package.homepage"))
+            cargoToml.get<String>("package.readme")?.let {
                 set("readme", readmeFile?.readText())
-                set("readme_file", it.toPath().fileName.toString())
+                set("readme_file", Path.of(it).fileName.toString())
             } ?: run {
                 set("readme", Json.NULL)
                 set("readme_file", Json.NULL)
             }
             set("keywords", JsonArray().apply { keywords.filter { it != "" }.forEach { add(it) } })
             set("categories", JsonArray().apply { categories.filter { it != "" }.forEach { add(it) } })
-            set("license", license)
-            licenseFile?.let {
-                set("license_file", it.toPath().fileName.toString())
+            set("license", cargoToml.get<String>("license"))
+            cargoToml.get<String>("package.licenseFile")?.let {
+                set("license_file", Path.of(it).fileName.toString())
             } ?: run {
                 set("license_file", Json.NULL)
             }
-            set("repository", repository)
+            set("repository", cargoToml.get<String>(repository))
             // https://doc.rust-lang.org/cargo/reference/manifest.html#the-badges-section
             // as docs state all badges should go to README, so it's safe to keep it empty
             set("badges", JsonObject())
             set("links", Json.NULL)
-        }.toString()
+        }
     }
 }
 
