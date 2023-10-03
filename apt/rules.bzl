@@ -110,11 +110,11 @@ def assemble_apt(name,
                 target = target
             )
 
-        archives_name = "_{}_archives".format(name)
+        archives_merged_name = "_{}_archives".format(name)
         pkg_tar(
-            name = archives_name,
+            name = archives_merged_name,
             package_dir = installation_dir,
-            deps = archives
+            deps = archives # using deps instead of sources will merge tars into a single tar
         )
 
         files_name = "_{}_files".format(name)
@@ -128,11 +128,9 @@ def assemble_apt(name,
         pkg_tar(
             name = tar_name,
             extension = "tar.gz",
-#            package_dir = installation_dir,
             srcs = [empty_dirs_name] + symlink_names + [files_name],
             mode = "0755",
-            deps = [archives_name],
-#            symlinks = symlinks,
+            deps = [archives_merged_name],
             modes = permissions,
         )
         deb_data = tar_name
