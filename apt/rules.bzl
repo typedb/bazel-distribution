@@ -18,7 +18,7 @@
 #
 
 load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_deb")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink", "pkg_filegroup", "pkg_files")
 
 def _assemble_apt_version_file_impl(ctx):
     version = ctx.var.get('version', '0.0.0')
@@ -99,15 +99,40 @@ def assemble_apt(name,
             dirs = empty_dirs
         )
 
+        symlink_names = []
+        for link, target in symlinks.items():
+            print(link, target)
+            symlink_name = "_{}-{}".format(name, link.replace("/", "_").replace("\\", "_"))
+            symlink_names.append(symlink_name)
+            pkg_mklink(
+                name = symlink_name,
+                link_name = link,
+                target = target
+            )
+
+        archives_name = "_{}_archives".format(name)
+        pkg_tar(
+            name = archives_name,
+            package_dir = installation_dir,
+            deps = archives
+        )
+
+        files_name = "_{}_files".format(name)
+        pkg_files(
+            name = files_name,
+            prefix = installation_dir,
+            srcs = files.keys(),
+            renames = files,
+        )
+
         pkg_tar(
             name = tar_name,
             extension = "tar.gz",
-            deps = archives,
-            package_dir = installation_dir,
-            srcs = [empty_dirs_name],
-            files = files,
+#            package_dir = installation_dir,
+            srcs = [empty_dirs_name] + symlink_names + [files_name],
             mode = "0755",
-            symlinks = symlinks,
+            deps = [archives_name],
+#            symlinks = symlinks,
             modes = permissions,
         )
         deb_data = tar_name
