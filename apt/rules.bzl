@@ -87,6 +87,11 @@ def assemble_apt(name,
         permissions: mapping between paths and UNIXy permissions
         architecture: package architecture (default option: 'all', common other options: 'amd64', 'arm64')
     """
+
+    ALLOWED_ARCHITECTURES = ['all', 'amd64', 'arm64']
+    if not architecture in ALLOWED_ARCHITECTURES:
+        fail("Apt architectures supported are only: {}".format(ALLOWED_ARCHITECTURES))
+
     tar_name = "_{}-deb-tar".format(name)
     deb_data = None
     if installation_dir:
