@@ -19,7 +19,7 @@
 
 def _file_rename_impl(ctx):
     output_file_name = ctx.attr.output
-    replace_count = output_file_name.replace_count("{")
+    replace_count = output_file_name.count("{")
     start_index = 0
     for i in range(replace_count):
         open_curly_index = output_file_name.find("{", start_index)
