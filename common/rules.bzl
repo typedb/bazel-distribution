@@ -19,7 +19,7 @@
 
 load("@vaticle_bazel_distribution//common/assemble_versioned:rules.bzl", _assemble_versioned = "assemble_versioned")
 load("@vaticle_bazel_distribution//common/checksum:rules.bzl", _checksum = "checksum")
-load("@vaticle_bazel_distribution//common/generate_json_config:rules.bzl", _check_generate_json_configsum = "generate_json_config")
+load("@vaticle_bazel_distribution//common/generate_json_config:rules.bzl", _generate_json_config = "generate_json_config")
 load("@vaticle_bazel_distribution//common/java_deps:rules.bzl", _java_deps = "java_deps")
 load("@vaticle_bazel_distribution//common/tgz2zip:rules.bzl", _tgz2zip = "tgz2zip")
 load("@vaticle_bazel_distribution//common/targz:rules.bzl", _assemble_targz = "assemble_targz")
