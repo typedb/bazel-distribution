@@ -224,15 +224,11 @@ object JVMPlatformAssembler {
             }
 
             override fun afterPack() {
-                when (val codeSigningOptions = options.image.appleCodeSigning) {
+                when (options.image.appleCodeSigning) {
                     null -> logger.debug { "Skipping notarizing step: Apple code signing is not enabled" }
                     else -> {
-                        val dmgFilename = "${options.image.filename}-$version.dmg"
-                        MacAppNotarizer(
-                            options = codeSigningOptions,
-                            dmgFilename = dmgFilename,
-                            dmgPath = Path.of(distDir.path, dmgFilename)
-                        ).notarize()
+                        MacAppNotarizer(dmgPath = Path.of(distDir.path, "${options.image.filename}-$version.dmg")).notarize()
+                        appleCodeSigner!!.deleteKeychain()
                     }
                 }
             }

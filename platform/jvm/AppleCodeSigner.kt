@@ -47,7 +47,7 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
     lateinit var certSubject: String
 
     fun init() {
-        deleteExistingKeychainIfPresent()
+        deleteKeychain()
         createKeychain()
         setDefaultKeychain()
         unlockKeychain()
@@ -57,7 +57,7 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
         initialised = true
     }
 
-    private fun deleteExistingKeychainIfPresent() {
+    fun deleteKeychain() {
         val keychainListInfo = shell.execute(listOf(SECURITY, LIST_KEYCHAINS)).outputString()
         if (KEYCHAIN_NAME in keychainListInfo) shell.execute(listOf(SECURITY, DELETE_KEYCHAIN, KEYCHAIN_NAME))
     }
