@@ -27,6 +27,7 @@ class MacAppNotarizer(private val dmgPath: Path) {
                 Shell.Command.arg(XCRUN), Shell.Command.arg(NOTARYTOOL), Shell.Command.arg(SUBMIT),
                 Shell.Command.arg(KEYCHAIN_PROFILE), Shell.Command.arg(KEYCHAIN_PASSWORD, printable = false),
                 Shell.Command.arg(WAIT), Shell.Command.arg(TIMEOUT), Shell.Command.arg(ONE_HOUR),
+                Shell.Command.arg(dmgPath.toString()),
         )
     }
 
