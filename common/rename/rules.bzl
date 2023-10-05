@@ -32,9 +32,13 @@ def _file_rename_impl(ctx):
             fail("Cound not find variable '{}' in the context.".format(variable))
         output_file_name = output_file_name.replace("{" + variable + "}", value)
 
+    input_file = ctx.attr.target.files.to_list()[0]
+    if output_file_name == input_file.short_path:
+        return DefaultInfo(files = depset([input_file]))
+
     output_file = ctx.actions.declare_file(output_file_name)
     ctx.actions.run_shell(
-        inputs = [ctx.attr.target.files.to_list()[0]],
+        inputs = [input_file],
         command = "cp $1 $2",
         arguments = [ctx.attr.target.files.to_list()[0].path, output_file.path],
         outputs = [output_file],

@@ -85,22 +85,13 @@ def assemble_targz(name,
         append_version = append_version
     )
 
+    output_filename = output_filename or name
     pkg_tar(
-        name = "{}__do_not_reference__targz_1".format(name),
+        name = name,
         deps = [":{}__do_not_reference__targz_0".format(name)],
         package_dir_file = "{}__do_not_reference__pkgdir".format(name),
+        out = output_filename + ".tar.gz",
         extension = "tar.gz",
-        tags = tags,
-    )
-
-    output_filename = output_filename or name
-
-    native.genrule(
-        name = name,
-        srcs = [":{}__do_not_reference__targz_1".format(name)],
-        cmd = "cp $$(echo $(SRCS) | awk '{print $$1}') $@",
-        outs = [output_filename + ".tar.gz"],
         visibility = visibility,
         tags = tags,
     )
-
