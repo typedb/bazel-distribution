@@ -56,14 +56,6 @@ stardoc(
         # From: //brew:rules.bzl
         "deploy_brew",
 
-        # From: //common/assemble_versioned:rules.bzl
-        "assemble_versioned",
-
-        # From: //common/checksum:rules.bzl
-        "checksum",
-
-        # From: //common/generate_json_config:rules.bzl
-        "generate_json_config",
 
         # From: //common/java_deps:rules.bzl
         "MAVEN_COORDINATES_PREFIX",
@@ -73,10 +65,13 @@ stardoc(
 
         # From: //common:rules.bzl
         "assemble_targz",
+        "assemble_versioned",
         "assemble_zip",
-
-        # From: //common/tgz2zip:rules.bzl
+        "checksum",
+        "file_rename",
+        "generate_json_config",
         "tgz2zip",
+        "workspace_refs",
 
         # From: //crates:rules.bzl
         "assemble_crate",
