@@ -309,13 +309,13 @@ _assemble_zip_to_jvm_platform = rule(
 )
 
 
-def native_jdk17():
+def native_jdk21():
     return select({
-        "@vaticle_bazel_distribution//platform:is_linux_arm64": "@jdk17_linux_arm64//file",
-        "@vaticle_bazel_distribution//platform:is_linux_x86_64": "@jdk17_linux_x86_64//file",
-        "@vaticle_bazel_distribution//platform:is_mac_arm64": "@jdk17_mac_arm64//file",
-        "@vaticle_bazel_distribution//platform:is_mac_x86_64": "@jdk17_mac_x86_64//file",
-        "@vaticle_bazel_distribution//platform:is_windows_x86_64": "@jdk17_windows_x86_64//file",
+        "@vaticle_bazel_distribution//platform:is_linux_arm64": "@jdk21_linux_arm64//file",
+        "@vaticle_bazel_distribution//platform:is_linux_x86_64": "@jdk21_linux_x86_64//file",
+        "@vaticle_bazel_distribution//platform:is_mac_arm64": "@jdk21_mac_arm64//file",
+        "@vaticle_bazel_distribution//platform:is_mac_x86_64": "@jdk21_mac_x86_64//file",
+        "@vaticle_bazel_distribution//platform:is_windows_x86_64": "@jdk21_windows_x86_64//file",
     })
 
 def assemble_jvm_platform(name,
@@ -331,7 +331,7 @@ def assemble_jvm_platform(name,
                           main_jar_path,
                           main_class,
                           icon = None,
-                          jdk = native_jdk17(),
+                          jdk = native_jdk21(),
                           additional_files = {},
                           verbose = False,
                           log_sensitive_data = False,
