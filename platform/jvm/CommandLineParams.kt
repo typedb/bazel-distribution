@@ -30,7 +30,7 @@ class CommandLineParams {
         const val APPLE_CODE_SIGNING_CERT_PASSWORD = "--apple_code_signing_cert_password"
         const val APPLE_ID = "--apple_id"
         const val APPLE_ID_PASSWORD = "--apple_id_password"
-        const val APPLE_TEAM_ID = "--apple-team-id"
+        const val APPLE_TEAM_ID = "--apple_team_id"
         const val CONFIG_PATH = "--config_path"
     }
 }
