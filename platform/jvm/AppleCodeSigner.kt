@@ -128,12 +128,6 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
         return subjectCommonName.value.toString()
     }
 
-    fun signAppImage(rootPath: Path, appName: String) {
-        signFile(rootPath.toFile())
-        signFile(rootPath.resolve(CONTENTS).resolve(RUNTIME).toFile())
-        signFile(rootPath.resolve(CONTENTS).resolve(MAC_OS).resolve(appName).toFile())
-    }
-
     fun signUnsignedNativeLibs(root: File) {
         // Some JARs contain unsigned `.jnilib` and `.dylib` files, which we can extract, sign and repackage
         for (jar in root.listFilesRecursively().filter {
