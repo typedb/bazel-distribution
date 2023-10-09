@@ -6,7 +6,6 @@ import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_TEAM_ID
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.CONFIG_PATH
 import picocli.CommandLine
-import java.awt.GraphicsConfigTemplate
 import java.io.File
 
 class CommandLineParams {
