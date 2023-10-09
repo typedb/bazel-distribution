@@ -175,12 +175,14 @@ windowsWiXToolsetPath: {}
     if "APPLE_CODE_SIGN" in ctx.var and ctx.var["APPLE_CODE_SIGN"] == "yes":
         _require_apple_code_signing_var(ctx, "APPLE_ID")
         _require_apple_code_signing_var(ctx, "APPLE_ID_PASSWORD")
+        _require_apple_code_signing_var(ctx, "APPLE_TEAM_ID")
         _require_apple_code_signing_var(ctx, "APPLE_CODE_SIGNING_CERT_PASSWORD")
 
         arguments = [
             config_path_arg,
             "--apple_id={}".format(ctx.var["APPLE_ID"]),
             "--apple_id_password={}".format(ctx.var["APPLE_ID_PASSWORD"]),
+            "--apple_team_id={}".format(ctx.var["APPLE_TEAM_ID"]),
             "--apple_code_signing_cert_password={}".format(ctx.var["APPLE_CODE_SIGNING_CERT_PASSWORD"])
         ]
     else:

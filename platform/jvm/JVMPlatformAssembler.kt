@@ -7,6 +7,7 @@ import com.vaticle.bazel.distribution.common.OS.WINDOWS
 import com.vaticle.bazel.distribution.common.shell.Shell
 import com.vaticle.bazel.distribution.common.util.FileUtil.listFilesRecursively
 import com.vaticle.bazel.distribution.common.util.SystemUtil.currentOS
+import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Companion.KEYCHAIN_NAME
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.InputFiles.Paths.JDK
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.InputFiles.Paths.SRC
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.InputFiles.Paths.WIX_TOOLSET
@@ -21,6 +22,8 @@ import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.Platform
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.LINUX_APP_CATEGORY
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.LINUX_MENU_GROUP
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.LINUX_SHORTCUT
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.MAC_SIGN
+import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.MAC_SIGNING_KEYCHAIN
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.MAIN_CLASS
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.MAIN_JAR
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.PlatformImageBuilder.JPackageArgs.NAME
@@ -218,7 +221,6 @@ object JVMPlatformAssembler {
                 // NOTE: the jpackage tool does have code signing options (--mac-sign, etc.), but they don't seem to
                 // work. We work around this by creating an app image, signing it, and repackaging it as a DMG.
                 super.pack()
-                signAppImageIfSigningEnabled()
                 convertPackageToDMG()
                 signDMGIfSigningEnabled()
             }
@@ -227,29 +229,24 @@ object JVMPlatformAssembler {
                 when (val codeSigningOptions = options.image.appleCodeSigning) {
                     null -> logger.debug { "Skipping notarizing step: Apple code signing is not enabled" }
                     else -> {
-                        val dmgFilename = "${options.image.filename}-$version.dmg"
                         MacAppNotarizer(
-                            options = codeSigningOptions,
-                            dmgFilename = dmgFilename,
-                            dmgPath = Path.of(distDir.path, dmgFilename)
-                        ).notarize()
+                            dmgPath = Path.of(distDir.path, "${options.image.filename}-$version.dmg")
+                        ).notarize(codeSigningOptions)
+                        appleCodeSigner!!.deleteKeychain()
                     }
                 }
             }
 
             override fun packArgsPlatform(): List<String> {
-                return listOf(TYPE, "app-image") // license file (if exists) is added later, at the DMG creation stage
-            }
-
-            private fun signAppImageIfSigningEnabled() {
+                // license file (if exists) is added later, at the DMG creation stage
                 if (options.image.appleCodeSigningEnabled) {
-                    if (!appleCodeSigner!!.initialised) appleCodeSigner.init()
-                    appleCodeSigner.signAppImage(appImagePath, options.image.name)
+                    return listOf(
+                            TYPE, "app-image",
+                            MAC_SIGN,
+                            MAC_SIGNING_KEYCHAIN, KEYCHAIN_NAME,
+                    )
                 } else {
-                    logger.debug {
-                        "Apple code signing will not be performed because it disabled in the configuration " +
-                                " (it should only be enabled when distributing an image for use on other machines)"
-                    }
+                    return listOf(TYPE, "app-image")
                 }
             }
 
@@ -332,6 +329,8 @@ object JVMPlatformAssembler {
             const val LINUX_SHORTCUT = "--linux-shortcut"
             const val MAIN_CLASS = "--main-class"
             const val MAIN_JAR = "--main-jar"
+            const val MAC_SIGN = "--mac-sign"
+            const val MAC_SIGNING_KEYCHAIN = "--mac-signing-keychain"
             const val NAME = "--name"
             const val TYPE = "--type"
             const val VENDOR = "--vendor"

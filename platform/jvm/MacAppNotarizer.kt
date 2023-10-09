@@ -1,80 +1,34 @@
 package com.vaticle.bazel.distribution.platform.jvm
 
 import com.vaticle.bazel.distribution.common.shell.Shell
-import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.logger
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.shell
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.ALTOOL
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.FILE
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.NOTARIZATION_INFO
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.NOTARIZE_APP
+import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.APPLE_ID
+import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.NOTARYTOOL
+import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.ONE_HOUR
 import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.PASSWORD
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.PRIMARY_BUNDLE_ID
 import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.STAPLE
 import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.STAPLER
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.USERNAME
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.NotarizationInfoResult.Status.APPROVED
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.NotarizationInfoResult.Status.PENDING
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.NotarizationInfoResult.Status.REJECTED
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.StatusPoller.LOG_FILE_URL
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.StatusPoller.MAX_RETRIES
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.StatusPoller.POLL_INTERVAL_MS
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.StatusPoller.STATUS_MESSAGE_PACKAGE_APPROVED
+import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.SUBMIT
+import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.TEAM_ID
+import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.TIMEOUT
+import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.WAIT
 import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Programs.XCRUN
 import java.nio.file.Path
 
-class MacAppNotarizer(private val options: Options.AppleCodeSigning, private val dmgFilename: String, private val dmgPath: Path) {
-    fun notarize() {
-        val requestUUID = parseNotarizeResult(shell.execute(notarizeCommand()).outputString())
-        logger.debug { "Notarization request UUID: $requestUUID" }
-        waitForPackageApproval(requestUUID)
+class MacAppNotarizer(private val dmgPath: Path) {
+    fun notarize(appleCodeSigning: Options.AppleCodeSigning) {
+        shell.execute(notarizeCommand(appleCodeSigning)).outputString()
         markPackageAsApproved()
     }
 
-    private fun notarizeCommand(): Shell.Command {
-        // TODO: xcrun altool --notarize-app is deprecated in Xcode 13: see
-        //       https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution/customizing_the_notarization_workflow?preferredLanguage=occ
+    private fun notarizeCommand(appleCodeSigning: Options.AppleCodeSigning): Shell.Command {
         return Shell.Command(
-            Shell.Command.arg(XCRUN), Shell.Command.arg(ALTOOL), Shell.Command.arg(NOTARIZE_APP),
-            Shell.Command.arg(PRIMARY_BUNDLE_ID), Shell.Command.arg(options.macAppID),
-            Shell.Command.arg(USERNAME), Shell.Command.arg(options.appleID, printable = false),
-            Shell.Command.arg(PASSWORD), Shell.Command.arg(options.appleIDPassword, printable = false),
-            Shell.Command.arg(FILE), Shell.Command.arg(dmgPath.toString())
-        )
-    }
-
-    private fun parseNotarizeResult(value: String): String {
-        return Regex("RequestUUID = ([a-z0-9\\-]{36})").find(value)?.groupValues?.get(1)
-            ?: throw IllegalStateException("Notarization failed: the response $value from " +
-                    "'xcrun altool --notarize-app' does not contain a valid RequestUUID")
-    }
-
-    private fun waitForPackageApproval(requestUUID: String) {
-        var retries = 0
-        while (retries < MAX_RETRIES) {
-            Thread.sleep(POLL_INTERVAL_MS)
-            val notarizeResult = NotarizationInfoResult.of(
-                shell.execute(notarizationInfoCommand(requestUUID)).outputString()
-            )
-            when (notarizeResult.status) {
-                PENDING -> retries++
-                APPROVED -> {
-                    logger.debug { "$dmgFilename was APPROVED by the Apple notarization service" }
-                    return
-                }
-                REJECTED -> {
-                    throw IllegalStateException("$dmgFilename was REJECTED by the Apple notarization service\n${notarizeResult.rawText}")
-                }
-            }
-        }
-        throw IllegalStateException("Timed out while waiting for $dmgFilename to be scanned by the Apple notarization service; the bundle is still in PENDING status (RequestUUID = $requestUUID)")
-    }
-
-    private fun notarizationInfoCommand(requestUUID: String): Shell.Command {
-        return Shell.Command(
-            Shell.Command.arg(XCRUN), Shell.Command.arg(ALTOOL), Shell.Command.arg(NOTARIZATION_INFO),
-            Shell.Command.arg(requestUUID),
-            Shell.Command.arg(USERNAME), Shell.Command.arg(options.appleID, printable = false),
-            Shell.Command.arg(PASSWORD), Shell.Command.arg(options.appleIDPassword, printable = false)
+                Shell.Command.arg(XCRUN), Shell.Command.arg(NOTARYTOOL), Shell.Command.arg(SUBMIT),
+                Shell.Command.arg(APPLE_ID), Shell.Command.arg(appleCodeSigning.appleID),
+                Shell.Command.arg(PASSWORD), Shell.Command.arg(appleCodeSigning.appleIDPassword, printable = false),
+                Shell.Command.arg(TEAM_ID), Shell.Command.arg(appleCodeSigning.appleTeamID, printable = false),
+                Shell.Command.arg(WAIT), Shell.Command.arg(TIMEOUT), Shell.Command.arg(ONE_HOUR),
+                Shell.Command.arg(dmgPath.toString()),
         )
     }
 
@@ -82,48 +36,16 @@ class MacAppNotarizer(private val options: Options.AppleCodeSigning, private val
         shell.execute(listOf(XCRUN, STAPLER, STAPLE, dmgPath.toString()))
     }
 
-    private data class NotarizationInfoResult(val status: Status, val rawText: String) {
-        enum class Status {
-            PENDING,
-            APPROVED,
-            REJECTED
-        }
-
-        companion object {
-            fun of(info: String): NotarizationInfoResult {
-                return when {
-                    STATUS_MESSAGE_PACKAGE_APPROVED in info -> {
-                        NotarizationInfoResult(status = APPROVED, rawText = info)
-                    }
-                    LOG_FILE_URL in info -> {
-                        // Apple log file takes time to build, so it's possible to see "Package Declined" before a
-                        // LogFileURL is available. It's useful to read the log file, so we wait for it to be generated.
-                        NotarizationInfoResult(status = REJECTED, rawText = info)
-                    }
-                    else -> {
-                        NotarizationInfoResult(status = PENDING, rawText = info)
-                    }
-                }
-            }
-        }
-    }
-
     private object Args {
-        const val ALTOOL = "altool"
-        const val FILE = "--file"
-        const val NOTARIZATION_INFO = "--notarization-info"
-        const val NOTARIZE_APP = "--notarize-app"
-        const val PASSWORD = "--password"
-        const val PRIMARY_BUNDLE_ID = "--primary-bundle-id"
+        const val APPLE_ID = "--apple-id"
+        const val NOTARYTOOL = "notarytool"
+        const val ONE_HOUR = "1h"
         const val STAPLE = "staple"
         const val STAPLER = "stapler"
-        const val USERNAME = "--username"
-    }
-
-    private object StatusPoller {
-        const val LOG_FILE_URL = "LogFileURL"
-        const val MAX_RETRIES = 30
-        const val POLL_INTERVAL_MS = 30000L
-        const val STATUS_MESSAGE_PACKAGE_APPROVED = "Status Message: Package Approved"
+        const val PASSWORD = "--password"
+        const val SUBMIT = "submit"
+        const val TIMEOUT = "--timeout"
+        const val TEAM_ID = "--team-id"
+        const val WAIT = "--wait"
     }
 }

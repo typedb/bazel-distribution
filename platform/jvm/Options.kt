@@ -29,6 +29,7 @@ import com.vaticle.bazel.distribution.common.util.PropertiesUtil.requireString
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_CODE_SIGNING_CERT_PASSWORD
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID
 import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID_PASSWORD
+import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_TEAM_ID
 import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.logger
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_CODE_SIGN
 import com.vaticle.bazel.distribution.platform.jvm.Options.Keys.APPLE_CODE_SIGNING_CERT_PATH
@@ -163,7 +164,8 @@ data class Options(val logging: Logging, val input: Input, val image: Image, val
     }
 
     data class AppleCodeSigning(
-        val appleID: String, val appleIDPassword: String, val cert: File, val certPassword: String,
+        val appleID: String, val appleIDPassword: String, val appleTeamID: String,
+        val cert: File, val certPassword: String,
         val macAppID: String, val deepSignJarsRegex: Regex?
     ) {
         val signNativeLibsInDeps: Boolean = deepSignJarsRegex != null
@@ -173,6 +175,7 @@ data class Options(val logging: Logging, val input: Input, val image: Image, val
                 AppleCodeSigning(
                     appleID = require(APPLE_ID, appleID),
                     appleIDPassword = require(APPLE_ID_PASSWORD, appleIDPassword),
+                    appleTeamID = require(APPLE_TEAM_ID, appleTeamID),
                     cert = File(props.requireString(APPLE_CODE_SIGNING_CERT_PATH)),
                     certPassword = require(APPLE_CODE_SIGNING_CERT_PASSWORD, appleCodeSigningCertPassword),
                     macAppID = props.requireString(MAC_APP_ID),

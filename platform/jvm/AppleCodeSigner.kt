@@ -47,7 +47,7 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
     lateinit var certSubject: String
 
     fun init() {
-        deleteExistingKeychainIfPresent()
+        deleteKeychain()
         createKeychain()
         setDefaultKeychain()
         unlockKeychain()
@@ -57,7 +57,7 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
         initialised = true
     }
 
-    private fun deleteExistingKeychainIfPresent() {
+    fun deleteKeychain() {
         val keychainListInfo = shell.execute(listOf(SECURITY, LIST_KEYCHAINS)).outputString()
         if (KEYCHAIN_NAME in keychainListInfo) shell.execute(listOf(SECURITY, DELETE_KEYCHAIN, KEYCHAIN_NAME))
     }
@@ -126,12 +126,6 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
         val subjectCommonName: Rdn = LdapName(subject).rdns.find { it.type == CN }
             ?: throw IllegalStateException("Imported X509 cert subject does not specify a common name ($CN)! (subject = $subject)")
         return subjectCommonName.value.toString()
-    }
-
-    fun signAppImage(rootPath: Path, appName: String) {
-        signFile(rootPath.toFile())
-        signFile(rootPath.resolve(CONTENTS).resolve(RUNTIME).toFile())
-        signFile(rootPath.resolve(CONTENTS).resolve(MAC_OS).resolve(appName).toFile())
     }
 
     fun signUnsignedNativeLibs(root: File) {
