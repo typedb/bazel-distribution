@@ -123,6 +123,7 @@ def _java_deps_impl(ctx):
             if ctx.attr.maven_name and file.path not in mapping:
                 if ctx.attr.ignore_missing_maven_name:
                     print("Ignoring {} since it does not have associated Maven coordinate".format(file.owner))
+                    continue
                 else:
                     fail("Error: {} does not have associated Maven coordinate".format(file.owner))
             output_path = mapping.get(file.path, default=file.basename).replace('.', '-').replace(':', '-')
@@ -147,6 +148,9 @@ def _java_deps_impl(ctx):
         output = jars_mapping,
         content = str(full_output_paths)
     )
+
+    print("FULL OUTPUT PATHS:")
+    print(full_output_paths)
 
     if not ctx.attr.version_file:
         version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
