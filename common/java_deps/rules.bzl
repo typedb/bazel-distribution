@@ -121,7 +121,10 @@ def _java_deps_impl(ctx):
     for file in ctx.attr.target.data_runfiles.files.to_list():
         if file.extension == "jar" and not _is_jdk_jar(file):
             if ctx.attr.maven_name and file.path not in mapping:
-                fail("{} does not have associated Maven coordinate".format(file.owner))
+                if ctx.attr.ignore_missing_maven_name:
+                    print("Ignoring {} since it does not have associated Maven coordinate".format(file.owner))
+                else:
+                    fail("Error: {} does not have associated Maven coordinate".format(file.owner))
             output_path = mapping.get(file.path, default=file.basename).replace('.', '-').replace(':', '-')
             conflicting_jar_file = jars_by_output_path.get(output_path)
             if conflicting_jar_file:
@@ -196,6 +199,10 @@ java_deps = rule(
         ),
         "maven_name": attr.bool(
             doc = "Name JAR files inside archive based on Maven coordinates",
+            default = False,
+        ),
+        "ignore_missing_maven_name": attr.bool(
+            doc = "If bundling by maven name, ignore instead of failing when encountering a target that is missing a maven name",
             default = False,
         ),
         "_java_deps_builder": attr.label(
