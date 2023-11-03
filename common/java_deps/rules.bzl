@@ -129,11 +129,19 @@ def _java_deps_impl(ctx):
             output_path = mapping.get(file.path, default=file.basename).replace('.', '-').replace(':', '-')
             conflicting_jar_file = jars_by_output_path.get(output_path)
             if conflicting_jar_file:
-                fail(
-                    ("'{}' and '{}' were both mapped to the same filename, '{}'. Distinct JARs should be mapped to distinct " +
-                    "filenames, either by supplying Maven coordinates, or ensuring the original filenames are distinct."
-                    ).format(conflicting_jar_file.path, file.path, output_path)
-                )
+                if conflicting_jar_file.basename in ctx.attr.allowed_conflicting_jars:
+                    print(
+                        ("'{}' and '{}' were both mapped to the same filename, '{}', but this name is explicitly allowed to conflict. " +
+                         "Arbitrarily skipping the second encountered dependency."
+                        ).format(conflicting_jar_file.path, file.path, output_path)
+                    )
+                    continue
+                else:
+                    fail(
+                        ("'{}' and '{}' were both mapped to the same filename, '{}'. Distinct JARs must be mapped to distinct " +
+                        "filenames, either by supplying Maven coordinates, or ensuring the original filenames are distinct."
+                        ).format(conflicting_jar_file.path, file.path, output_path)
+                    )
             jars_by_output_path[output_path] = file
             for jar_pattern in output_path_overrides:
                 if file.basename == jar_pattern or (jar_pattern.endswith("*") and file.basename.startswith(jar_pattern.rstrip("*"))):
@@ -148,9 +156,6 @@ def _java_deps_impl(ctx):
         output = jars_mapping,
         content = str(full_output_paths)
     )
-
-    print("FULL OUTPUT PATHS:")
-    print(full_output_paths)
 
     if not ctx.attr.version_file:
         version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
@@ -206,8 +211,12 @@ java_deps = rule(
             default = False,
         ),
         "ignore_missing_maven_name": attr.bool(
-            doc = "If bundling by maven name, ignore instead of failing when encountering a target that is missing a maven name",
+            doc = "Don't fail if bundling using maven names when encountering a target that is missing a maven name",
             default = False,
+        ),
+        "allowed_conflicting_jars": attr.string_list(
+            doc = "List of allowed JAR names that can conflict (ie. the same JAR name produced by two different dependencies).",
+            default = [],
         ),
         "_java_deps_builder": attr.label(
             default = "//common/java_deps",
