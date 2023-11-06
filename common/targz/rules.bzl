@@ -95,3 +95,16 @@ def assemble_targz(name,
         visibility = visibility,
         tags = tags,
     )
+
+def targz_edit(name, src, strip_components = 0, **kwargs):
+    extra_args = ["--strip-components", str(strip_components)]
+    native.genrule(
+        name = name,
+        outs = [name],
+        srcs = [src],
+        cmd_bash =
+            "mkdir -p tmpdir &&" +
+            "tar -xzf $< -C tmpdir {} &&".format(" ".join(extra_args)) +
+            "tar -czf $@ -C tmpdir --strip-components=1 .",
+        **kwargs
+    )
