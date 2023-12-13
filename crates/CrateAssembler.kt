@@ -212,13 +212,6 @@ class CrateAssembler : Callable<Unit> {
                             IOUtils.copy(readmeFile, tarOutputStream)
                             tarOutputStream.closeArchiveEntry()
                         }
-
-                        tarOutputStream.putArchiveEntry(TarArchiveEntry(
-                                versionFile ,
-                                "$prefix/VERSION"
-                        ))
-                        IOUtils.copy(versionFile, tarOutputStream)
-                        tarOutputStream.closeArchiveEntry()
                     }
                 }
             }
