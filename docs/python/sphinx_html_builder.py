@@ -19,25 +19,18 @@
 # under the License.
 #
 
-exports_files(glob(["**/*.kt"]))
-exports_files(["cpp/doxyfile.template", "cpp/doxyfile_templater.py"])
+import argparse
+import sys
 
-load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+from sphinx.cmd.build import main
+from sphinx.ext import apidoc
 
-kt_jvm_library(
-    name = "html_docs_to_adoc_lib",
-    srcs = glob(["adoc/*.kt", "dataclasses/*.kt", "util/*.kt"]),
-    visibility = ["//visibility:public"],
-)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--output', help="Output directory")
+    parser.add_argument('--package', help="Package directory")
+    parser.add_argument('--source_dir', help="Sphinx source directory")
+    args = parser.parse_args()
 
-load("@vaticle_dependencies_tool_docs//:requirements.bzl", docs_requirement = "requirement")
-
-py_binary(
-    name = "sphinx_runner",
-    srcs = [
-        "python/sphinx_html_builder.py",
-    ],
-    main = "sphinx_html_builder.py",
-    deps = [docs_requirement("sphinx")],
-    visibility = ["//visibility:public"]
-)
+    apidoc.main(["-o", args.source_dir, args.package])
+    sys.exit(main(["-M", "html", args.source_dir, args.output]))
