@@ -84,24 +84,3 @@ sphinx_docs = rule(
         Creates an HTML documentation for python module using Sphinx.
         """
 )
-
-def sphinx_to_adoc(name, data, docs_dirs):
-    args = ["$(location %s)" % target for target in data] + [
-        "--output",
-        "python/docs",
-    ] + ["--dir=%s=%s" % (filename, docs_dirs[filename]) for filename in docs_dirs]
-    kt_jvm_binary(
-        name = name,
-        srcs = [
-            "@vaticle_bazel_distribution//docs:python/PythonDocsParser.kt",
-        ],
-        main_class = "com.vaticle.typedb.driver.tool.docs.python.PythonDocsParserKt",
-        args = args,
-        deps = [
-            "@vaticle_bazel_distribution//docs:html_docs_to_adoc_lib",
-            "@maven//:org_jsoup_jsoup",
-            "@maven//:info_picocli_picocli",
-        ],
-        data = data,
-        visibility = ["//visibility:public"],
-    )

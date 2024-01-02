@@ -19,16 +19,7 @@
 # under the License.
 #
 
-exports_files(glob(["**/*.kt"]))
-exports_files(["cpp/doxyfile.template", "cpp/doxyfile_templater.py"])
-
-load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
-
-kt_jvm_library(
-    name = "html_docs_to_adoc_lib",
-    srcs = glob(["adoc/*.kt", "dataclasses/*.kt", "util/*.kt"]),
-    visibility = ["//visibility:public"],
-)
+exports_files(["cpp/doxyfile.template"])
 
 load("@vaticle_dependencies_tool_docs//:requirements.bzl", docs_requirement = "requirement")
 
