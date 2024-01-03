@@ -99,7 +99,7 @@ class CrateDeployer : Callable<Unit> {
     private fun httpPut(url: String, token: String, content: ByteArray): HttpResponse {
         return NetHttpTransport()
             .createRequestFactory()
-            .buildPutRequest(GenericUrl(url), ByteArrayContent("application/json", content))
+            .buildPutRequest(GenericUrl(url), ByteArrayContent(null, content)) // TODO: Verify it works with crates.io
             .setHeaders(
                 HttpHeaders().setAuthorization(token)
             )
