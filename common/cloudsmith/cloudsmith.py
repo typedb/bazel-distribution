@@ -3,6 +3,7 @@ import re
 import requests
 import time
 
+
 class CloudsmithDeploymentException(Exception):
     def __init__(self, msg, response=None):
         self.msg = msg
@@ -14,6 +15,7 @@ class CloudsmithDeploymentException(Exception):
             ret += ". HTTP response was [%d]: %s" % (self.response.status_code, self.response.text)
         return ret
 
+
 class CloudsmithDeployment:
     COMMON_OPTS = {"tags"}
 
@@ -22,7 +24,8 @@ class CloudsmithDeployment:
         self.auth = requests.auth.HTTPBasicAuth(username, password)
         res = re.search(r"cloudsmith:\/\/([^\/]+)/([^\/]+)\/?", cloudsmith_url)
         if res is None:
-            raise CloudsmithDeploymentException("Invalid cloudsmith_url. Expected cloudsmith://<owner>/<repo> but was: %s" % cloudsmith_url)
+            raise CloudsmithDeploymentException(
+                "Invalid cloudsmith_url. Expected cloudsmith://<owner>/<repo> but was: %s" % cloudsmith_url)
         self.repo_owner = res.group(1)
         self.repo = res.group(2)
 
@@ -88,8 +91,11 @@ class CloudsmithDeployment:
         if len(unrecognised_fields) != 0:
             raise CloudsmithDeploymentException("Unrecognised option: " + str(unrecognised_fields))
 
-    def _get_slug(selfself, metadata_post_response):
+    def _get_slug(self, metadata_post_response):
         return metadata_post_response.json()["slug_perm"]
+
+    def _pick_filename(self, path, preferred_filename):
+        return preferred_filename if preferred_filename else os.path.basename(path)
 
     # Specific
     def apt(self, deb_file, distro="any-distro/any-version", opts={}):
@@ -131,23 +137,27 @@ class CloudsmithDeployment:
         assert (sync_success)
         return sync_success, slug
 
-    def maven(self, group_id, artifact_id, jar_path, pom_path, sources_jar=None, javadoc_jar=None, tests_jar=None, opts = {}):
+    def maven(self, group_id, artifact_id,
+              jar_path, pom_path, jar_filename=None, pom_filename=None,
+              sources_path=None, javadoc_path=None, tests_path=None,
+              sources_filename=None, javadoc_filename=None, tests_filename=None,
+              opts={}):
         accepted_opts = {}
         self._validate_opts(opts, accepted_opts)
-        jar_id = self._upload_file(jar_path, os.path.basename(jar_path))
-        pom_id = self._upload_file(pom_path, os.path.basename(pom_path))
+        jar_id = self._upload_file(jar_path, self._pick_filename(jar_path, jar_filename))
+        pom_id = self._upload_file(pom_path, self._pick_filename(pom_path, pom_filename))
         data = {
             "group_id": group_id,
             "artifact_id": artifact_id,
             "package_file": jar_id,
             "pom_file": pom_id
         }
-        if sources_jar is not None:
-            data["sources_file"] = self._upload_file(sources_jar, os.path.basename(sources_jar))
-        if javadoc_jar is not None:
-            data["javadoc_file"] = self._upload_file(javadoc_jar, os.path.basename(javadoc_jar))
-        if tests_jar is not None:
-            data["tests_file"] = self._upload_file(tests_jar, os.path.basename(tests_jar))
+        if sources_path is not None:
+            data["sources_file"] = self._upload_file(sources_path, self._pick_filename(sources_path, sources_filename))
+        if javadoc_path is not None:
+            data["javadoc_file"] = self._upload_file(javadoc_path, self._pick_filename(javadoc_path, javadoc_filename))
+        if tests_path is not None:
+            data["tests_file"] = self._upload_file(tests_path, self._pick_filename(tests_path, tests_filename))
 
         slug = self._post_metadata("maven", data)
         sync_success = self._wait_for_sync(slug)
