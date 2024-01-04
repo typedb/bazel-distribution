@@ -99,7 +99,7 @@ class CloudsmithDeployment:
 
     # Specific
     def apt(self, deb_file, distro="any-distro/any-version", opts={}):
-        accepted_opts = {}
+        accepted_opts = set()
         self._validate_opts(opts, accepted_opts)
         # The uploaded filename is irrelevant. Cloudsmith sync will take care of it.
         uploaded_id = self._upload_file(deb_file, os.path.basename(deb_file))
@@ -127,7 +127,7 @@ class CloudsmithDeployment:
         return sync_success, slug
 
     def helm(self, tar_path, opts={}):
-        accepted_opts = {}
+        accepted_opts = set()
         self._validate_opts(opts, accepted_opts)
         uploaded_id = self._upload_file(tar_path, os.path.basename(tar_path))
         data = {
