@@ -51,11 +51,10 @@ def _deploy_artifact_impl(ctx):
     symlinks = {
         'VERSION': version_file,
     }
-
     return DefaultInfo(
         executable = _deploy_script,
         runfiles = ctx.runfiles(
-            files = files,
+            files = files + ctx.attr._cloudsmith_pylib[DefaultInfo].default_runfiles.files.to_list(),
             symlinks = symlinks,
         ),
     )
@@ -83,6 +82,9 @@ _deploy_artifact = rule(
         "artifact_name": attr.string(
             doc = "The artifact filename, automatic from the target file if not specified",
             default = '',
+        ),
+        "_cloudsmith_pylib": attr.label(
+            default = "//common/cloudsmith:cloudsmith-wrapper",
         ),
         "_deploy_script_template": attr.label(
             allow_single_file = True,

@@ -95,3 +95,9 @@ http_archive(
 
 load("@bazel_stardoc//:setup.bzl", "stardoc_repositories")
 stardoc_repositories()
+
+# Load @vaticle_bazel_distribution_cloudsmith
+load("//common/cloudsmith:deps.bzl", cloudsmith_deps = "deps")
+cloudsmith_deps()
+load("@vaticle_bazel_distribution_cloudsmith//:requirements.bzl", install_cloudsmith_deps = "install_deps")
+install_deps()

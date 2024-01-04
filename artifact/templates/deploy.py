@@ -27,7 +27,6 @@ import subprocess as sp
 import sys
 from posixpath import join as urljoin
 
-
 def upload(url, username, password, local_fn, remote_fn):
     upload_status_code = sp.check_output([
         'curl', '--silent',

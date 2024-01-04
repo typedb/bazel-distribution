@@ -3,7 +3,6 @@ import re
 import requests
 import time
 
-
 class CloudsmithDeploymentException(Exception):
     def __init__(self, msg, response=None):
         self.msg = msg
@@ -14,7 +13,6 @@ class CloudsmithDeploymentException(Exception):
         if self.response is not None:
             ret += ". HTTP response was [%d]: %s" % (self.response.status_code, self.response.text)
         return ret
-
 
 class CloudsmithDeployment:
     COMMON_OPTS = {"tags"}
