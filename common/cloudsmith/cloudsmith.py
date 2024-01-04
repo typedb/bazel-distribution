@@ -18,6 +18,8 @@ class CloudsmithDeploymentException(Exception):
 
 class CloudsmithDeployment:
     COMMON_OPTS = {"tags"}
+    _WAIT_FOR_SYNC_ATTEMPTS = 30
+    _WAIT_FOR_SYNC_SLEEP_SEC = 2
 
     # Interface with the cloudsmith api
     def __init__(self, username, password, cloudsmith_url):
@@ -45,14 +47,14 @@ class CloudsmithDeployment:
         response = None
         ctr = 0
         while syncing:
-            if ctr >= 10:
-                raise CloudsmithDeploymentException("Sync still in progress after 10 attempts. Failing...")
+            if ctr >= CloudsmithDeployment._WAIT_FOR_SYNC_ATTEMPTS:
+                raise CloudsmithDeploymentException("Sync still in progress after %d attempts. Failing..."%CloudsmithDeployment._WAIT_FOR_SYNC_ATTEMPTS)
             response = requests.get(url, auth=self.auth)
             self._check_status_code("sync status", response)
             json = response.json()
             syncing = json["is_sync_in_progress"] or not (json["is_sync_completed"] or json["is_sync_failed"])
             ctr += 1
-            time.sleep(2)
+            time.sleep(CloudsmithDeployment._WAIT_FOR_SYNC_SLEEP_SEC)
         return response
 
     def _upload_file(self, file, filename):
