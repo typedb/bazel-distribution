@@ -27,19 +27,12 @@ import subprocess as sp
 import sys
 from posixpath import join as urljoin
 
-def upload(url, username, password, local_fn, remote_fn):
-    upload_status_code = sp.check_output([
-        'curl', '--silent',
-        '--write-out', '%{http_code}',
-        '-u', '{}:{}'.format(username, password),
-        '--upload-file', local_fn,
-        urljoin(url, remote_fn)
-    ]).decode().strip()
+import glob
+# Prefer using the runfile dependency than system dependency
+runfile_deps = [path for path in map(os.path.abspath, glob.glob('external/*/*'))]
+sys.path = runfile_deps + sys.path
 
-    if upload_status_code != '201':
-        raise Exception('upload of {} failed, got HTTP status code {}'.format(
-            local_fn, upload_status_code))
-
+from common.cloudsmith.cloudsmith import CloudsmithDeployment
 
 if len(sys.argv) != 2:
     raise ValueError('Should pass only <snapshot|release> as arguments')
@@ -85,6 +78,5 @@ if repo_type == 'release':
 else:
     base_url = '{snapshot}'
 
-dir_url = '{base_url}/{artifact_group}/{version}'.format(version=version, base_url=base_url)
-
-upload(dir_url, username, password, '{artifact_path}', filename)
+cs = CloudsmithDeployment(username, password, base_url)
+cs.artifact("{artifact_group}", version, '{artifact_path}', filename)

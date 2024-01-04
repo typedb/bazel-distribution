@@ -22,7 +22,7 @@ class CloudsmithDeployment:
         self.auth = requests.auth.HTTPBasicAuth(username, password)
         res = re.search(r"cloudsmith:\/\/([^\/]+)/([^\/]+)\/?", cloudsmith_url)
         if res is None:
-            raise CloudsmithDeploymentException("Unrecognised cloudsmith_url: %s" % cloudsmith_url)
+            raise CloudsmithDeploymentException("Invalid cloudsmith_url. Expected cloudsmith://<owner>/<repo> but was: %s" % cloudsmith_url)
         self.repo_owner = res.group(1)
         self.repo = res.group(2)
 
@@ -105,10 +105,10 @@ class CloudsmithDeployment:
         assert (sync_success)
         return sync_success, slug
 
-    def artifact(self, name, version, artifact_path, opts={}):
+    def artifact(self, name, version, artifact_path, filename, opts={}):
         accepted_opts = {"description", "summary"}
         self._validate_opts(opts, accepted_opts)
-        uploaded_id = self._upload_file(artifact_path, os.path.basename(artifact_path))
+        uploaded_id = self._upload_file(artifact_path, filename)
         data = {
             "package_file": uploaded_id,
             "name": name,

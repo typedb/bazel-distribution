@@ -51,10 +51,11 @@ def _deploy_artifact_impl(ctx):
     symlinks = {
         'VERSION': version_file,
     }
+    cloudsmith_lib_files = ctx.attr._cloudsmith_pylib[DefaultInfo].default_runfiles.files.to_list()
     return DefaultInfo(
         executable = _deploy_script,
         runfiles = ctx.runfiles(
-            files = files + ctx.attr._cloudsmith_pylib[DefaultInfo].default_runfiles.files.to_list(),
+            files = files + cloudsmith_lib_files,
             symlinks = symlinks,
         ),
     )
