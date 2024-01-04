@@ -67,8 +67,6 @@ load("//packer:rules.bzl", _assemble_packer = "assemble_packer", _deploy_packer 
 
 load("//pip:rules.bzl", _assemble_pip = "assemble_pip", _deploy_pip = "deploy_pip")
 
-load("//rpm:rules.bzl", _assemble_rpm = "assemble_rpm", _deploy_rpm = "deploy_rpm")
-
 assemble_apt = _assemble_apt
 deploy_apt = _deploy_apt
 
@@ -117,6 +115,3 @@ deploy_packer = _deploy_packer
 
 assemble_pip = _assemble_pip
 deploy_pip = _deploy_pip
-
-assemble_rpm = _assemble_rpm
-deploy_rpm = _deploy_rpm

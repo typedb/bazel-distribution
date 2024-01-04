@@ -70,19 +70,4 @@ if not apt_password:
 
 cs = CloudsmithDeployment(apt_username, apt_password, repo_url)
 cs.apt("package.deb", )
-upload_status_code = subprocess.check_output([
-    'curl',
-    '--silent',
-    '--output', '/dev/stderr',
-    '--write-out', '%{http_code}',
-    '-u', '{}:{}'.format(apt_username, apt_password),
-    '-X', 'POST',
-    '-H', 'Content-Type: multipart/form-data',
-    '--data-binary', '@package.deb',
-    apt_registry
-]).decode().strip()
-
-if upload_status_code != '201':
-    raise Exception('upload failed, got HTTP status code {}'.format(upload_status_code))
-
 print('Deployment completed.')

@@ -41,7 +41,6 @@ stardoc(
         "//npm/deploy:lib",
         "//packer:lib",
         "//pip:lib",
-        "//rpm:lib",
     ],
     symbol_names = [
         # From: //apt:rules.bzl
@@ -106,9 +105,5 @@ stardoc(
         # From: //pip:rules.bzl
         "assemble_pip",
         "deploy_pip",
-
-        # From: //rpm:rules.bzl
-        "assemble_rpm",
-        "deploy_rpm",
     ],
 )

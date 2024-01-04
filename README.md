@@ -321,30 +321,6 @@ Execute Packer to perform deployment
 | <a id="deploy_packer-target"></a>target |  <code>assemble_packer</code> label to be deployed.   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
 
 
-<a id="deploy_rpm"></a>
-
-## deploy_rpm
-
-<pre>
-deploy_rpm(<a href="#deploy_rpm-name">name</a>, <a href="#deploy_rpm-release">release</a>, <a href="#deploy_rpm-snapshot">snapshot</a>, <a href="#deploy_rpm-target">target</a>)
-</pre>
-
-Deploy package built with `assemble_rpm` to RPM repository.
-
-    Select deployment to `snapshot` or `release` repository with `bazel run //:some-deploy-rpm -- [snapshot|release]
-    
-
-**ATTRIBUTES**
-
-
-| Name  | Description | Type | Mandatory | Default |
-| :------------- | :------------- | :------------- | :------------- | :------------- |
-| <a id="deploy_rpm-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
-| <a id="deploy_rpm-release"></a>release |  Remote repository to deploy rpm release to   | String | required |  |
-| <a id="deploy_rpm-snapshot"></a>snapshot |  Remote repository to deploy rpm snapshot to   | String | required |  |
-| <a id="deploy_rpm-target"></a>target |  <code>assemble_rpm</code> target to deploy   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
-
-
 <a id="doxygen_docs"></a>
 
 ## doxygen_docs
@@ -649,36 +625,6 @@ Assemble files for HashiCorp Packer deployment
 | <a id="assemble_packer-name"></a>name |  A unique name for this target.   |  none |
 | <a id="assemble_packer-config"></a>config |  Packer JSON config   |  none |
 | <a id="assemble_packer-files"></a>files |  Files to include into deployment   |  <code>{}</code> |
-
-
-<a id="assemble_rpm"></a>
-
-## assemble_rpm
-
-<pre>
-assemble_rpm(<a href="#assemble_rpm-name">name</a>, <a href="#assemble_rpm-package_name">package_name</a>, <a href="#assemble_rpm-spec_file">spec_file</a>, <a href="#assemble_rpm-version_file">version_file</a>, <a href="#assemble_rpm-workspace_refs">workspace_refs</a>, <a href="#assemble_rpm-installation_dir">installation_dir</a>,
-             <a href="#assemble_rpm-archives">archives</a>, <a href="#assemble_rpm-empty_dirs">empty_dirs</a>, <a href="#assemble_rpm-files">files</a>, <a href="#assemble_rpm-permissions">permissions</a>, <a href="#assemble_rpm-symlinks">symlinks</a>, <a href="#assemble_rpm-tags">tags</a>)
-</pre>
-
-Assemble package for installation with RPM
-
-**PARAMETERS**
-
-
-| Name  | Description | Default Value |
-| :------------- | :------------- | :------------- |
-| <a id="assemble_rpm-name"></a>name |  A unique name for this target.   |  none |
-| <a id="assemble_rpm-package_name"></a>package_name |  Package name for built .rpm package   |  none |
-| <a id="assemble_rpm-spec_file"></a>spec_file |  The RPM spec file to use   |  none |
-| <a id="assemble_rpm-version_file"></a>version_file |  File containing version number of a package. Alternatively, pass --define version=VERSION to Bazel invocation. Not specifying version defaults to '0.0.0'   |  <code>None</code> |
-| <a id="assemble_rpm-workspace_refs"></a>workspace_refs |  JSON file with other Bazel workspace references   |  <code>None</code> |
-| <a id="assemble_rpm-installation_dir"></a>installation_dir |  directory into which .rpm package is unpacked at installation   |  <code>None</code> |
-| <a id="assemble_rpm-archives"></a>archives |  Bazel labels of archives that go into .rpm package   |  <code>[]</code> |
-| <a id="assemble_rpm-empty_dirs"></a>empty_dirs |  list of empty directories created at package installation   |  <code>[]</code> |
-| <a id="assemble_rpm-files"></a>files |  mapping between Bazel labels of archives that go into .rpm package and their resulting location on .rpm package installation   |  <code>{}</code> |
-| <a id="assemble_rpm-permissions"></a>permissions |  mapping between paths and UNIX permissions   |  <code>{}</code> |
-| <a id="assemble_rpm-symlinks"></a>symlinks |  mapping between source and target of symbolic links created at installation   |  <code>{}</code> |
-| <a id="assemble_rpm-tags"></a>tags |  additional tags passed to all wrapped rules   |  <code>[]</code> |
 
 
 <a id="assemble_targz"></a>
