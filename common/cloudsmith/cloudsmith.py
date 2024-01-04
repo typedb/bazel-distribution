@@ -101,6 +101,7 @@ class CloudsmithDeployment:
     def apt(self, deb_file, distro="any-distro/any-version", opts={}):
         accepted_opts = {}
         self._validate_opts(opts, accepted_opts)
+        # The uploaded filename is irrelevant. Cloudsmith sync will take care of it.
         uploaded_id = self._upload_file(deb_file, os.path.basename(deb_file))
         data = {
             "package_file": uploaded_id,

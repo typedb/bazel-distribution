@@ -187,9 +187,10 @@ def assemble_apt(name,
 
 
 def _deploy_apt_impl(ctx):
+    _deploy_script = ctx.actions.declare_file(ctx.attr.deploy_script_name)
     ctx.actions.expand_template(
         template = ctx.file._deployment_script,
-        output = ctx.outputs.deployment_script,
+        output = _deploy_script,
         substitutions = {
             '{snapshot}' : ctx.attr.snapshot,
             '{release}' : ctx.attr.release
@@ -200,14 +201,14 @@ def _deploy_apt_impl(ctx):
     symlinks = {
         'package.deb': ctx.files.target[0],
     }
-
-    return DefaultInfo(executable = ctx.outputs.deployment_script,
+    cloudsmith_lib_files = ctx.attr._cloudsmith_pylib[DefaultInfo].default_runfiles.files.to_list()
+    return DefaultInfo(executable = _deploy_script,
                        runfiles = ctx.runfiles(
-                           files=[ctx.files.target[0]],
+                           files=[ctx.files.target[0]] + cloudsmith_lib_files,
                            symlinks = symlinks))
 
 
-deploy_apt = rule(
+_deploy_apt = rule(
     attrs = {
         "target": attr.label(
             doc = 'assemble_apt label to deploy'
@@ -220,13 +221,17 @@ deploy_apt = rule(
             mandatory = True,
             doc = 'Release repository to deploy apt artifact to'
         ),
+        "_cloudsmith_pylib": attr.label(
+            default = "//common/cloudsmith:cloudsmith-wrapper",
+        ),
         "_deployment_script": attr.label(
             allow_single_file = True,
             default = "//apt/templates:deploy.py"
         ),
-    },
-    outputs = {
-        "deployment_script": "%{name}.sh",
+        "deploy_script_name": attr.string(
+            mandatory = True,
+            doc = 'Name of instantiated deployment script'
+        ),
     },
     implementation = _deploy_apt_impl,
     executable = True,
@@ -235,3 +240,22 @@ deploy_apt = rule(
     Select deployment to `snapshot` or `release` repository with `bazel run //:some-deploy-apt -- [snapshot|release]
     """
 )
+
+def deploy_apt(name, target, snapshot, release, **kwargs):
+    deploy_script_target_name = name + "__deploy"
+    deploy_script_name = deploy_script_target_name + "-deploy.py"
+
+    _deploy_apt(
+        name = deploy_script_target_name,
+        target = target,
+        snapshot = snapshot,
+        release = release,
+        deploy_script_name = deploy_script_name,
+        **kwargs
+    )
+
+    native.py_binary(
+        name = name,
+        srcs = [deploy_script_target_name],
+        main = deploy_script_name,
+    )
