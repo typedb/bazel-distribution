@@ -188,24 +188,21 @@ def assemble_apt(name,
 
 def _deploy_apt_impl(ctx):
     _deploy_script = ctx.actions.declare_file(ctx.attr.deploy_script_name)
+    package_path = ctx.files.target[0].short_path
     ctx.actions.expand_template(
         template = ctx.file._deployment_script,
         output = _deploy_script,
         substitutions = {
             '{snapshot}' : ctx.attr.snapshot,
-            '{release}' : ctx.attr.release
+            '{release}' : ctx.attr.release,
+            '{package_path}' : package_path,
         },
         is_executable = True
     )
 
-    symlinks = {
-        'package.deb': ctx.files.target[0],
-    }
     cloudsmith_lib_files = ctx.attr._cloudsmith_pylib[DefaultInfo].default_runfiles.files.to_list()
     return DefaultInfo(executable = _deploy_script,
-                       runfiles = ctx.runfiles(
-                           files=[ctx.files.target[0]] + cloudsmith_lib_files,
-                           symlinks = symlinks))
+                       runfiles = ctx.runfiles(files=[ctx.files.target[0]] + cloudsmith_lib_files))
 
 
 _deploy_apt = rule(

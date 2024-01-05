@@ -68,6 +68,7 @@ if not apt_password:
         '$DEPLOY_APT_PASSWORD env variable'
     )
 
+package_path = "{package_path}"
 cs = CloudsmithDeployment(apt_username, apt_password, repo_url)
-cs.apt("package.deb", )
+cs.apt(package_path)
 print('Deployment completed.')
