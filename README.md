@@ -275,9 +275,9 @@ deploy_npm(<a href="#deploy_npm-name">name</a>, <a href="#deploy_npm-release">re
     ## How to generate an auth token
 
     ### Using the command line (`npm adduser`)
-    1. Run `npm adduser &lt;repo_url&gt;` (example: `npm adduser --registry=https://repo.vaticle.com/repository/npm-private`)
+    1. Run `npm adduser &lt;repo_url&gt;` (example: `npm adduser --registry=https://npm.cloudsmith.io/typedb/private/`)
     2. When prompted, provide login credentials to sign in to the user account that is used in your CI and has permissions to publish the package
-    3. If successful, a line will be added to your `.npmrc` file (`$HOME/.npmrc` on Unix) which looks like: `//repo.vaticle.com/repository/npm-snapshot/:_authToken=NpmToken.00000000-0000-0000-0000-000000000000`. The token is the value of `_authToken`, in this case `NpmToken.00000000-0000-0000-0000-000000000000`.
+    3. If successful, a line will be added to your `.npmrc` file (`$HOME/.npmrc` on Unix) which looks like: `//npm.cloudsmith.io/typedb/private/:_authToken=NpmToken.00000000-0000-0000-0000-000000000000`. The token is the value of `_authToken`, in this case `NpmToken.00000000-0000-0000-0000-000000000000`.
     4. Save the auth token somewhere safe and then delete it from your `.npmrc` file
 
     ### Using a UI
