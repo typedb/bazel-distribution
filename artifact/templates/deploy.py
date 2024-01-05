@@ -67,9 +67,6 @@ if repo_type == 'release' and len(re.findall(version_release_regex, version)) ==
                      .format(version, repo_type, version_snapshot_regex))
 
 filename = '{artifact_filename}'
-if filename == '':
-    filename = os.path.basename('{artifact_path}')
-
 filename = filename.format(version = version)
 
 base_url = None
