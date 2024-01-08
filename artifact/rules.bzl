@@ -168,7 +168,7 @@ def artifact_file(name,
 
     http_file(
         name = name,
-        urls = ["{}/{}/{}/{}".format(repository_url, group_name, version, artifact_name)],
+        urls = ["{}/names/{}/versions/{}/{}".format(repository_url.rstrip("/"), group_name, version, artifact_name)],
         downloaded_file_path = artifact_name,
         sha = sha,
         tags = tags + ["{}={}".format(versiontype, version)],
