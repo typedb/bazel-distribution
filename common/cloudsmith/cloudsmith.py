@@ -18,8 +18,8 @@ class CloudsmithDeploymentException(Exception):
 
 class CloudsmithDeployment:
     COMMON_OPTS = {"tags"}
-    _WAIT_FOR_SYNC_ATTEMPTS = 30
-    _WAIT_FOR_SYNC_SLEEP_SEC = 2
+    _WAIT_FOR_SYNC_ATTEMPTS = 100
+    _WAIT_FOR_SYNC_SLEEP_SEC = 3
 
     # Interface with the cloudsmith api
     def __init__(self, username, password, cloudsmith_url):
