@@ -19,8 +19,6 @@
 # under the License.
 #
 
-load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
-
 def _sphinx_docs_impl(ctx):
     package = ctx.actions.declare_directory("package")
 

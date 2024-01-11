@@ -32,6 +32,7 @@ stardoc(
         "//brew:lib",
         "//common:lib",
         "//crates:lib",
+        "//docs:lib",
         "//gcp:lib",
         "//github:lib",
         "//maven:lib",
@@ -76,6 +77,10 @@ stardoc(
         # From: //crates:rules.bzl
         "assemble_crate",
         "deploy_crate",
+
+        # From: //docs:*/rules.bzl
+        "doxygen_docs",
+        "sphinx_docs",
 
         # From: //gcp:rules.bzl
         "assemble_gcp",

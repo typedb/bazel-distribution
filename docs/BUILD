@@ -21,6 +21,7 @@
 
 exports_files(["cpp/doxyfile.template"])
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@vaticle_dependencies_tool_docs//:requirements.bzl", docs_requirement = "requirement")
 
 py_binary(
@@ -31,4 +32,14 @@ py_binary(
     main = "sphinx_html_builder.py",
     deps = [docs_requirement("sphinx")],
     visibility = ["//visibility:public"]
+)
+
+bzl_library(
+    name = "lib",
+    srcs = [
+        "cpp/rules.bzl",
+        "python/rules.bzl",
+    ],
+    deps = [],
+    visibility = ["//visibility:public"],
 )

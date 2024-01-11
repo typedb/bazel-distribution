@@ -97,4 +97,7 @@ doxygen_docs = rule(
              default = "doxygen_docs"
         )
     },
+    doc = """
+        Creates HTML documentation for C++ projects using Doxygen.
+        """
 )
