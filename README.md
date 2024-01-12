@@ -345,6 +345,32 @@ Deploy package built with `assemble_rpm` to RPM repository.
 | <a id="deploy_rpm-target"></a>target |  <code>assemble_rpm</code> target to deploy   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
 
 
+<a id="doxygen_docs"></a>
+
+## doxygen_docs
+
+<pre>
+doxygen_docs(<a href="#doxygen_docs-name">name</a>, <a href="#doxygen_docs-desc">desc</a>, <a href="#doxygen_docs-main_page_md">main_page_md</a>, <a href="#doxygen_docs-project_name">project_name</a>, <a href="#doxygen_docs-sources">sources</a>, <a href="#doxygen_docs-strip_prefix">strip_prefix</a>, <a href="#doxygen_docs-version">version</a>)
+</pre>
+
+
+        Creates HTML documentation for C++ projects using Doxygen.
+        
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="doxygen_docs-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="doxygen_docs-desc"></a>desc |  A description for the project   | String | optional | <code>""</code> |
+| <a id="doxygen_docs-main_page_md"></a>main_page_md |  The file to use as main page for the generate docs   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
+| <a id="doxygen_docs-project_name"></a>project_name |  The project name for the doxygen docs   | String | required |  |
+| <a id="doxygen_docs-sources"></a>sources |  A list of files made available to doxygen. This is NOT automatically included in the doxyfile   | <a href="https://bazel.build/concepts/labels">List of labels</a> | required |  |
+| <a id="doxygen_docs-strip_prefix"></a>strip_prefix |  Prefix to strip from path of files being processed   | String | optional | <code>""</code> |
+| <a id="doxygen_docs-version"></a>version |  The version of the project being documented   | String | optional | <code>""</code> |
+
+
 <a id="generate_json_config"></a>
 
 ## generate_json_config
@@ -370,7 +396,8 @@ Fills in JSON template with provided values
 ## java_deps
 
 <pre>
-java_deps(<a href="#java_deps-name">name</a>, <a href="#java_deps-java_deps_root">java_deps_root</a>, <a href="#java_deps-java_deps_root_overrides">java_deps_root_overrides</a>, <a href="#java_deps-maven_name">maven_name</a>, <a href="#java_deps-target">target</a>, <a href="#java_deps-version_file">version_file</a>)
+java_deps(<a href="#java_deps-name">name</a>, <a href="#java_deps-allowed_conflicting_jars">allowed_conflicting_jars</a>, <a href="#java_deps-ignore_missing_maven_name">ignore_missing_maven_name</a>, <a href="#java_deps-java_deps_root">java_deps_root</a>,
+          <a href="#java_deps-java_deps_root_overrides">java_deps_root_overrides</a>, <a href="#java_deps-maven_name">maven_name</a>, <a href="#java_deps-target">target</a>, <a href="#java_deps-version_file">version_file</a>)
 </pre>
 
 Packs Java library alongside with its dependencies into archive
@@ -381,11 +408,38 @@ Packs Java library alongside with its dependencies into archive
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="java_deps-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="java_deps-allowed_conflicting_jars"></a>allowed_conflicting_jars |  List of allowed JAR names that can conflict (ie. the same JAR name produced by two different dependencies).   | List of strings | optional | <code>[]</code> |
+| <a id="java_deps-ignore_missing_maven_name"></a>ignore_missing_maven_name |  Don't fail if bundling using maven names when encountering a target that is missing a maven name   | Boolean | optional | <code>False</code> |
 | <a id="java_deps-java_deps_root"></a>java_deps_root |  Folder inside archive to put JARs into   | String | optional | <code>""</code> |
 | <a id="java_deps-java_deps_root_overrides"></a>java_deps_root_overrides |  JARs with filenames matching the given patterns will be placed into the specified folders inside the archive,             instead of the default folder. Patterns can be either the full name of a JAR, or a prefix followed by a '*'.   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | optional | <code>{}</code> |
 | <a id="java_deps-maven_name"></a>maven_name |  Name JAR files inside archive based on Maven coordinates   | Boolean | optional | <code>False</code> |
 | <a id="java_deps-target"></a>target |  Java target to pack into archive   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
 | <a id="java_deps-version_file"></a>version_file |  File containing version string.             Alternatively, pass --define version=VERSION to Bazel invocation.             Not specifying version at all defaults to '0.0.0'   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
+
+
+<a id="sphinx_docs"></a>
+
+## sphinx_docs
+
+<pre>
+sphinx_docs(<a href="#sphinx_docs-name">name</a>, <a href="#sphinx_docs-out">out</a>, <a href="#sphinx_docs-package_subdir">package_subdir</a>, <a href="#sphinx_docs-sphinx_conf">sphinx_conf</a>, <a href="#sphinx_docs-sphinx_rst">sphinx_rst</a>, <a href="#sphinx_docs-target">target</a>)
+</pre>
+
+
+        Creates an HTML documentation for python module using Sphinx.
+        
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="sphinx_docs-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="sphinx_docs-out"></a>out |  Output directory   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
+| <a id="sphinx_docs-package_subdir"></a>package_subdir |  Directory with the module files in the package archive   | String | required |  |
+| <a id="sphinx_docs-sphinx_conf"></a>sphinx_conf |  Configuration file for the Sphinx documentation builder   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
+| <a id="sphinx_docs-sphinx_rst"></a>sphinx_rst |  Sphinx documentation master file for the package   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
+| <a id="sphinx_docs-target"></a>target |  Package including .tar.gz archive   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
 
 
 <a id="tgz2zip"></a>

@@ -1,3 +1,6 @@
+#
+# Copyright (C) 2022 Vaticle
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,24 +19,27 @@
 # under the License.
 #
 
-maven_artifacts = [
-    "com.eclipsesource.minimal-json:minimal-json",
-    "com.electronwill.night-config:core",
-    "com.electronwill.night-config:toml",
-    "com.google.http-client:google-http-client",
-    "info.picocli:picocli",
-    "org.apache.commons:commons-compress",
-    "org.jsoup:jsoup",
-    "org.zeroturnaround:zt-exec",
-]
+exports_files(["cpp/doxyfile.template"])
 
-maven_artifacts_with_versions = [
-    "com.eclipsesource.minimal-json:minimal-json:0.9.5",
-    "com.electronwill.night-config:core:3.6.5",
-    "com.electronwill.night-config:toml:3.6.5",
-    "com.google.http-client:google-http-client:1.34.2",
-    "info.picocli:picocli:4.3.2",
-    "org.apache.commons:commons-compress:1.21",
-    "org.jsoup:jsoup:1.16.1",
-    "org.zeroturnaround:zt-exec:1.10",
-]
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@vaticle_dependencies_tool_docs//:requirements.bzl", docs_requirement = "requirement")
+
+py_binary(
+    name = "sphinx_runner",
+    srcs = [
+        "python/sphinx_html_builder.py",
+    ],
+    main = "sphinx_html_builder.py",
+    deps = [docs_requirement("sphinx")],
+    visibility = ["//visibility:public"]
+)
+
+bzl_library(
+    name = "lib",
+    srcs = [
+        "cpp/rules.bzl",
+        "python/rules.bzl",
+    ],
+    deps = [],
+    visibility = ["//visibility:public"],
+)

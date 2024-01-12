@@ -56,6 +56,12 @@ pip_deps()
 load("@vaticle_bazel_distribution_pip//:requirements.bzl", "install_deps")
 install_deps()
 
+# Load //docs
+load("//docs:python/deps.bzl", python_docs_deps = "deps")
+python_docs_deps()
+load("@vaticle_dependencies_tool_docs//:requirements.bzl", install_doc_deps = "install_deps")
+install_doc_deps()
+
 # TODO: remove this declaration once we upgrade to @io_bazel_stardoc with Bazel 5 support
 # Load @bazel_skylib
 http_archive(

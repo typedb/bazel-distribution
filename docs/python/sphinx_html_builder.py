@@ -1,3 +1,6 @@
+#
+# Copyright (C) 2022 Vaticle
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,24 +19,18 @@
 # under the License.
 #
 
-maven_artifacts = [
-    "com.eclipsesource.minimal-json:minimal-json",
-    "com.electronwill.night-config:core",
-    "com.electronwill.night-config:toml",
-    "com.google.http-client:google-http-client",
-    "info.picocli:picocli",
-    "org.apache.commons:commons-compress",
-    "org.jsoup:jsoup",
-    "org.zeroturnaround:zt-exec",
-]
+import argparse
+import sys
 
-maven_artifacts_with_versions = [
-    "com.eclipsesource.minimal-json:minimal-json:0.9.5",
-    "com.electronwill.night-config:core:3.6.5",
-    "com.electronwill.night-config:toml:3.6.5",
-    "com.google.http-client:google-http-client:1.34.2",
-    "info.picocli:picocli:4.3.2",
-    "org.apache.commons:commons-compress:1.21",
-    "org.jsoup:jsoup:1.16.1",
-    "org.zeroturnaround:zt-exec:1.10",
-]
+from sphinx.cmd.build import main
+from sphinx.ext import apidoc
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--output', help="Output directory")
+    parser.add_argument('--package', help="Package directory")
+    parser.add_argument('--source_dir', help="Sphinx source directory")
+    args = parser.parse_args()
+
+    apidoc.main(["-o", args.source_dir, args.package])
+    sys.exit(main(["-M", "html", args.source_dir, args.output]))
