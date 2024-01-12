@@ -36,7 +36,7 @@ import sys, glob
 runfile_deps = [path for path in map(os.path.abspath, glob.glob('external/*/*'))]
 sys.path = runfile_deps + sys.path
 
-from common.cloudsmith.uploader import Uploader
+from common.uploader.uploader import Uploader
 
 
 def unpack_args(_, a, b=False):

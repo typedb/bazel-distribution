@@ -16,10 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-load("@vaticle_bazel_distribution_cloudsmith//:requirements.bzl", cloudsmith_requirement = "requirement")
+load("@vaticle_bazel_distribution_uploader//:requirements.bzl", cloudsmith_requirement = "requirement")
 
 py_library(
-    name = "cloudsmith-wrapper",
+    name = "uploader",
     srcs = glob(["*.py"]),
     deps = [cloudsmith_requirement("requests")],
     visibility = ["//visibility:public"],

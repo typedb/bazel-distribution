@@ -2,21 +2,9 @@ import os
 import re
 import requests
 import time
-from .uploader import Uploader
+from .uploader import Uploader, DeploymentException
 
-class CloudsmithDeploymentException(Exception):
-    def __init__(self, msg, response=None):
-        self.msg = msg
-        self.response = response
-
-    def __str__(self):
-        ret = "CloudsmithDeploymentException: %s" % (self.msg)
-        if self.response is not None:
-            ret += ". HTTP response was [%d]: %s" % (self.response.status_code, self.response.text)
-        return ret
-
-
-class CloudsmithDeployment(Uploader):
+class CloudsmithUploader(Uploader):
     COMMON_OPTS = {"tags"}
     _WAIT_FOR_SYNC_ATTEMPTS = 100
     _WAIT_FOR_SYNC_SLEEP_SEC = 3
@@ -26,7 +14,7 @@ class CloudsmithDeployment(Uploader):
         self.auth = requests.auth.HTTPBasicAuth(username, password)
         res = re.search(r"cloudsmith:\/\/([^\/]+)/([^\/]+)\/?", cloudsmith_url)
         if res is None:
-            raise CloudsmithDeploymentException(
+            raise DeploymentException(
                 "Invalid cloudsmith_url. Expected cloudsmith://<owner>/<repo> but was: %s" % cloudsmith_url)
         self.repo_owner = res.group(1)
         self.repo = res.group(2)
@@ -47,14 +35,14 @@ class CloudsmithDeployment(Uploader):
         response = None
         ctr = 0
         while syncing:
-            if ctr >= CloudsmithDeployment._WAIT_FOR_SYNC_ATTEMPTS:
-                raise CloudsmithDeploymentException("Sync still in progress after %d attempts. Failing..."%CloudsmithDeployment._WAIT_FOR_SYNC_ATTEMPTS)
+            if ctr >= CloudsmithUploader._WAIT_FOR_SYNC_ATTEMPTS:
+                raise DeploymentException("Sync still in progress after %d attempts. Failing..." % CloudsmithUploader._WAIT_FOR_SYNC_ATTEMPTS)
             response = requests.get(url, auth=self.auth)
             self._check_status_code("sync status", response)
             json = response.json()
             syncing = json["is_sync_in_progress"] or not (json["is_sync_completed"] or json["is_sync_failed"])
             ctr += 1
-            time.sleep(CloudsmithDeployment._WAIT_FOR_SYNC_SLEEP_SEC)
+            time.sleep(CloudsmithUploader._WAIT_FOR_SYNC_SLEEP_SEC)
         return response
 
     def _upload_file(self, file, filename):
@@ -79,17 +67,17 @@ class CloudsmithDeployment(Uploader):
         if success:
             print("- Success!")
         else:
-            raise CloudsmithDeploymentException("Syncing failed", resp)
+            raise DeploymentException("Syncing failed", resp)
         return success
 
     def _check_status_code(self, stage, response):
         if (response.status_code // 100) != 2:
-            raise CloudsmithDeploymentException("HTTP request for %s failed" % stage, response)
+            raise DeploymentException("HTTP request for %s failed" % stage, response)
         else:
             return True
 
     def _validate_opts(self, opts, accepted_opts):
-        unrecognised_fields = [f for f in opts if f not in accepted_opts.union(CloudsmithDeployment.COMMON_OPTS)]
+        unrecognised_fields = [f for f in opts if f not in accepted_opts.union(CloudsmithUploader.COMMON_OPTS)]
         if len(unrecognised_fields) != 0:
             raise ValueError("Unrecognised option: " + str(unrecognised_fields))
 

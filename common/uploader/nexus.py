@@ -1,12 +1,9 @@
 import hashlib
-import os
-import re
 import requests
-import time
 
-from .uploader import Uploader
+from .uploader import Uploader, DeploymentException
 
-class NexusDeployment(Uploader):
+class NexusUploader(Uploader):
     COMMON_OPTS = set()
 
     def __init__(self, username, password, url):
@@ -35,8 +32,7 @@ class NexusDeployment(Uploader):
         response = self._upload_file_impl(file, url, use_post)
         success = (response.status_code // 100) == 2
         if not success:
-            from .cloudsmith import  CloudsmithDeploymentException
-            raise CloudsmithDeploymentException("HTTP request for %s failed" % "upload", response) # TODO: Fix type
+            raise DeploymentException("HTTP request for %s failed" % "upload", response) # TODO: Fix type
         else:
             return True
 
@@ -62,12 +58,12 @@ class NexusDeployment(Uploader):
             success = (response.status_code // 100)== 2
 
         if not success:
-            from .cloudsmith import  CloudsmithDeploymentException
-            raise CloudsmithDeploymentException("HTTP request for %s failed" % stage, response) # TODO: Fix type
+            from .cloudsmith import  DeploymentException
+            raise DeploymentException("HTTP request for %s failed" % stage, response) # TODO: Fix type
         else:
             return True
     def _validate_opts(self, opts, accepted_opts):
-        unrecognised_fields = [f for f in opts if f not in accepted_opts.union(NexusDeployment.COMMON_OPTS)]
+        unrecognised_fields = [f for f in opts if f not in accepted_opts.union(NexusUploader.COMMON_OPTS)]
         if len(unrecognised_fields) != 0:
             raise ValueError("Unrecognised option: " + str(unrecognised_fields))
 

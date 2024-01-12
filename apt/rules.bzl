@@ -200,9 +200,9 @@ def _deploy_apt_impl(ctx):
         is_executable = True
     )
 
-    cloudsmith_lib_files = ctx.attr._cloudsmith_pylib[DefaultInfo].default_runfiles.files.to_list()
+    deployment_lib_files = ctx.attr._deployment_wrapper_lib[DefaultInfo].default_runfiles.files.to_list()
     return DefaultInfo(executable = _deploy_script,
-                       runfiles = ctx.runfiles(files=[ctx.files.target[0]] + cloudsmith_lib_files))
+                       runfiles = ctx.runfiles(files=[ctx.files.target[0]] + deployment_lib_files))
 
 
 _deploy_apt = rule(
@@ -218,8 +218,8 @@ _deploy_apt = rule(
             mandatory = True,
             doc = 'Release repository to deploy apt artifact to'
         ),
-        "_cloudsmith_pylib": attr.label(
-            default = "//common/cloudsmith:cloudsmith-wrapper",
+        "_deployment_wrapper_lib": attr.label(
+            default = "//common/uploader:uploader",
         ),
         "_deployment_script": attr.label(
             allow_single_file = True,

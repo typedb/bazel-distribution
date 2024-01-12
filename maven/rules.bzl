@@ -374,10 +374,10 @@ def _deploy_maven_impl(ctx):
         files.append(ctx.attr.target[MavenDeploymentInfo].srcjar)
         symlinks[src_jar_link] = ctx.attr.target[MavenDeploymentInfo].srcjar
 
-    cloudsmith_lib_files = ctx.attr._cloudsmith_pylib[DefaultInfo].default_runfiles.files.to_list()
+    deployment_lib_files = ctx.attr._deployment_wrapper_lib[DefaultInfo].default_runfiles.files.to_list()
     return DefaultInfo(
         executable = deploy_maven_script,
-        runfiles = ctx.runfiles(files=files + cloudsmith_lib_files, symlinks = symlinks)
+        runfiles = ctx.runfiles(files=files + deployment_lib_files, symlinks = symlinks)
     )
 
 _deploy_maven = rule(
@@ -395,8 +395,8 @@ _deploy_maven = rule(
             mandatory = True,
             doc = 'Release repository to release maven artifact to'
         ),
-        "_cloudsmith_pylib": attr.label(
-            default = "//common/cloudsmith:cloudsmith-wrapper",
+        "_deployment_wrapper_lib": attr.label(
+            default = "//common/uploader:uploader",
         ),
         "_deploy_script_template": attr.label(
             allow_single_file = True,

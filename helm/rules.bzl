@@ -31,11 +31,11 @@ def _deploy_helm_impl(ctx):
         },
     )
 
-    cloudsmith_lib_files = ctx.attr._cloudsmith_pylib[DefaultInfo].default_runfiles.files.to_list()
+    deployment_lib_files = ctx.attr._deployment_wrapper_lib[DefaultInfo].default_runfiles.files.to_list()
     return DefaultInfo(
         executable = _deploy_script,
         runfiles = ctx.runfiles(
-            files = [ctx.file.chart] + cloudsmith_lib_files
+            files = [ctx.file.chart] + deployment_lib_files
         ),
     )
 
@@ -46,8 +46,8 @@ _deploy_helm = rule(
             mandatory = True,
             doc = "Chart to deploy to repo",
         ),
-        "_cloudsmith_pylib": attr.label(
-            default = "//common/cloudsmith:cloudsmith-wrapper",
+        "_deployment_wrapper_lib": attr.label(
+            default = "//common/uploader:uploader",
         ),
         "_deploy_script_template": attr.label(
             allow_single_file = True,

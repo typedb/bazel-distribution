@@ -1,16 +1,26 @@
 import os
-
 from abc import ABC,abstractmethod
+
+class DeploymentException(Exception):
+    def __init__(self, msg, response=None):
+        self.msg = msg
+        self.response = response
+
+    def __str__(self):
+        ret = "CloudsmithDeploymentException: %s" % (self.msg)
+        if self.response is not None:
+            ret += ". HTTP response was [%d]: %s" % (self.response.status_code, self.response.text)
+        return ret
 
 class Uploader(ABC):
     @staticmethod
     def create(username, password, repo_url):
         if repo_url.startswith("cloudsmith"):
-            from .cloudsmith import CloudsmithDeployment
-            return CloudsmithDeployment(username, password, repo_url)
+            from .cloudsmith import CloudsmithUploader
+            return CloudsmithUploader(username, password, repo_url)
         elif repo_url.startswith("http"):
-            from .nexus import NexusDeployment
-            return NexusDeployment(username, password, repo_url)
+            from .nexus import NexusUploader
+            return NexusUploader(username, password, repo_url)
         else:
             raise ValueError("Unrecognised url: ", repo_url)
 
