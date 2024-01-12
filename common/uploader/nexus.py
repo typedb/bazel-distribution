@@ -17,14 +17,11 @@ class NexusUploader(Uploader):
     def _upload_file_impl(self, file, url, use_post):
         if use_post:
             headers = {"Content-Type" : "multipart/form-data"}
-            print("Trying: Upload %s to %s using %s"%(file, url, "POST" if use_post else "PUT"))
             return requests.post(url, auth = self.auth, data = open(file, "rb").read() , headers = headers)
         else:
-            print("Trying: Upload %s to %s using %s"%(file, url, "POST" if use_post else "PUT"))
             return requests.put(url, auth = self.auth, data = open(file, "rb").read())
 
     def _upload_string_impl(self, data, url):
-        print("Trying: Upload %s to %s using %s"%(data, url, "POST" if use_post else "PUT"))
         return requests.put(url, auth = self.auth, data = data)
 
     def _upload_file(self, file, url, use_post = False):
@@ -40,7 +37,6 @@ class NexusUploader(Uploader):
         use_post = False
         stage = "upload"
         response = self._upload_file_impl(file, url, use_post)
-        success = True
         success = (response.status_code // 100)== 2
         if success and should_sign:
             stage = "sign"
@@ -49,19 +45,20 @@ class NexusUploader(Uploader):
         if success:
             stage = "md5"
             md5 = hashlib.md5(open(file, 'rb').read()).hexdigest()
-            response = self._upload_string_impl(md5, url + ".md5", use_post)
+            response = self._upload_string_impl(md5, url + ".md5")
             success = (response.status_code // 100)== 2
         if success:
             stage = "sha1"
             sha1 = hashlib.sha1(open(file, 'rb').read()).hexdigest()
-            response = self._upload_string_impl(sha1, url + ".sha1", use_post)
+            response = self._upload_string_impl(sha1, url + ".sha1")
             success = (response.status_code // 100)== 2
 
         if not success:
             from .cloudsmith import  DeploymentException
-            raise DeploymentException("HTTP request for %s failed" % stage, response) # TODO: Fix type
+            raise DeploymentException("HTTP request for %s failed" % stage, response)
         else:
             return True
+
     def _validate_opts(self, opts, accepted_opts):
         unrecognised_fields = [f for f in opts if f not in accepted_opts.union(NexusUploader.COMMON_OPTS)]
         if len(unrecognised_fields) != 0:
@@ -117,7 +114,6 @@ class NexusUploader(Uploader):
             Uploader._maven_names(artifact_id, version, sources_path, javadoc_path, tests_path)
         base_url = "{repo_url}/{coordinates}/{artifact}/{version}/".format(
             repo_url = self.repo_url.rstrip("/"), coordinates=group_id.text.replace('.', '/'), version=version, artifact=artifact_id)
-        print(base_url, jar_filename, pom_filename, sources_filename, javadoc_filename, tests_filename)
         jar_url = base_url + jar_filename
         pom_url = base_url + pom_filename
         success = True
