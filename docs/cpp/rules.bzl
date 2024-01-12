@@ -99,5 +99,6 @@ doxygen_docs = rule(
     },
     doc = """
         Creates HTML documentation for C++ projects using Doxygen.
+        This rule is not hermetic, and requires doxygen to be installed on the host.
         """
 )
