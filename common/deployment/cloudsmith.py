@@ -2,7 +2,7 @@ import os
 import re
 import requests
 import time
-
+from .uploader import Uploader
 
 class CloudsmithDeploymentException(Exception):
     def __init__(self, msg, response=None):
@@ -16,7 +16,7 @@ class CloudsmithDeploymentException(Exception):
         return ret
 
 
-class CloudsmithDeployment:
+class CloudsmithDeployment(Uploader):
     COMMON_OPTS = {"tags"}
     _WAIT_FOR_SYNC_ATTEMPTS = 100
     _WAIT_FOR_SYNC_SLEEP_SEC = 3
@@ -91,7 +91,7 @@ class CloudsmithDeployment:
     def _validate_opts(self, opts, accepted_opts):
         unrecognised_fields = [f for f in opts if f not in accepted_opts.union(CloudsmithDeployment.COMMON_OPTS)]
         if len(unrecognised_fields) != 0:
-            raise CloudsmithDeploymentException("Unrecognised option: " + str(unrecognised_fields))
+            raise ValueError("Unrecognised option: " + str(unrecognised_fields))
 
     def _get_slug(self, metadata_post_response):
         return metadata_post_response.json()["slug_perm"]
@@ -114,13 +114,13 @@ class CloudsmithDeployment:
         assert (sync_success)
         return sync_success, slug
 
-    def artifact(self, name, version, artifact_path, filename, opts={}):
+    def artifact(self, artifact_group, version, artifact_path, filename, opts={}):
         accepted_opts = {"description", "summary"}
         self._validate_opts(opts, accepted_opts)
         uploaded_id = self._upload_file(artifact_path, filename)
         data = {
             "package_file": uploaded_id,
-            "name": name,
+            "name": artifact_group,
             "version": version
         }
         slug = self._post_metadata("raw", data)
@@ -140,12 +140,14 @@ class CloudsmithDeployment:
         assert (sync_success)
         return sync_success, slug
 
-    def maven(self, group_id, artifact_id,
-              jar_path, pom_path, jar_filename=None, pom_filename=None,
-              sources_path=None, javadoc_path=None, tests_path=None,
-              sources_filename=None, javadoc_filename=None, tests_filename=None,
+    def maven(self, group_id, artifact_id, version,
+              jar_path, pom_path,
+              sources_path=None, javadoc_path=None, tests_path = None,
+              should_sign = True,
               opts={}):
         accepted_opts = {}
+        jar_filename, pom_filename, sources_filename, javadoc_filename, tests_filename = \
+            Uploader._maven_names(artifact_id, version, sources_path, javadoc_path, tests_path)
         self._validate_opts(opts, accepted_opts)
         jar_id = self._upload_file(jar_path, self._pick_filename(jar_path, jar_filename))
         pom_id = self._upload_file(pom_path, self._pick_filename(pom_path, pom_filename))

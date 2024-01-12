@@ -32,7 +32,7 @@ import glob
 runfile_deps = [path for path in map(os.path.abspath, glob.glob('external/*/*'))]
 sys.path = runfile_deps + sys.path
 
-from common.cloudsmith.cloudsmith import CloudsmithDeployment
+from common.cloudsmith.uploader import Uploader
 
 if len(sys.argv) != 2:
     raise ValueError('Should pass only <snapshot|release> as arguments')
@@ -75,5 +75,5 @@ if repo_type == 'release':
 else:
     base_url = '{snapshot}'
 
-cs = CloudsmithDeployment(username, password, base_url)
-cs.artifact("{artifact_group}", version, '{artifact_path}', filename)
+uploader = Uploader.create(username, password, base_url)
+uploader.artifact("{artifact_group}", version, '{artifact_path}', filename)

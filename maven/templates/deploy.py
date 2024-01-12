@@ -36,7 +36,7 @@ import sys, glob
 runfile_deps = [path for path in map(os.path.abspath, glob.glob('external/*/*'))]
 sys.path = runfile_deps + sys.path
 
-from common.cloudsmith.cloudsmith import CloudsmithDeployment
+from common.cloudsmith.uploader import Uploader
 
 
 def unpack_args(_, a, b=False):
@@ -98,14 +98,10 @@ if repo_type == 'release' and len(re.findall(version_release_regex, version)) ==
                      'must have a version which complies to this regex: {}'
                      .format(version, repo_type, version_release_regex))
 
-filename_base = '{artifact}-{version}'.format(artifact=artifact_id.text, version=version)
-
-cs = CloudsmithDeployment(username, password, maven_url)
-cs.maven(group_id.text, artifact_id.text,
-         jar_path=jar_path, pom_path=pom_file_path,
-         jar_filename=filename_base + ".jar", pom_filename=filename_base + ".pom",
-         sources_path=srcjar_path if os.path.exists(srcjar_path) else None,
-         javadoc_path=srcjar_path if os.path.exists(srcjar_path) else None,
-         sources_filename=filename_base + "-sources.jar" if os.path.exists(srcjar_path) else None,
-         javadoc_filename=filename_base + "-javadoc.jar" if os.path.exists(srcjar_path) else None, # TODO(vmax): use real Javadoc instead of srcjar
-         )
+uploader = Uploader.create(username, password, maven_url)
+uploader.maven(group_id, artifact_id.text, version,
+    jar_path=jar_path, pom_path=pom_file_path,
+    sources_path=srcjar_path if os.path.exists(srcjar_path) else None,
+    javadoc_path=srcjar_path if os.path.exists(srcjar_path) else None,
+    tests_path = None
+)

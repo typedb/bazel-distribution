@@ -20,7 +20,7 @@ load("@vaticle_bazel_distribution_cloudsmith//:requirements.bzl", cloudsmith_req
 
 py_library(
     name = "cloudsmith-wrapper",
-    srcs = ["cloudsmith.py"],
+    srcs = glob(["*.py"]),
     deps = [cloudsmith_requirement("requests")],
     visibility = ["//visibility:public"],
 )

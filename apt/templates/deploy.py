@@ -36,7 +36,7 @@ import sys, glob
 runfile_deps = [path for path in map(os.path.abspath, glob.glob('external/*/*'))]
 sys.path = runfile_deps + sys.path
 
-from common.cloudsmith.cloudsmith import CloudsmithDeployment
+from common.cloudsmith.uploader import Uploader
 
 parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')
@@ -69,6 +69,8 @@ if not apt_password:
     )
 
 package_path = "{package_path}"
-cs = CloudsmithDeployment(apt_username, apt_password, repo_url)
-cs.apt(package_path)
+
+uploader = Uploader.create(apt_username, apt_password, repo_url)
+uploader.apt(package_path)
+
 print('Deployment completed.')
