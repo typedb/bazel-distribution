@@ -60,8 +60,8 @@ class CrateDeployer : Callable<Unit> {
 
     private val repoUrl: String
         get() = when (releaseMode) {
-            CrateRepoType.Snapshot -> snapshotRepo
-            CrateRepoType.Release -> releaseRepo
+            CrateRepoType.Snapshot -> snapshotRepo.trim('/')
+            CrateRepoType.Release -> releaseRepo.trim('/')
         } + "/api/v1/crates/new"
 
     private val token = System.getenv("DEPLOY_CRATE_TOKEN") ?: throw RuntimeException(
@@ -99,7 +99,7 @@ class CrateDeployer : Callable<Unit> {
     private fun httpPut(url: String, token: String, content: ByteArray): HttpResponse {
         return NetHttpTransport()
             .createRequestFactory()
-            .buildPutRequest(GenericUrl(url), ByteArrayContent("application/json", content))
+            .buildPutRequest(GenericUrl(url), ByteArrayContent(null, content)) // TODO: Verify it works with crates.io
             .setHeaders(
                 HttpHeaders().setAuthorization(token)
             )

@@ -31,18 +31,25 @@ import tarfile
 import tempfile
 from runpy import run_path
 
+import sys, glob
+# Prefer using the runfile dependency than system dependency
+runfile_deps = [path for path in map(os.path.abspath, glob.glob('external/*/*'))]
+sys.path = runfile_deps + sys.path
+
+from common.uploader.uploader import Uploader
+
 parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')
 args = parser.parse_args()
 
 repo_type_key = args.repo_type
 
-apt_deployments = {
+apt_repositories = {
     'snapshot' : "{snapshot}",
     'release' : "{release}"
 }
 
-apt_registry = apt_deployments[repo_type_key]
+repo_url = apt_repositories[repo_type_key]
 
 apt_username, apt_password = (
     os.getenv('DEPLOY_APT_USERNAME'),
@@ -61,19 +68,9 @@ if not apt_password:
         '$DEPLOY_APT_PASSWORD env variable'
     )
 
-upload_status_code = subprocess.check_output([
-    'curl',
-    '--silent',
-    '--output', '/dev/stderr',
-    '--write-out', '%{http_code}',
-    '-u', '{}:{}'.format(apt_username, apt_password),
-    '-X', 'POST',
-    '-H', 'Content-Type: multipart/form-data',
-    '--data-binary', '@package.deb',
-    apt_registry
-]).decode().strip()
+package_path = "{package_path}"
 
-if upload_status_code != '201':
-    raise Exception('upload failed, got HTTP status code {}'.format(upload_status_code))
+uploader = Uploader.create(apt_username, apt_password, repo_url)
+uploader.apt(package_path)
 
 print('Deployment completed.')

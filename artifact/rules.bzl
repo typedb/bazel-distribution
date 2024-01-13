@@ -51,11 +51,11 @@ def _deploy_artifact_impl(ctx):
     symlinks = {
         'VERSION': version_file,
     }
-
+    deployment_lib_files = ctx.attr._deployment_wrapper_lib[DefaultInfo].default_runfiles.files.to_list()
     return DefaultInfo(
         executable = _deploy_script,
         runfiles = ctx.runfiles(
-            files = files,
+            files = files + deployment_lib_files,
             symlinks = symlinks,
         ),
     )
@@ -83,6 +83,9 @@ _deploy_artifact = rule(
         "artifact_name": attr.string(
             doc = "The artifact filename, automatic from the target file if not specified",
             default = '',
+        ),
+        "_deployment_wrapper_lib": attr.label(
+            default = "//common/uploader:uploader",
         ),
         "_deploy_script_template": attr.label(
             allow_single_file = True,
@@ -165,7 +168,7 @@ def artifact_file(name,
 
     http_file(
         name = name,
-        urls = ["{}/{}/{}/{}".format(repository_url, group_name, version, artifact_name)],
+        urls = ["{}/names/{}/versions/{}/{}".format(repository_url.rstrip("/"), group_name, version, artifact_name)],
         downloaded_file_path = artifact_name,
         sha = sha,
         tags = tags + ["{}={}".format(versiontype, version)],

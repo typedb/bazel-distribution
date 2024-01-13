@@ -16,23 +16,11 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+load("@vaticle_bazel_distribution_uploader//:requirements.bzl", cloudsmith_requirement = "requirement")
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-
-bzl_library(
-    name = "lib",
-    srcs = [
-        "rules.bzl",
-        "@rules_pkg//:rpm.bzl",
-    ],
-    deps = [
-        "@rules_pkg//doc_build:rules_pkg_lib",
-    ],
-    visibility = ["//visibility:public"]
-)
-
-py_binary(
-    name = "generate_spec_file",
-    srcs = ["generate_spec_file.py"],
-    visibility = ["//visibility:public"]
+py_library(
+    name = "uploader",
+    srcs = glob(["*.py"]),
+    deps = [cloudsmith_requirement("requests")],
+    visibility = ["//visibility:public"],
 )

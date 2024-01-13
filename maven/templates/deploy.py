@@ -30,57 +30,13 @@ import sys
 import tempfile
 from posixpath import join as urljoin
 
+import sys, glob
 
-def sha1(fn):
-    return hashlib.sha1(open(fn, 'rb').read()).hexdigest()
+# Prefer using the runfile dependency than system dependency
+runfile_deps = [path for path in map(os.path.abspath, glob.glob('external/*/*'))]
+sys.path = runfile_deps + sys.path
 
-
-def md5(fn):
-    return hashlib.md5(open(fn, 'rb').read()).hexdigest()
-
-
-def upload_file(url, username, password, local_fn, remote_fn):
-    upload_status_code = sp.check_output([
-        'curl', '--silent',
-        '--write-out', '%{http_code}',
-        '-u', '{}:{}'.format(username, password),
-        '--upload-file', local_fn,
-        urljoin(url, remote_fn)
-    ]).decode().strip()
-
-    if upload_status_code not in {'200', '201'}:
-        raise Exception('upload_file of {} failed, got HTTP status code {}'.format(
-            local_fn, upload_status_code))
-
-
-def upload_str(url, username, password, string, remote_fn):
-    upload_status_code = sp.check_output([
-        'curl', '--silent',
-        '--write-out', '%{http_code}',
-        '-u', '{}:{}'.format(username, password),
-        '--upload-file', '-',
-        urljoin(url, remote_fn)
-    ], input=string.encode()).decode().strip()
-
-    if upload_status_code not in {'200', '201'}:
-        raise Exception('upload_str of "{}" failed, got HTTP status code {}'.format(
-            string, upload_status_code))
-
-
-def sign(fn):
-    # TODO(vmax): current limitation of this functionality
-    # is that gpg key should already be present in keyring
-    # and should not require passphrase
-    asc_file = tempfile.mktemp()
-    sp.check_call([
-        'gpg',
-        '--detach-sign',
-        '--armor',
-        '--output',
-        asc_file,
-        fn
-    ])
-    return asc_file
+from common.uploader.uploader import Uploader
 
 
 def unpack_args(_, a, b=False):
@@ -90,8 +46,9 @@ def unpack_args(_, a, b=False):
 if len(sys.argv) < 2:
     raise ValueError('Should pass <snapshot|release> [--gpg] as arguments')
 
-
 repo_type, should_sign = unpack_args(*sys.argv)
+
+if should_sign: raise NotImplementedError("Signing is not implemented yet")
 
 username, password = os.getenv('DEPLOY_MAVEN_USERNAME'), os.getenv('DEPLOY_MAVEN_PASSWORD')
 
@@ -110,7 +67,7 @@ jar_path = "$JAR_PATH"
 pom_file_path = "$POM_PATH"
 srcjar_path = "$SRCJAR_PATH"
 
-namespace = { 'namespace': 'http://maven.apache.org/POM/4.0.0' }
+namespace = {'namespace': 'http://maven.apache.org/POM/4.0.0'}
 root = ElementTree.parse(pom_file_path).getroot()
 group_id = root.find('namespace:groupId', namespace)
 artifact_id = root.find('namespace:artifactId', namespace)
@@ -141,32 +98,10 @@ if repo_type == 'release' and len(re.findall(version_release_regex, version)) ==
                      'must have a version which complies to this regex: {}'
                      .format(version, repo_type, version_release_regex))
 
-filename_base = '{coordinates}/{artifact}/{version}/{artifact}-{version}'.format(
-    coordinates=group_id.text.replace('.', '/'), version=version, artifact=artifact_id.text)
-
-upload_file(maven_url, username, password, jar_path, filename_base + '.jar')
-if should_sign:
-    upload_file(maven_url, username, password, sign(jar_path), filename_base + '.jar.asc')
-upload_file(maven_url, username, password, pom_file_path, filename_base + '.pom')
-if should_sign:
-    upload_file(maven_url, username, password, sign(pom_file_path), filename_base + '.pom.asc')
-if os.path.exists(srcjar_path):
-    upload_file(maven_url, username, password, srcjar_path, filename_base + '-sources.jar')
-    if should_sign:
-        upload_file(maven_url, username, password, sign(srcjar_path), filename_base + '-sources.jar.asc')
-    # TODO(vmax): use real Javadoc instead of srcjar
-    upload_file(maven_url, username, password, srcjar_path, filename_base + '-javadoc.jar')
-    if should_sign:
-        upload_file(maven_url, username, password, sign(srcjar_path), filename_base + '-javadoc.jar.asc')
-
-upload_str(maven_url, username, password, md5(pom_file_path), filename_base + '.pom.md5')
-upload_str(maven_url, username, password, sha1(pom_file_path), filename_base + '.pom.sha1')
-upload_str(maven_url, username, password, md5(jar_path), filename_base + '.jar.md5')
-upload_str(maven_url, username, password, sha1(jar_path), filename_base + '.jar.sha1')
-
-if os.path.exists(srcjar_path):
-    upload_str(maven_url, username, password, md5(srcjar_path), filename_base + '-sources.jar.md5')
-    upload_str(maven_url, username, password, sha1(srcjar_path), filename_base + '-sources.jar.sha1')
-
-    upload_str(maven_url, username, password, md5(srcjar_path), filename_base + '-javadoc.jar.md5')
-    upload_str(maven_url, username, password, sha1(srcjar_path), filename_base + '-javadoc.jar.sha1')
+uploader = Uploader.create(username, password, maven_url)
+uploader.maven(group_id, artifact_id.text, version,
+    jar_path=jar_path, pom_path=pom_file_path,
+    sources_path=srcjar_path if os.path.exists(srcjar_path) else None,
+    javadoc_path=srcjar_path if os.path.exists(srcjar_path) else None,
+    tests_path = None
+)

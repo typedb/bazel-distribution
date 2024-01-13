@@ -39,35 +39,33 @@ if len(sys.argv) != 2:
 
 _, repo_type = sys.argv
 
-username, password = os.getenv('DEPLOY_ARTIFACT_USERNAME'), os.getenv('DEPLOY_ARTIFACT_PASSWORD')
+username, password = os.getenv('DEPLOY_HELM_USERNAME'), os.getenv('DEPLOY_HELM_PASSWORD')
 
 if not username:
-    raise ValueError('Error: username should be passed via $DEPLOY_ARTIFACT_USERNAME env variable')
+    raise ValueError('Error: username should be passed via $DEPLOY_HELM_USERNAME env variable')
 
 if not password:
-    raise ValueError('Error: password should be passed via $DEPLOY_ARTIFACT_PASSWORD env variable')
+    raise ValueError('Error: password should be passed via $DEPLOY_HELM_PASSWORD env variable')
 
-version = open("{version_file}", "r").read().strip()
+chart_path = '{chart_path}'
+filename = os.path.basename('{chart_path}')
 
 snapshot = 'snapshot'
-version_snapshot_regex = '^[0-9|a-f|A-F]{40}$'
+version_snapshot_regex = '.*-0.0.0-[0-9|a-f|A-F]{40}.*'
 release = 'release'
-version_release_regex = '^[0-9]+.[0-9]+.[0-9]+(-[a-zA-Z0-9]+)*$'
+version_release_regex = '.*-[0-9]+.[0-9]+.[0-9]+(-[a-zA-Z0-9]+)*.*'
 
 if repo_type not in [snapshot, release]:
     raise ValueError("Invalid repository type: {}. It should be one of these: {}"
                      .format(repo_type, [snapshot, release]))
-if repo_type == 'snapshot' and len(re.findall(version_snapshot_regex, version)) == 0:
-    raise ValueError('Invalid version: {}. An artifact uploaded to a {} repository '
-                     'must have a version which complies to this regex: {}'
-                     .format(version, repo_type, version_snapshot_regex))
-if repo_type == 'release' and len(re.findall(version_release_regex, version)) == 0:
-    raise ValueError('Invalid version: {}. An artifact uploaded to a {} repository '
-                     'must have a version which complies to this regex: {}'
-                     .format(version, repo_type, version_snapshot_regex))
-
-filename = '{artifact_filename}'
-filename = filename.format(version = version)
+if repo_type == 'snapshot' and len(re.findall(version_snapshot_regex, filename)) == 0:
+    raise ValueError('Invalid version: {}. A helm chart uploaded to a {} repository '
+                     'must contain a version in its filename which complies to this regex: {}'
+                     .format(filename, repo_type, version_snapshot_regex))
+if repo_type == 'release' and len(re.findall(version_release_regex, filename)) == 0:
+    raise ValueError('Invalid version: {}. An helm chart uploaded to a {} repository '
+                     'must contain a version in its filename which complies to this regex: {}'
+                     .format(filename, repo_type, version_snapshot_regex))
 
 base_url = None
 if repo_type == 'release':
@@ -76,4 +74,4 @@ else:
     base_url = '{snapshot}'
 
 uploader = Uploader.create(username, password, base_url)
-uploader.artifact("{artifact_group}", version, '{artifact_path}', filename)
+uploader.helm(chart_path)
