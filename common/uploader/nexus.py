@@ -114,7 +114,7 @@ class NexusUploader(Uploader):
         jar_filename, pom_filename, sources_filename, javadoc_filename, tests_filename = \
             Uploader._maven_names(artifact_id, version, sources_path, javadoc_path, tests_path)
         base_url = "{repo_url}/{coordinates}/{artifact}/{version}/".format(
-            repo_url = self.repo_url.rstrip("/"), coordinates=group_id.text.replace('.', '/'), version=version, artifact=artifact_id)
+            repo_url = self.repo_url.rstrip("/"), coordinates=group_id.replace('.', '/'), version=version, artifact=artifact_id)
         jar_url = base_url + jar_filename
         pom_url = base_url + pom_filename
         success = True
