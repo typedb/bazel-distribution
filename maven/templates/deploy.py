@@ -99,7 +99,7 @@ if repo_type == 'release' and len(re.findall(version_release_regex, version)) ==
                      .format(version, repo_type, version_release_regex))
 
 uploader = Uploader.create(username, password, maven_url)
-uploader.maven(group_id, artifact_id.text, version,
+uploader.maven(group_id.text, artifact_id.text, version,
     jar_path=jar_path, pom_path=pom_file_path,
     sources_path=srcjar_path if os.path.exists(srcjar_path) else None,
     javadoc_path=srcjar_path if os.path.exists(srcjar_path) else None,
