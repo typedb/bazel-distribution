@@ -101,7 +101,6 @@ class NexusUploader(Uploader):
         accepted_opts = set()
         self._validate_opts(opts, accepted_opts)
         upload_url = "%s/api/charts/%s"%(self.repo_url.rstrip("/"), os.path.basename(tar_path))
-        print("Trying to push helm: %s to %s"%(tar_path, upload_url))
         success = self._upload_file(tar_path, upload_url, use_post=False)
         return success, upload_url
 
