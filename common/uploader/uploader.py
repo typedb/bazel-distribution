@@ -7,7 +7,7 @@ class DeploymentException(Exception):
         self.response = response
 
     def __str__(self):
-        ret = "CloudsmithDeploymentException: %s" % (self.msg)
+        ret = "DeploymentException: %s" % (self.msg)
         if self.response is not None:
             ret += ". HTTP response was [%d]: %s" % (self.response.status_code, self.response.text)
         return ret

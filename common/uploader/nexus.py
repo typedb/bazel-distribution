@@ -1,4 +1,5 @@
 import hashlib
+import os
 import requests
 
 from .uploader import Uploader, DeploymentException
@@ -87,7 +88,7 @@ class NexusUploader(Uploader):
         self._validate_opts(opts, accepted_opts)
         upload_url = self.repo_url
         success = self._upload_file(deb_file, upload_url, use_post = True)
-        return success, self.upload_url
+        return success, upload_url
 
     def artifact(self, artifact_group, version, artifact_path, filename, opts={}):
         accepted_opts = set()
@@ -99,8 +100,9 @@ class NexusUploader(Uploader):
     def helm(self, tar_path, opts={}):
         accepted_opts = set()
         self._validate_opts(opts, accepted_opts)
-        upload_url = "%s/api/charts"%(self.repo_url.rstrip("/"))
-        success = self._upload_file(tar_path, upload_url, use_post=True)
+        upload_url = "%s/api/charts/%s"%(self.repo_url.rstrip("/"), os.path.basename(tar_path))
+        print("Trying to push helm: %s to %s"%(tar_path, upload_url))
+        success = self._upload_file(tar_path, upload_url, use_post=False)
         return success, upload_url
 
     def maven(self, group_id, artifact_id, version,
