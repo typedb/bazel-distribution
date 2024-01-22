@@ -164,10 +164,19 @@ class CrateAssembler : Callable<Unit> {
     private fun externalDepVersion(dep: String, bazelDepWorkspace: Map<String, String>, workspaceRefs: JsonObject): String {
         val workspace = bazelDepWorkspace.get(dep)
         val commitDep = workspaceRefs.get("commits").asObject().get(workspace)
-        if (commitDep != null) return commitDep.asString();
+        if (commitDep != null) return commitToVersion(commitDep.asString());
         val tagDep = workspaceRefs.get("tags").asObject().get(workspace)
-        if (tagDep != null) return tagDep.asString();
+        if (tagDep != null) return tagToVersion(tagDep.asString());
         throw IllegalStateException();
+    }
+
+    private fun commitToVersion(commit: String): String {
+        return "0.0.0-${commit}"
+    }
+
+    private fun tagToVersion(tag: String): String {
+        if (tag.contains("rc")) return tag.replace(Regex("-?rc"), "-rc")
+        else return tag
     }
 
     private fun writeCrateArchive(config: UnmodifiableConfig) {
@@ -226,7 +235,7 @@ class CrateAssembler : Callable<Unit> {
             cargoToml.set<Config>("package", this)
             set<String>("name", name)
             set<String>("edition", edition)
-            set<String>("version", versionFile.readText())
+            set<String>("version", tagToVersion(versionFile.readText()))
             set<Array<String>>("authors", authors.filter { it != "" })
             set<String>("homepage", homepage)
             set<String>("repository", repository)
