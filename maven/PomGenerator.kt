@@ -102,13 +102,9 @@ class PomGenerator : Callable<Unit> {
             return version
         }
         val versionCommit = workspaceRefs.get("commits").asObject().get(originalVersion)
-        if (versionCommit != null) {
-            return versionCommit.asString()
-        }
+        if (versionCommit != null) return commitToVersion(versionCommit.asString())
         val tagCommit = workspaceRefs.get("tags").asObject().get(originalVersion)
-        if (tagCommit != null) {
-            return tagCommit.asString()
-        }
+        if (tagCommit != null) return tagToVersion(tagCommit.asString())
         return originalVersion
     }
 
@@ -195,7 +191,7 @@ class PomGenerator : Callable<Unit> {
     }
 
     override fun call() {
-        val version = versionFile.readText()
+        val version = tagToVersion(versionFile.readText())
         val workspaceRefs = Json.parse(workspaceRefsFile.readText()).asObject()
 
         // Create an XML document for constructing the POM
@@ -257,6 +253,15 @@ class PomGenerator : Callable<Unit> {
 
         // write the final result
         outputDocumentToFile(pom)
+    }
+
+    private fun commitToVersion(commit: String): String {
+        return "0.0.0-$commit"
+    }
+
+    private fun tagToVersion(tag: String): String {
+        if (tag.contains("rc")) return tag.replace(Regex("-?rc"), "-rc")
+        else return tag
     }
 }
 
