@@ -28,6 +28,8 @@ def _assemble_npm_impl(ctx):
         if len(version) == 40:
             # this is a commit SHA, most likely
             version = "0.0.0-{}".format(version)
+        elif 'rc' in version and '-rc' not in version:
+            version = version.replace('rc', '-rc')
 
         ctx.actions.run_shell(
             inputs = [],
