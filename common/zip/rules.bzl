@@ -62,6 +62,13 @@ def assemble_zip(
     )
 
 def unzip(name, target, outs, **kwargs):
+    """Unzip an archive
+
+    Args:
+        name: A unique name for this target.
+        target: A single input .zip archive
+        outs: List of files to be extracted from the archive.
+    """
     native.genrule(
         name = name,
         srcs = [target],
