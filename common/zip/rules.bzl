@@ -61,19 +61,20 @@ def assemble_zip(
         tags = tags,
     )
 
-def unzip(name, target, outs, **kwargs):
-    """Unzip an archive
+def unzip_file(name, target, output, **kwargs):
+    """Unzip a single-file archive
 
     Args:
-        name: A unique name for this target.
-        target: A single input .zip archive
-        outs: List of files to be extracted from the archive.
+        name: unique name for this target
+        target: single input .zip archive
+        output: name for the unzipped file
     """
     native.genrule(
         name = name,
         srcs = [target],
-        outs = outs,
+        outs = [output],
         tools = ["@bazel_tools//tools/zip:zipper"],
-        cmd = "$(location @bazel_tools//tools/zip:zipper) x $< -d $(@D)",
+        cmd_bash = "mkdir -p $(@D)/tmp && $(location @bazel_tools//tools/zip:zipper) x $< -d $(@D)/tmp && mv $(@D)/tmp/* $@",
+        cmd_bat = "MD $(@D)\\tmp && $(location @bazel_tools//tools/zip:zipper) x $< -d $(@D)\\tmp && MOVE $(@D)\\tmp\\* $@",
         **kwargs
     )
