@@ -60,3 +60,13 @@ def assemble_zip(
         visibility = visibility,
         tags = tags,
     )
+
+def unzip(name, target, outs, **kwargs):
+    native.genrule(
+        name = name,
+        srcs = [target],
+        outs = outs,
+        tools = ["@bazel_tools//tools/zip:zipper"],
+        cmd = "$(location @bazel_tools//tools/zip:zipper) x $< -d $(@D)",
+        **kwargs
+    )
