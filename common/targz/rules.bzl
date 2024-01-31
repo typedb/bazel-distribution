@@ -96,8 +96,14 @@ def assemble_targz(name,
         tags = tags,
     )
 
-def targz_edit(name, src, strip_components = 0, **kwargs):
-    extra_args = ["--strip-components", str(strip_components)]
+def targz_edit(name, src, strip_components = 0, exclude_globs = None, **kwargs):
+    extra_args = []
+    if strip_components > 0:
+        extra_args.extend(["--strip-components", str(strip_components)])
+    if exclude_globs:
+        for exclude_pattern in exclude_globs:
+            extra_args.extend(["--exclude", exclude_pattern])
+
     native.genrule(
         name = name,
         outs = [name],
