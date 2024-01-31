@@ -96,7 +96,20 @@ def assemble_targz(name,
         tags = tags,
     )
 
-def targz_edit(name, src, strip_components = 0, exclude_globs = None, **kwargs):
+def targz_edit(name, src, strip_components = 0, exclude_globs = [], **kwargs):
+    """Edit distribution archive (.tar.gz)
+
+    Args:
+        name: A unique name for this target, serves as the output filename.
+        src: The .tar.gz archive to edit.
+        strip_components (int): argument to tar -xz --strip-components
+             Remove the specified number of leading path elements.  Pathnames
+             with fewer elements will be silently skipped.  Note that the
+             pathname is edited after checking inclusion/exclusion patterns but
+             before security checks.
+        exclude_globs (list of strs): arguments to tar -xz --exclude
+             Do not process files or directories that match the specified pattern.
+    """
     extra_args = []
     if strip_components > 0:
         extra_args.extend(["--strip-components", str(strip_components)])
