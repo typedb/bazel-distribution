@@ -50,7 +50,7 @@ if not password:
 version = open("{version_file}", "r").read().strip()
 
 snapshot = 'snapshot'
-version_snapshot_regex = '^[0-9|a-f|A-F]{40}$'
+version_snapshot_regex = '^.*[0-9a-fA-F]{40}$'
 release = 'release'
 version_release_regex = '^[0-9]+.[0-9]+.[0-9]+(-[a-zA-Z0-9]+)*$'
 
