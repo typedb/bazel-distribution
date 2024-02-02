@@ -22,15 +22,18 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 def _deploy_artifact_impl(ctx):
     _deploy_script = ctx.actions.declare_file(ctx.attr.deploy_script_name)
 
-    version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
-    version = ctx.var.get('version', '0.0.0')
+    if ctx.attr.version_file:
+        version_file = ctx.file.version_file
+    else:
+        version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
+        version = ctx.var.get('version', '0.0.0')
 
-    ctx.actions.run_shell(
-        inputs = [],
-        outputs = [version_file],
-        command = "echo {} > {}".format(version, version_file.path),
-    )
-    
+        ctx.actions.run_shell(
+            inputs = [],
+            outputs = [version_file],
+            command = "echo {} > {}".format(version, version_file.path),
+        )
+        
     ctx.actions.expand_template(
         template = ctx.file._deploy_script_template,
         output = _deploy_script,
