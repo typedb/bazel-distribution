@@ -1,4 +1,6 @@
 /*
+ * Copyright (C) 2022 Vaticle
+ *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,7 +19,7 @@
  * under the License.
  */
 
-package com.typedb.bazel.distribution.platform.jvm
+package com.vaticle.bazel.distribution.platform.jvm
 
 import picocli.CommandLine
 

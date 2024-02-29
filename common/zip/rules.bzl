@@ -1,5 +1,7 @@
 #
-#  This program is free software: you can redistribute it and/or modify
+# Copyright (C) 2022 Vaticle
+#
+# This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
@@ -13,8 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-load("@typedb_bazel_distribution//common/targz:rules.bzl", "assemble_targz")
-load("@typedb_bazel_distribution//common/tgz2zip:rules.bzl", "tgz2zip")
+load("@vaticle_bazel_distribution//common/targz:rules.bzl", "assemble_targz")
+load("@vaticle_bazel_distribution//common/tgz2zip:rules.bzl", "tgz2zip")
 
 def assemble_zip(
         name,

@@ -1,4 +1,6 @@
 /*
+ * Copyright (C) 2022 Vaticle
+ *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,12 +19,12 @@
  * under the License.
  */
 
-package com.typedb.bazel.distribution.common.util
+package com.vaticle.bazel.distribution.common.util
 
-import com.typedb.bazel.distribution.common.OS
-import com.typedb.bazel.distribution.common.OS.LINUX
-import com.typedb.bazel.distribution.common.OS.MAC
-import com.typedb.bazel.distribution.common.OS.WINDOWS
+import com.vaticle.bazel.distribution.common.OS
+import com.vaticle.bazel.distribution.common.OS.LINUX
+import com.vaticle.bazel.distribution.common.OS.MAC
+import com.vaticle.bazel.distribution.common.OS.WINDOWS
 import java.util.Locale.ENGLISH
 
 object SystemUtil {

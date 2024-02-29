@@ -19,7 +19,7 @@
 exports_files(["rules.bzl"])
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 bzl_library(
     name = "lib",
@@ -48,7 +48,7 @@ kt_jvm_library(
 
 java_binary(
     name = "crate-assembler",
-    main_class = "com.typedb.bazel.distribution.crates.CrateAssemblerKt",
+    main_class = "com.vaticle.bazeldistribution.crates.CrateAssemblerKt",
     visibility = ["//visibility:public"],
     runtime_deps = [
         ":crate-assembler-lib",
@@ -69,7 +69,7 @@ kt_jvm_library(
 
 java_binary(
     name = "crate-deployer",
-    main_class = "com.typedb.bazel.distribution.crates.CrateDeployerKt",
+    main_class = "com.vaticle.bazeldistribution.crates.CrateDeployerKt",
     visibility = ["//visibility:public"],
     runtime_deps = [
         ":crate-deployer-lib",

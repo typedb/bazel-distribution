@@ -263,7 +263,7 @@ assemble_crate = rule(
         "_crate_assembler_tool": attr.label(
             executable = True,
             cfg = "host",
-            default = "@typedb_bazel_distribution//crates:crate-assembler",
+            default = "@vaticle_bazel_distribution//crates:crate-assembler",
         ),
     },
     outputs = {
@@ -317,11 +317,11 @@ deploy_crate = rule(
         ),
         "_crate_deployer": attr.label(
             allow_single_file = True,
-            default = "@typedb_bazel_distribution//crates:crate-deployer_deploy.jar"
+            default = "@vaticle_bazel_distribution//crates:crate-deployer_deploy.jar"
         ),
         "_crate_deployer_wrapper_template": attr.label(
             allow_single_file = True,
-            default = "@typedb_bazel_distribution//crates/templates:deploy.sh",
+            default = "@vaticle_bazel_distribution//crates/templates:deploy.sh",
         )
     },
     executable = True,

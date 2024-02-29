@@ -1,4 +1,4 @@
-package com.typedb.bazel.distribution.platform.jvm
+package com.vaticle.bazel.distribution.platform.jvm
 
 object ShellArgs {
     object Programs {

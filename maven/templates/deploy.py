@@ -81,9 +81,6 @@ if version is None or len(version.text) == 0:
 
 version = version.text
 
-if version != version.strip():
-    raise Exception('Version "{}" has leading or trailing whitespaces'.format(version))
-
 snapshot = 'snapshot'
 version_snapshot_regex = '^[0-9]+.[0-9]+.[0-9]+-[0-9|a-f|A-F]{40}$|.*-SNAPSHOT$'
 release = 'release'

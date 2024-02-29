@@ -17,13 +17,13 @@
 # under the License.
 #
 
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 kt_jvm_library(
     name = "shell",
     srcs = glob(["*.kt"]),
     deps = [
-        "@typedb_bazel_distribution//common",
+        "@vaticle_bazel_distribution//common",
 
         "@maven//:org_zeroturnaround_zt_exec",
     ],

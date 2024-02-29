@@ -149,15 +149,13 @@ def assemble_apt(name,
             name = version_file
         )
     args = [
-        "$(location @typedb_bazel_distribution//apt:generate_depends_file)",
+        "$(location @vaticle_bazel_distribution//apt:generate_depends_file)",
         "--output", "$@",
         "--version_file", "$(location {})".format(version_file),
+        "--deps"
     ]
-    if len(depends):
-        args.append("--deps")
-        for dep in depends:
-            args.append('"{}"'.format(dep))
-
+    for dep in depends:
+        args.append('"{}"'.format(dep))
     srcs = [version_file]
 
     if workspace_refs:
@@ -172,7 +170,7 @@ def assemble_apt(name,
         srcs = srcs,
         outs = ["{}.depends".format(name)],
         cmd = " ".join(args),
-        tools = ["@typedb_bazel_distribution//apt:generate_depends_file"]
+        tools = ["@vaticle_bazel_distribution//apt:generate_depends_file"]
     )
 
     pkg_deb(
@@ -198,7 +196,6 @@ def _deploy_apt_impl(ctx):
             '{snapshot}' : ctx.attr.snapshot,
             '{release}' : ctx.attr.release,
             '{package_path}' : package_path,
-            '{version}' : ctx.var.get('version', '0.0.0')
         },
         is_executable = True
     )

@@ -18,7 +18,7 @@
 #
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 exports_files(["deploy.sh.template"])
 
@@ -34,9 +34,9 @@ kt_jvm_library(
     name = "deployer-lib",
     srcs = glob(["*.kt"]),
     deps = [
-        "@typedb_bazel_distribution//common",
-        "@typedb_bazel_distribution//common/shell",
-        "@typedb_bazel_distribution//common/util",
+        "@vaticle_bazel_distribution//common",
+        "@vaticle_bazel_distribution//common/shell",
+        "@vaticle_bazel_distribution//common/util",
 
         "@maven//:info_picocli_picocli",
         "@maven//:org_zeroturnaround_zt_exec",
@@ -46,6 +46,6 @@ kt_jvm_library(
 java_binary(
     name = "deployer-bin",
     runtime_deps = [":deployer-lib"],
-    main_class = "com.typedb.bazel.distribution.npm.deploy.DeployNPMKt",
+    main_class = "com.vaticle.bazel.distribution.npm.deploy.DeployNPMKt",
     visibility = ["//visibility:public"],
 )

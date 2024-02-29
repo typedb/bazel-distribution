@@ -69,10 +69,8 @@ if not apt_password:
     )
 
 package_path = "{package_path}"
-# Cloudsmith has a bug where packages with the same filename can break downloads
-uploaded_filename = package_path.rstrip(".deb") + "_{version}.deb"
 
 uploader = Uploader.create(apt_username, apt_password, repo_url)
-uploader.apt(package_path, uploaded_filename=uploaded_filename)
+uploader.apt(package_path)
 
 print('Deployment completed.')

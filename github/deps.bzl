@@ -19,7 +19,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def ghr_osx_zip():
+def deps():
     http_archive(
         name = "ghr_osx_zip",
         urls = ["https://github.com/tcnksm/ghr/releases/download/v0.12.1/ghr_v0.12.1_darwin_amd64.zip"],
@@ -27,8 +27,6 @@ def ghr_osx_zip():
         strip_prefix = "ghr_v0.12.1_darwin_amd64",
         build_file_content = 'exports_files(["ghr"])'
     )
-
-def ghr_linux_tar():
     http_archive(
         name = "ghr_linux_tar",
         urls = ["https://github.com/tcnksm/ghr/releases/download/v0.12.1/ghr_v0.12.1_linux_amd64.tar.gz"],
