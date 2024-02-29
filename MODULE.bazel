@@ -1,10 +1,13 @@
 module(
-    name = "vaticle_bazel_distribution"
+    name = "vaticle_bazel_distribution",
 )
 
 bazel_dep(name = "rules_pkg", version = "0.10.1")
-bazel_dep(name = "rules_kotlin", version = "1.9.0",
-    repo_name = "io_bazel_rules_kotlin")
+bazel_dep(
+    name = "rules_kotlin",
+    version = "1.9.0",
+    repo_name = "io_bazel_rules_kotlin",
+)
 bazel_dep(name = "rules_rust", version = "0.40.0")
 
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
@@ -13,8 +16,8 @@ rust.toolchain(
     versions = ["1.70.2"],
 )
 use_repo(rust, "rust_toolchains")
-register_toolchains("@rust_toolchains//:all")
 
+register_toolchains("@rust_toolchains//:all")
 
 bazel_dep(name = "rules_jvm_external", version = "6.0")
 
@@ -30,12 +33,12 @@ maven.install(
         "org.jsoup:jsoup:1.16.1",
         "org.zeroturnaround:zt-exec:1.10",
     ],
+    fetch_sources = True,
     repositories = [
         "https://repo1.maven.org/maven2",
     ],
     strict_visibility = True,
     version_conflict_policy = "pinned",
-    fetch_sources = True,
 )
 use_repo(
     maven,
@@ -43,9 +46,7 @@ use_repo(
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.5.0")
-
 bazel_dep(name = "stardoc", version = "0.6.2", repo_name = "bazel_stardoc")
-
 bazel_dep(name = "rules_python", version = "0.31.0")
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
@@ -69,4 +70,4 @@ pip.parse(
     python_version = "3.11",
     requirements_lock = "//common/uploader:requirements.txt",
 )
-use_repo(pip, "vaticle_bazel_distribution_pip", "vaticle_dependencies_tool_docs", "vaticle_bazel_distribution_uploader")
+use_repo(pip, "vaticle_bazel_distribution_pip", "vaticle_bazel_distribution_uploader", "vaticle_dependencies_tool_docs")
