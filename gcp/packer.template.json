@@ -14,7 +14,7 @@
       "image_name": "{image_name}",
       "image_family": "{image_family}",
       "image_licenses": {image_licenses},
-      "disk_size": 20,
+      "disk_size": 50,
       "disable_default_service_account": {disable_default_service_account}
     }
   ],
