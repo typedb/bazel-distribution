@@ -88,11 +88,12 @@ class CloudsmithUploader(Uploader):
         return preferred_filename if preferred_filename else os.path.basename(path)
 
     # Specific
-    def apt(self, deb_file, distro="any-distro/any-version", opts={}):
+    def apt(self, deb_file, distro="any-distro/any-version", uploaded_filename = None, opts={}):
         accepted_opts = set()
         self._validate_opts(opts, accepted_opts)
         # The uploaded filename is irrelevant. Cloudsmith sync will take care of it.
-        uploaded_id = self._upload_file(deb_file, os.path.basename(deb_file))
+        uploaded_filename = os.path.basename(deb_file) if uploaded_filename is None else uploaded_filename
+        uploaded_id = self._upload_file(deb_file, uploaded_filename)
         data = {
             "package_file": uploaded_id,
             "distribution": distro,
