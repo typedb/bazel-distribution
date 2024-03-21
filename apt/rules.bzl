@@ -196,6 +196,7 @@ def _deploy_apt_impl(ctx):
             '{snapshot}' : ctx.attr.snapshot,
             '{release}' : ctx.attr.release,
             '{package_path}' : package_path,
+            '{version}' : ctx.var.get('version', '0.0.0')
         },
         is_executable = True
     )
