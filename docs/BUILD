@@ -19,7 +19,7 @@
 # under the License.
 #
 
-exports_files(["cpp/doxyfile.template"])
+exports_files(["doxygen/doxyfile.template"])
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@vaticle_dependencies_tool_docs//:requirements.bzl", docs_requirement = "requirement")
@@ -37,7 +37,7 @@ py_binary(
 bzl_library(
     name = "lib",
     srcs = [
-        "cpp/rules.bzl",
+        "doxygen/rules.bzl",
         "python/rules.bzl",
     ],
     deps = [],
