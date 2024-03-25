@@ -98,3 +98,8 @@ GENERATE_LATEX         = NO
 HIDE_UNDOC_RELATIONS   = YES
 CLASS_GRAPH            = YES
 HAVE_DOT               = NO             ## Disables many details
+
+#---------------------------------------------------------------------------
+# Configuration options related to optional content included to the output
+#---------------------------------------------------------------------------
+EXTRACT_STATIC         = YES
