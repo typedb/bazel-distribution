@@ -221,15 +221,12 @@ nuget_pack = rule(
         ),
         "osx_native_lib": attr.string(
             doc = "Name of the native lib compiled for OSX",
-            mandatory = True,
         ),
         "linux_native_lib": attr.string(
             doc = "Name of the native lib compiled for Linux",
-            mandatory = True,
         ),
         "win_native_lib": attr.string(
             doc = "Name of the native lib compiled for Windows",
-            mandatory = True,
         ),
         "target_framework": attr.string(
             doc = "Target C# build framework",
