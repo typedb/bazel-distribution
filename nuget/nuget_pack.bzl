@@ -61,15 +61,27 @@ echo '{{"sdk": {{"version": "{version}"}} }}' >$(pwd)/global.json
 def nuget_pack_impl(ctx):
     nuspec = ctx.actions.declare_file("%s-generated.nuspec" % ctx.label.name)
 
+    native_lib_files = ""
+
+    if ctx.attr.osx_native_lib:
+        native_lib_files += """    <file src="$osx_native_lib$" target="runtimes/osx-x64/native" />
+""" % ctx.attr.osx_native_lib
+
+    if ctx.attr.linux_native_lib:
+        native_lib_files += """    <file src="$linux_native_lib$" target="runtimes/linux-x64/native" />
+""" % ctx.attr.linux_native_lib
+
+    if ctx.attr.osx_native_lib:
+        native_lib_files += """    <file src="$win_native_lib$" target="runtimes/win-x64/native" />
+""" % ctx.attr.osx_native_lib
+
     ctx.actions.expand_template(
         template = ctx.file.nuspec_template,
         output = nuspec,
         substitutions = {
             "$packageid$": ctx.attr.id,
             "$version$": ctx.attr.version,
-            "$osx_native_lib$": ctx.attr.osx_native_lib,
-            "$linux_native_lib$": ctx.attr.linux_native_lib,
-            "$win_native_lib$": ctx.attr.win_native_lib,
+            "$native_lib_files$": native_lib_files,
             "$target_framework$": ctx.attr.target_framework,
         },
     )
