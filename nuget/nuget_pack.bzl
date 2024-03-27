@@ -64,15 +64,15 @@ def nuget_pack_impl(ctx):
     native_lib_files = ""
 
     if ctx.attr.osx_native_lib:
-        native_lib_files += """    <file src="$osx_native_lib$" target="runtimes/osx-x64/native" />
+        native_lib_files += """    <file src="%s" target="runtimes/osx-x64/native" />
 """ % ctx.attr.osx_native_lib
 
     if ctx.attr.linux_native_lib:
-        native_lib_files += """    <file src="$linux_native_lib$" target="runtimes/linux-x64/native" />
+        native_lib_files += """    <file src="%s" target="runtimes/linux-x64/native" />
 """ % ctx.attr.linux_native_lib
 
     if ctx.attr.osx_native_lib:
-        native_lib_files += """    <file src="$win_native_lib$" target="runtimes/win-x64/native" />
+        native_lib_files += """    <file src="%s" target="runtimes/win-x64/native" />
 """ % ctx.attr.osx_native_lib
 
     ctx.actions.expand_template(
