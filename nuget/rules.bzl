@@ -19,6 +19,7 @@
 
 # This file is based on the original implementation of https://github.com/SeleniumHQ/selenium/.
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_dotnet//dotnet/private:common.bzl", "is_debug")
 load("@rules_dotnet//dotnet/private:providers.bzl", "DotnetAssemblyRuntimeInfo")
 
@@ -63,17 +64,17 @@ def nuget_pack_impl(ctx):
 
     native_lib_files = ""
 
-    if ctx.attr.osx_native_lib:
+    if ctx.attr.mac_native_lib:
         native_lib_files += """    <file src="%s" target="runtimes/osx-x64/native" />
-""" % ctx.attr.osx_native_lib
+""" % ctx.attr.mac_native_lib
 
     if ctx.attr.linux_native_lib:
         native_lib_files += """    <file src="%s" target="runtimes/linux-x64/native" />
 """ % ctx.attr.linux_native_lib
 
-    if ctx.attr.osx_native_lib:
+    if ctx.attr.win_native_lib:
         native_lib_files += """    <file src="%s" target="runtimes/win-x64/native" />
-""" % ctx.attr.osx_native_lib
+""" % ctx.attr.win_native_lib
 
     ctx.actions.expand_template(
         template = ctx.file.nuspec_template,
@@ -195,8 +196,10 @@ def nuget_pack_impl(ctx):
 
     return [
         DefaultInfo(
-            files = depset([pkg, symbols_pkg]),
-            runfiles = ctx.runfiles(files = [pkg, symbols_pkg]),
+#            files = depset([pkg, symbols_pkg]),
+            files = depset([pkg]),
+            runfiles = ctx.runfiles(files = [pkg]),
+#            runfiles = ctx.runfiles(files = [pkg, symbols_pkg]),
         ),
     ]
 
@@ -219,8 +222,8 @@ nuget_pack = rule(
             allow_empty = True,
             allow_files = True,
         ),
-        "osx_native_lib": attr.string(
-            doc = "Name of the native lib compiled for OSX",
+        "mac_native_lib": attr.string(
+            doc = "Name of the native lib compiled for MacOS",
         ),
         "linux_native_lib": attr.string(
             doc = "Name of the native lib compiled for Linux",
@@ -247,4 +250,62 @@ nuget_pack = rule(
         ),
     },
     toolchains = ["@rules_dotnet//dotnet:toolchain_type"],
+)
+
+def _nuget_push_impl(ctx):
+    args = [
+        "nuget",
+        "push",
+    ]
+
+    apikey = "???"
+    package_to_publish = ctx.attr.src.files.to_list()[0].path
+
+    output_file = ctx.actions.declare_file("done.txt")
+    ctx.actions.run_shell(
+                inputs = [],
+                outputs = [output_file],
+                command = "touch {}".format(output_file.path)
+            )
+
+    args.append(ctx.expand_location(ctx.attr.src.files.to_list()[0].path))
+    args.append("-s")
+    args.append(ctx.attr.package_repository_url)
+    args.append("-k")
+    args.append(apikey)
+
+    csharp_toolchain = ctx.toolchains["@rules_dotnet//dotnet:toolchain_type"]
+    tools = depset(csharp_toolchain.dotnetinfo.runtime_files)
+    dotnet_cli_home = ctx.actions.declare_directory("dotnet-cli-home")
+    env = {
+        "DOTNET_CLI_HOME": dotnet_cli_home.path,
+    }
+
+    ctx.actions.run(
+        executable = csharp_toolchain.dotnetinfo.runtime_files[0].path,
+        progress_message = "Publishing {}".format(package_to_publish),
+        arguments = args,
+        inputs = ctx.attr.src.files.to_list(),
+        outputs = [dotnet_cli_home],
+        tools = tools,
+        env = env,
+    )
+
+    return DefaultInfo(files = depset([
+        output_file,
+    ]))
+
+nuget_push = rule(
+    implementation = _nuget_push_impl,
+    attrs = {
+        "src": attr.label(
+#            allow_single_file = True,
+        ),
+        "package_repository_url": attr.string(
+            mandatory = True,
+        )
+    },
+    toolchains = [
+        "@rules_dotnet//dotnet:toolchain_type",
+    ],
 )
