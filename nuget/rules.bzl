@@ -186,20 +186,20 @@ def nuget_pack_impl(ctx):
             dotnet,
             packages,
         ],
-        tools = [
-            ctx.executable._zip,
-            dotnet,
-        ] + toolchain.default.files.to_list() + toolchain.runtime.default_runfiles.files.to_list() + toolchain.runtime.data_runfiles.files.to_list(),
+        tools = [ctx.executable._zip, dotnet]
+            + toolchain.default.files.to_list()
+            + toolchain.runtime.default_runfiles.files.to_list()
+            + toolchain.runtime.data_runfiles.files.to_list(),
         command = cmd,
         mnemonic = "CreateNupkg",
     )
 
     return [
         DefaultInfo(
-#            files = depset([pkg, symbols_pkg]),
-            files = depset([pkg]),
-            runfiles = ctx.runfiles(files = [pkg]),
-#            runfiles = ctx.runfiles(files = [pkg, symbols_pkg]),
+            files = depset([pkg, symbols_pkg]),
+#            files = depset([pkg]),
+#            runfiles = ctx.runfiles(files = [pkg]),
+            runfiles = ctx.runfiles(files = [pkg, symbols_pkg]),
         ),
     ]
 
@@ -253,57 +253,63 @@ nuget_pack = rule(
 )
 
 def _nuget_push_impl(ctx):
-    args = [
-        "nuget",
-        "push",
-    ]
+    apikey = ""
 
-    apikey = "???"
-    package_to_publish = ctx.attr.src.files.to_list()[0].path
+    all_srcs = ctx.attr.src.files.to_list()
 
-    output_file = ctx.actions.declare_file("done.txt")
-    ctx.actions.run_shell(
-                inputs = [],
-                outputs = [output_file],
-                command = "touch {}".format(output_file.path)
-            )
-
-    args.append(ctx.expand_location(ctx.attr.src.files.to_list()[0].path))
-    args.append("-s")
-    args.append(ctx.attr.package_repository_url)
-    args.append("-k")
-    args.append(apikey)
+    package_files = []
+    for package_file in ctx.attr.src.files.to_list():
+        if package_file.extension == "snupkg":
+            continue # .snupkg are automatically included by the nuget push command if they are in the same dir
+        package_files.append(package_file)
 
     csharp_toolchain = ctx.toolchains["@rules_dotnet//dotnet:toolchain_type"]
-    tools = depset(csharp_toolchain.dotnetinfo.runtime_files)
-    dotnet_cli_home = ctx.actions.declare_directory("dotnet-cli-home")
-    env = {
-        "DOTNET_CLI_HOME": dotnet_cli_home.path,
-    }
+    dotnet_runtime = csharp_toolchain.dotnetinfo.runtime_files[0]
 
-    ctx.actions.run(
-        executable = csharp_toolchain.dotnetinfo.runtime_files[0].path,
-        progress_message = "Publishing {}".format(package_to_publish),
-        arguments = args,
-        inputs = ctx.attr.src.files.to_list(),
-        outputs = [dotnet_cli_home],
-        tools = tools,
-        env = env,
+    package_file_paths = []
+    for package_file in package_files:
+        package_file_paths.append(ctx.expand_location(package_file.short_path))
+
+    package_file = package_files[0]
+
+    ctx.actions.expand_template(
+        template = ctx.file._push_script_template,
+        output = ctx.outputs.push_script,
+        substitutions = {
+            '{dotnet_runtime_path}': dotnet_runtime.path,
+#            '{nupkg_path}': ctx.expand_location(package_file.short_path),
+            '{nupkg_path}': " ".join(package_file_paths),
+            '{api_key}': apikey,
+            '{target_repo_url}': ctx.attr.repository_url,
+        },
+        is_executable = True,
     )
 
-    return DefaultInfo(files = depset([
-        output_file,
-    ]))
+    return DefaultInfo(
+        executable = ctx.outputs.push_script,
+        runfiles = ctx.runfiles(files = all_srcs + [dotnet_runtime])
+    )
+
 
 nuget_push = rule(
     implementation = _nuget_push_impl,
+    executable = True,
     attrs = {
         "src": attr.label(
-#            allow_single_file = True,
+            allow_files = [".nupkg", ".snupkg"],
+            doc = "Nuget packages (and their debug symbol packages) to push",
         ),
-        "package_repository_url": attr.string(
+        "repository_url": attr.string(
             mandatory = True,
-        )
+            doc = "URL of the target repository",
+        ),
+        "_push_script_template": attr.label(
+            allow_single_file = True,
+            default = "//nuget/templates:push.py",
+        ),
+    },
+    outputs = {
+        "push_script": "push.py"
     },
     toolchains = [
         "@rules_dotnet//dotnet:toolchain_type",
