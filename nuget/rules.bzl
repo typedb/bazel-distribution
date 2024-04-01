@@ -62,25 +62,50 @@ echo '{{"sdk": {{"version": "{version}"}} }}' >$(pwd)/global.json
 def nuget_pack_impl(ctx):
     nuspec = ctx.actions.declare_file("%s-generated.nuspec" % ctx.label.name)
 
+    current_arch = ""
+
     native_lib_files = ""
 
+    native_lib = None
+
     if ctx.attr.mac_native_lib:
-        native_lib_files += """    <file src="%s" target="runtimes/osx-x64/native" />
-""" % ctx.attr.mac_native_lib
+        native_lib = ctx.attr.mac_native_lib
+        current_arch = ".osx-x64"
 
     if ctx.attr.linux_native_lib:
-        native_lib_files += """    <file src="%s" target="runtimes/linux-x64/native" />
-""" % ctx.attr.linux_native_lib
+        native_lib = ctx.attr.linux_native_lib
+        current_arch = ".linux-x64"
 
     if ctx.attr.win_native_lib:
-        native_lib_files += """    <file src="%s" target="runtimes/win-x64/native" />
-""" % ctx.attr.win_native_lib
+        native_lib = ctx.attr.win_native_lib
+        current_arch = ".win-x64"
+
+    package_name = "%s%s"  % (ctx.attr.id, current_arch)
+
+    if native_lib:
+        target_dir = "runtimes/{}/native"
+        if current_arch == ".osx-arm64":
+            target_dir = target_dir.format("osx-arm64")
+        elif current_arch == ".osx-x64":
+            target_dir = target_dir.format("osx-x64")
+        elif current_arch == ".linux-arm64":
+            target_dir = target_dir.format("linux-arm64")
+        elif current_arch == ".linux-x64":
+            target_dir = target_dir.format("linux-x64")
+        elif current_arch == ".win-arm64":
+            target_dir = target_dir.format("win-arm64")
+        elif current_arch == ".win-x64":
+            target_dir = target_dir.format("win-x64")
+
+        native_ref_template = """    <file src="%s" target="%s" />
+"""
+        native_lib_files += native_ref_template % (native_lib, target_dir)
 
     ctx.actions.expand_template(
         template = ctx.file.nuspec_template,
         output = nuspec,
         substitutions = {
-            "$packageid$": ctx.attr.id,
+            "$packageid$": package_name,
             "$version$": ctx.attr.version,
             "$native_lib_files$": native_lib_files,
             "$target_framework$": ctx.attr.target_framework,
@@ -109,7 +134,7 @@ def nuget_pack_impl(ctx):
         <RootNamespace>%s</RootNamespace>
     </PropertyGroup>
 </Project>
-""" % (ctx.attr.target_framework, ctx.attr.id, ctx.attr.id)
+""" % (ctx.attr.target_framework, package_name, ctx.attr.id)
 
     csproj_file = ctx.actions.declare_file("%s-generated.csproj" % ctx.label.name)
     ctx.actions.write(csproj_file, csproj_template)
@@ -138,7 +163,7 @@ def nuget_pack_impl(ctx):
     # Now we have everything, let's build our package
     toolchain = ctx.toolchains["@rules_dotnet//dotnet:toolchain_type"]
 
-    nupkg_name_stem = "%s.%s" % (ctx.attr.id, ctx.attr.version)
+    nupkg_name_stem = "%s.%s" % (package_name, ctx.attr.version)
 
     dotnet = toolchain.runtime.files_to_run.executable
     pkg = ctx.actions.declare_file("%s.nupkg" % nupkg_name_stem)
@@ -168,9 +193,9 @@ def nuget_pack_impl(ctx):
           "cd %s-working-dir && " % ctx.label.name + \
           "echo '<configuration><packageSources><clear /><add key=\"local\" value=\"%%CWD%%/%s\" /></packageSources></configuration>' >nuget.config && " % packages.path + \
           "$DOTNET restore --no-dependencies && " + \
-          "$DOTNET pack --no-build --include-symbols -p:NuspecFile=project.nuspec --include-symbols -p:SymbolPackageFormat=snupkg -p:Configuration=%s -p:PackageId=%s -p:Version=%s -p:PackageVersion=%s -p:NuspecProperties=\"version=%s\" && " % (build_flavor, ctx.attr.id, ctx.attr.version, ctx.attr.version, ctx.attr.version) + \
-          "cp bin/%s/%s.%s.nupkg ../%s && " % (build_flavor, ctx.attr.id, ctx.attr.version, pkg.path) + \
-          "cp bin/%s/%s.%s.snupkg ../%s" % (build_flavor, ctx.attr.id, ctx.attr.version, symbols_pkg.path)
+          "$DOTNET pack --no-build --include-symbols -p:NuspecFile=project.nuspec --include-symbols -p:SymbolPackageFormat=snupkg -p:Configuration=%s -p:PackageId=%s -p:Version=%s -p:PackageVersion=%s -p:NuspecProperties=\"version=%s\" && " % (build_flavor, package_name, ctx.attr.version, ctx.attr.version, ctx.attr.version) + \
+          "cp bin/%s/%s.%s.nupkg ../%s && " % (build_flavor, package_name, ctx.attr.version, pkg.path) + \
+          "cp bin/%s/%s.%s.snupkg ../%s" % (build_flavor, package_name, ctx.attr.version, symbols_pkg.path)
 
     cmd = ctx.expand_location(
         cmd,
@@ -272,9 +297,11 @@ def _nuget_push_impl(ctx):
 
     package_file = package_files[0]
 
+    push_file = ctx.actions.declare_file("%s-push.py" % ctx.label.name)
+
     ctx.actions.expand_template(
         template = ctx.file._push_script_template,
-        output = ctx.outputs.push_script,
+        output = push_file,
         substitutions = {
             '{dotnet_runtime_path}': dotnet_runtime.path,
 #            '{nupkg_path}': ctx.expand_location(package_file.short_path),
@@ -286,7 +313,7 @@ def _nuget_push_impl(ctx):
     )
 
     return DefaultInfo(
-        executable = ctx.outputs.push_script,
+        executable = push_file,
         runfiles = ctx.runfiles(files = all_srcs + [dotnet_runtime])
     )
 
@@ -308,9 +335,9 @@ nuget_push = rule(
             default = "//nuget/templates:push.py",
         ),
     },
-    outputs = {
-        "push_script": "push.py"
-    },
+#    outputs = {
+#        "push_script": "push.py"
+#    },
     toolchains = [
         "@rules_dotnet//dotnet:toolchain_type",
     ],
