@@ -222,8 +222,6 @@ def nuget_pack_impl(ctx):
     return [
         DefaultInfo(
             files = depset([pkg, symbols_pkg]),
-#            files = depset([pkg]),
-#            runfiles = ctx.runfiles(files = [pkg]),
             runfiles = ctx.runfiles(files = [pkg, symbols_pkg]),
         ),
     ]
@@ -278,8 +276,6 @@ nuget_pack = rule(
 )
 
 def _nuget_push_impl(ctx):
-    apikey = ""
-
     all_srcs = ctx.attr.src.files.to_list()
 
     package_files = []
@@ -295,8 +291,6 @@ def _nuget_push_impl(ctx):
     for package_file in package_files:
         package_file_paths.append(ctx.expand_location(package_file.short_path))
 
-    package_file = package_files[0]
-
     push_file = ctx.actions.declare_file("%s-push.py" % ctx.label.name)
 
     ctx.actions.expand_template(
@@ -304,10 +298,9 @@ def _nuget_push_impl(ctx):
         output = push_file,
         substitutions = {
             '{dotnet_runtime_path}': dotnet_runtime.path,
-#            '{nupkg_path}': ctx.expand_location(package_file.short_path),
-            '{nupkg_path}': " ".join(package_file_paths),
-            '{api_key}': apikey,
-            '{target_repo_url}': ctx.attr.repository_url,
+            '{nupkg_paths}': " ".join(package_file_paths),
+            '{snapshot_url}': ctx.attr.snapshot_url,
+            '{release_url}': ctx.attr.release_url,
         },
         is_executable = True,
     )
@@ -326,18 +319,19 @@ nuget_push = rule(
             allow_files = [".nupkg", ".snupkg"],
             doc = "Nuget packages (and their debug symbol packages) to push",
         ),
-        "repository_url": attr.string(
+        "snapshot_url" : attr.string(
             mandatory = True,
-            doc = "URL of the target repository",
+            doc = "URL of the target snapshot repository",
+        ),
+        "release_url" : attr.string(
+            mandatory = True,
+            doc = "URL of the target release repository",
         ),
         "_push_script_template": attr.label(
             allow_single_file = True,
             default = "//nuget/templates:push.py",
         ),
     },
-#    outputs = {
-#        "push_script": "push.py"
-#    },
     toolchains = [
         "@rules_dotnet//dotnet:toolchain_type",
     ],

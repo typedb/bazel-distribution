@@ -19,27 +19,30 @@
 # under the License.
 #
 
-from __future__ import print_function
-import hashlib
-import json
-import os
-import shutil
-import subprocess as sp
+import subprocess
 import sys
-import tempfile
-import zipfile
+import os
+
+def unpack_args(_, arg1):
+    return arg1
+
+if len(sys.argv) < 2:
+    raise ValueError("Should pass <snapshot|release> as arguments")
+
+repo_type = unpack_args(*sys.argv)
+
+nuget_repositories = {
+    "snapshot": "{snapshot_url}",
+    "release": "{release_url}",
+}
+target_repo_url = nuget_repositories[repo_type]
+
+api_key = os.getenv('DEPLOY_NUGET_API_KEY')
+
+if not api_key:
+    raise ValueError('Error: API key should be passed via $DEPLOY_NUGET_API_KEY env variable')
 
 print("Executing nuget push for {nupkg_path}...")
-
-# sp.check_call([
-#     '{dotnet_runtime_path}',
-#     'nuget',
-#     'push',
-#     '{nupkg_path}',
-#     '-k',
-#     '{api_key}',
-#     '-s',
-#     '{target_repo_url}'])
-sp.check_call('{dotnet_runtime_path} nuget push {nupkg_path} -k {api_key} -s {target_repo_url}', shell=True)
+subprocess.check_call(f"{dotnet_runtime_path} nuget push {nupkg_paths} -k {api_key} -s {target_repo_url}", shell=True)
 
 print("Done executing nuget push!")
