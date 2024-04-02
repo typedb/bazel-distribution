@@ -42,7 +42,7 @@ api_key = os.getenv('DEPLOY_NUGET_API_KEY')
 if not api_key:
     raise ValueError('Error: API key should be passed via $DEPLOY_NUGET_API_KEY env variable')
 
-print("Executing nuget push for {nupkg_path}...")
+print(f"Executing nuget push for {nupkg_paths}...")
 subprocess.check_call(f"{dotnet_runtime_path} nuget push {nupkg_paths} -k {api_key} -s {target_repo_url}", shell=True)
 
 print("Done executing nuget push!")
