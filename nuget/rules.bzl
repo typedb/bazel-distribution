@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,7 +14,6 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
 
 # This file is based on the original implementation of https://github.com/SeleniumHQ/selenium/.
 
@@ -65,7 +63,16 @@ def _check_platform(platform):
         fail("Platform must be set to any of {}. Got {} instead!".format(allowed_values, platform))
 
 
-def nuget_pack_impl(ctx):
+def _parse_version(ctx):
+    version = ctx.attr.version
+    if not version:
+        version = ctx.var.get("version", "0.0.0")
+
+    return version
+
+
+def _nuget_pack_impl(ctx):
+    version = _parse_version(ctx)
     nuspec = ctx.actions.declare_file("{}-generated.nuspec".format(ctx.label.name))
 
     # A mapping of files to the paths in which we expect to find them in the package
@@ -93,7 +100,7 @@ def nuget_pack_impl(ctx):
         output = nuspec,
         substitutions = {
             "$packageid$": package_name,
-            "$version$": ctx.attr.version,
+            "$version$": version,
             "$native_lib_declrs$": native_lib_declrs,
             "$target_framework$": ctx.attr.target_framework,
         },
@@ -147,7 +154,7 @@ def nuget_pack_impl(ctx):
     # Now we have everything, let's build our package
     toolchain = ctx.toolchains["@rules_dotnet//dotnet:toolchain_type"]
 
-    nupkg_name_stem = "{}.{}".format(package_name, ctx.attr.version)
+    nupkg_name_stem = "{}.{}".format(package_name, version)
 
     dotnet = toolchain.runtime.files_to_run.executable
     pkg = ctx.actions.declare_file("{}.nupkg".format(nupkg_name_stem))
@@ -177,9 +184,9 @@ def nuget_pack_impl(ctx):
           "cd {}-working-dir && ".format(ctx.label.name) + \
           "echo '<configuration><packageSources><clear /><add key=\"local\" value=\"%%CWD%%/{}\" /></packageSources></configuration>' >nuget.config && ".format(packages.path) + \
           "$DOTNET restore --no-dependencies && " + \
-          "$DOTNET pack --no-build --include-symbols -p:NuspecFile=project.nuspec --include-symbols -p:SymbolPackageFormat=snupkg -p:Configuration={} -p:PackageId={} -p:Version={} -p:PackageVersion={} -p:NuspecProperties=\"version={}\" && ".format(build_flavor, package_name, ctx.attr.version, ctx.attr.version, ctx.attr.version) + \
-          "cp bin/{}/{}.{}.nupkg ../{} && ".format(build_flavor, package_name, ctx.attr.version, pkg.path) + \
-          "cp bin/{}/{}.{}.snupkg ../{}".format(build_flavor, package_name, ctx.attr.version, symbols_pkg.path)
+          "$DOTNET pack --no-build --include-symbols -p:NuspecFile=project.nuspec --include-symbols -p:SymbolPackageFormat=snupkg -p:Configuration={} -p:PackageId={} -p:Version={} -p:PackageVersion={} -p:NuspecProperties=\"version={}\" && ".format(build_flavor, package_name, version, version, version) + \
+          "cp bin/{}/{}.{}.nupkg ../{} && ".format(build_flavor, package_name, version, pkg.path) + \
+          "cp bin/{}/{}.{}.snupkg ../{}".format(build_flavor, package_name, version, symbols_pkg.path)
 
     cmd = ctx.expand_location(
         cmd,
@@ -211,14 +218,18 @@ def nuget_pack_impl(ctx):
     ]
 
 nuget_pack = rule(
-    nuget_pack_impl,
+    _nuget_pack_impl,
     attrs = {
         "id": attr.string(
             doc = "Nuget ID of the package",
             mandatory = True,
         ),
         "version": attr.string(
-            mandatory = True,
+            doc = """
+            Target package's version.
+            Alternatively, pass --define version=VERSION to Bazel invocation.
+            Not specifying version at all defaults to '0.0.0'
+            """,
         ),
         "libs": attr.label_keyed_string_dict(
             doc = "The .Net libraries that are being published",
