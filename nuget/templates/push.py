@@ -62,9 +62,9 @@ def files_in(path_to_parent):
         if os.path.isdir(subpath):
             for file in files_in(subpath):
                 yield file
-        if 'dotnet' in os.path.join(path_to_parent,fname): yield os.path.join(path_to_parent,fname)
+        yield os.path.join(path_to_parent,fname)
 
-print("Subdirs and files with dotnet:")
+print("Subdirs and files of the current dir:")
 for file in set(files_in(path)):
     print(file)
 
