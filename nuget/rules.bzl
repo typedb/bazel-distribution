@@ -285,7 +285,7 @@ def _nuget_push_impl(ctx):
     for package_file in package_files:
         package_file_paths.append(ctx.expand_location(package_file.short_path))
 
-    push_file = ctx.actions.declare_file("{}-push.py".format(ctx.label.name))
+    push_file = ctx.actions.declare_file(ctx.attr.script_file_name)
 
     ctx.actions.expand_template(
         template = ctx.file._push_script_template,
@@ -305,7 +305,7 @@ def _nuget_push_impl(ctx):
     )
 
 
-nuget_push = rule(
+_nuget_push = rule(
     implementation = _nuget_push_impl,
     executable = True,
     attrs = {
@@ -321,6 +321,10 @@ nuget_push = rule(
             mandatory = True,
             doc = "URL of the target release repository",
         ),
+        "script_file_name": attr.string(
+            mandatory = True,
+            doc = "Name of instantiated deployment script"
+        ),
         "_push_script_template": attr.label(
             allow_single_file = True,
             default = "//nuget/templates:push.py",
@@ -330,3 +334,23 @@ nuget_push = rule(
         "@rules_dotnet//dotnet:toolchain_type",
     ],
 )
+
+
+def nuget_push(name, src, snapshot_url, release_url, **kwargs):
+    push_script_name = "{}_script".format(name)
+    push_script_file_name = "{}-push.py".format(push_script_name)
+
+    _nuget_push(
+        name = push_script_name,
+        script_file_name = push_script_file_name,
+        src = src,
+        snapshot_url = snapshot_url,
+        release_url = release_url,
+        **kwargs
+    )
+
+    native.py_binary(
+        name = name,
+        srcs = [push_script_name],
+        main = push_script_file_name
+    )
