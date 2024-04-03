@@ -16,9 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import tempfile
+import os
 import subprocess
 import sys
-import os
 
 def unpack_args(_, arg1):
     return arg1
@@ -39,7 +40,21 @@ api_key = os.getenv('DEPLOY_NUGET_API_KEY')
 if not api_key:
     raise ValueError('Error: API key should be passed via $DEPLOY_NUGET_API_KEY env variable')
 
+args = [
+    "{dotnet_runtime_path}",
+    "nuget",
+    "push",
+]
+args += "{nupkg_paths}".split()
+args += [
+    "-k",
+    f"{api_key}",
+    "-s",
+    f"{target_repo_url}",
+]
+
 print(f"Executing nuget push for {nupkg_paths}...")
-subprocess.check_call(f"{dotnet_runtime_path} nuget push {nupkg_paths} -k {api_key} -s {target_repo_url}", shell=True)
+
+subprocess.check_call(args)
 
 print("Done executing nuget push!")
