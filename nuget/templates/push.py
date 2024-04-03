@@ -16,7 +16,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import tempfile
 import os
 import subprocess
 import sys
@@ -54,6 +53,20 @@ args += [
 ]
 
 print(f"Executing nuget push for {nupkg_paths}...")
+print(f"Runtime information:\n Dotnet path: {dotnet_runtime_path}")
+path = os.path.dirname(os.path.realpath(__file__))
+print(f"Current path: {path}")
+def files_in(path_to_parent):
+    for fname in os.listdir(path_to_parent):
+        subpath = os.path.join(path_to_parent,fname)
+        if os.path.isdir(subpath):
+            for file in files_in(subpath):
+                yield file
+        if 'dotnet' in os.path.join(path_to_parent,fname): yield os.path.join(path_to_parent,fname)
+
+print("Subdirs and files with dotnet:")
+for file in set(files_in(path)):
+    print(file)
 
 subprocess.check_call(args)
 

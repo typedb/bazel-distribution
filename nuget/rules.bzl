@@ -299,9 +299,12 @@ def _nuget_push_impl(ctx):
         is_executable = True,
     )
 
+    print("DOTNETPATH: {}".format(ctx.expand_location(dotnet_runtime.path)))
+    print("PUSHFILE: {}".format(push_file.path))
+
     return DefaultInfo(
         executable = push_file,
-        runfiles = ctx.runfiles(files = all_srcs + [dotnet_runtime])
+        runfiles = ctx.runfiles(files = all_srcs + [dotnet_runtime]),
     )
 
 
