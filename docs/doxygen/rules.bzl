@@ -26,7 +26,7 @@ def _doxygen_docs_impl(ctx):
         files.extend(target.files.to_list())
 
     replacements = {
-        "PROJECT_NAME": ctx.attr.project_name,
+        "PROJECT_NAME": '"' + ctx.attr.project_name + '"',
         "PROJECT_NUMBER" : ctx.attr.version,
         "PROJECT_BRIEF" : ctx.attr.desc,
         "OUTPUT_DIRECTORY" : output_directory.path,
@@ -90,7 +90,7 @@ doxygen_docs = rule(
         ),
         "_doxyfile_template" : attr.label(
              allow_single_file = True,
-             default = "//docs:cpp/doxyfile.template"
+             default = "//docs:doxygen/doxyfile.template"
         ),
         "_output_directory" : attr.string(
              doc = "The output directory for the doxygen docs",
@@ -98,7 +98,7 @@ doxygen_docs = rule(
         )
     },
     doc = """
-        Creates HTML documentation for C++ projects using Doxygen.
+        Creates HTML documentation for C++ and C# projects using Doxygen.
         This rule is not hermetic, and requires doxygen to be installed on the host.
         """
 )

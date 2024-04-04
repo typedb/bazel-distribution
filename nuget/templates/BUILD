@@ -1,6 +1,3 @@
-#
-# Copyright (C) 2022 Vaticle
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,29 +14,5 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
 
-exports_files(["doxygen/doxyfile.template"])
-
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@vaticle_dependencies_tool_docs//:requirements.bzl", docs_requirement = "requirement")
-
-py_binary(
-    name = "sphinx_runner",
-    srcs = [
-        "python/sphinx_html_builder.py",
-    ],
-    main = "sphinx_html_builder.py",
-    deps = [docs_requirement("sphinx")],
-    visibility = ["//visibility:public"]
-)
-
-bzl_library(
-    name = "lib",
-    srcs = [
-        "doxygen/rules.bzl",
-        "python/rules.bzl",
-    ],
-    deps = [],
-    visibility = ["//visibility:public"],
-)
+exports_files(["push.py"])
