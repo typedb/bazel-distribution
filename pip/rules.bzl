@@ -380,7 +380,17 @@ _deploy_pip = rule(
         """
 )
 
-def deploy_pip(name, target, snapshot, release, suffix = "", distribution_tag = "py3-none-any"):
+
+def deploy_pip(name, target, snapshot = "", release = "", pypirc_repository = "", suffix = "", distribution_tag = "py3-none-any"):
+    if (snapshot and release and pypirc_repository):
+        fail("Only one 'snapshot and release' or 'pypirc_repository' may be set")
+    if (not snapshot and not release and not pypirc_repository):
+        fail("At least one 'snapshot and release' or 'pypirc_repository' must be set")
+    if (snapshot and not release):
+        fail("'release' repository param must be set if 'snapshot' repository is configured")
+    if (not snapshot and release):
+        fail("'snapshot' repository param must be set if 'release' repository is configured")
+
     deploy_script_target_name = name + "__deploy"
     deploy_script_name = deploy_script_target_name + "-deploy.py"
     _deploy_pip(
@@ -389,6 +399,7 @@ def deploy_pip(name, target, snapshot, release, suffix = "", distribution_tag = 
         target = target,
         snapshot = snapshot,
         release = release,
+        pypirc_repository = pypirc_repository,
         suffix = suffix,
         distribution_tag = distribution_tag,
     )
