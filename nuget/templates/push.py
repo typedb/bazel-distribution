@@ -65,7 +65,7 @@ def files_in(path_to_parent):
         yield os.path.join(path_to_parent,fname)
 
 print("Subdirs and files of the current dir:")
-for file in set(files_in(os.path.join(path, "../../"))):
+for file in set(files_in(path)):
     print(file)
 
 subprocess.check_call(args)

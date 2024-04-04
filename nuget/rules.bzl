@@ -304,7 +304,7 @@ def _nuget_push_impl(ctx):
 
     return DefaultInfo(
         executable = push_file,
-        runfiles = ctx.runfiles(files = all_srcs + [dotnet_runtime]),
+        runfiles = ctx.runfiles(files = all_srcs + toolchain.dotnetinfo.runtime_files),
     )
 
 
