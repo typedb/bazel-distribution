@@ -17,7 +17,6 @@
 
 # This file is based on the original implementation of https://github.com/SeleniumHQ/selenium/.
 
-load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_dotnet//dotnet/private:common.bzl", "is_debug")
 load("@rules_dotnet//dotnet/private:providers.bzl", "DotnetAssemblyRuntimeInfo")
 
@@ -29,7 +28,7 @@ load("@rules_dotnet//dotnet/private:providers.bzl", "DotnetAssemblyRuntimeInfo")
 # The `MSBuildEnableWorkloadResolver` is disabled to prevent warnings
 # about a missing Microsoft.NET.SDK.WorkloadAutoImportPropsLocator
 
-def dotnet_preamble(toolchain):
+def _dotnet_preamble(toolchain):
     return """
 export DOTNET="$(pwd)/{dotnet}"
 export DOTNET_CLI_HOME="$(dirname $DOTNET)"
@@ -177,7 +176,7 @@ def _nuget_pack_impl(ctx):
         mnemonic = "LayoutNugetPackages",
     )
 
-    cmd = dotnet_preamble(toolchain) + \
+    cmd = _dotnet_preamble(toolchain) + \
           "mkdir {}-working-dir && ".format(ctx.label.name) + \
           "echo $(pwd) && " + \
           "$(location @bazel_tools//tools/zip:zipper) x {} -d {}-working-dir && ".format(zip_file.path, ctx.label.name) + \
@@ -334,7 +333,6 @@ _nuget_push = rule(
         "@rules_dotnet//dotnet:toolchain_type",
     ],
 )
-
 
 def nuget_push(name, src, snapshot_url, release_url, **kwargs):
     push_script_name = "{}_script".format(name)
