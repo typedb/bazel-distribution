@@ -22,14 +22,14 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 def deps():
     http_archive(
         name = "packer_osx",
-        url = "https://releases.hashicorp.com/packer/1.7.4/packer_1.7.4_darwin_amd64.zip",
-        sha256 = "f3faf9dce0cebdfc7abfcf70511c6230e0c0a5c499ca3478def81549ded91b20",
-        build_file_content = 'exports_files(["packer"])'
+        build_file_content = 'exports_files(["packer"])',
+        url = "https://releases.hashicorp.com/packer/1.8.3/packer_1.8.3_darwin_amd64.zip",
+        sha256 = "ef1ceaaafcdada65bdbb45793ad6eedbc7c368d415864776b9d3fa26fb30b896"
     )
 
     http_archive(
         name = "packer_linux",
-        url = "https://releases.hashicorp.com/packer/1.7.4/packer_1.7.4_linux_amd64.zip",
-        sha256 = "3660064a56a174a6da5c37ee6b36107098c6b37e35cc84feb2f7f7519081b1b0",
-        build_file_content = 'exports_files(["packer"])'
+        build_file_content = 'exports_files(["packer"])',
+        url = "https://releases.hashicorp.com/packer/1.8.3/packer_1.8.3_linux_amd64.zip",
+        sha256 = "0587f7815ed79589cd9c2b754c82115731c8d0b8fd3b746fe40055d969facba5"
     )
