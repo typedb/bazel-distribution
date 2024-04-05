@@ -101,6 +101,3 @@ load("//common/uploader:deps.bzl", uploader_deps = "deps")
 uploader_deps()
 load("@vaticle_bazel_distribution_uploader//:requirements.bzl", install_uploader_deps = "install_deps")
 install_uploader_deps()
-
-load("//packer:deps.bzl", packer_deps = "deps")
-packer_deps()
