@@ -20,19 +20,22 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 
 def _deploy_artifact_impl(ctx):
-    _deploy_script = ctx.actions.declare_file("{}_deploy.py".format(ctx.attr.name))
+    _deploy_script = ctx.actions.declare_file(ctx.attr.deploy_script_name)
 
-    version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
-    version = ctx.var.get('version', '0.0.0')
+    if ctx.attr.version_file:
+        version_file = ctx.file.version_file
+    else:
+        version_file = ctx.actions.declare_file(ctx.attr.name + "__do_not_reference.version")
+        version = ctx.var.get('version', '0.0.0')
 
-    ctx.actions.run_shell(
-        inputs = [],
-        outputs = [version_file],
-        command = "echo {} > {}".format(version, version_file.path),
-    )
-    
+        ctx.actions.run_shell(
+            inputs = [],
+            outputs = [version_file],
+            command = "echo {} > {}".format(version, version_file.path),
+        )
+
     ctx.actions.expand_template(
-        template = ctx.file._deploy_script,
+        template = ctx.file._deploy_script_template,
         output = _deploy_script,
         substitutions = {
             "{version_file}": version_file.short_path,
@@ -51,17 +54,17 @@ def _deploy_artifact_impl(ctx):
     symlinks = {
         'VERSION': version_file,
     }
-
+    deployment_lib_files = ctx.attr._deployment_wrapper_lib[DefaultInfo].default_runfiles.files.to_list()
     return DefaultInfo(
         executable = _deploy_script,
         runfiles = ctx.runfiles(
-            files = files,
+            files = files + deployment_lib_files,
             symlinks = symlinks,
         ),
     )
 
 
-deploy_artifact = rule(
+_deploy_artifact = rule(
     attrs = {
         "target": attr.label(
             allow_single_file = True,
@@ -84,9 +87,16 @@ deploy_artifact = rule(
             doc = "The artifact filename, automatic from the target file if not specified",
             default = '',
         ),
-        "_deploy_script": attr.label(
+        "_deployment_wrapper_lib": attr.label(
+            default = "//common/uploader:uploader",
+        ),
+        "_deploy_script_template": attr.label(
             allow_single_file = True,
             default = "//artifact/templates:deploy.py",
+        ),
+        "deploy_script_name": attr.string(
+            mandatory = True,
+            doc = 'Name of instantiated deployment script'
         ),
         "release": attr.string(
             mandatory = True,
@@ -101,6 +111,26 @@ deploy_artifact = rule(
     implementation = _deploy_artifact_impl,
     doc = "Deploy archive target into a raw repo",
 )
+
+def deploy_artifact(name, target, snapshot, release, **kwargs):
+    deploy_script_target_name = name + "__deploy"
+    deploy_script_name = deploy_script_target_name + "-deploy.py"
+
+    _deploy_artifact(
+        name = deploy_script_target_name,
+        deploy_script_name = deploy_script_name,
+        target = target,
+        snapshot = snapshot,
+        release = release,
+        **kwargs
+    )
+
+    native.py_binary(
+        name = name,
+        srcs = [deploy_script_target_name],
+        main = deploy_script_name,
+    )
+
 
 
 def artifact_file(name,
@@ -141,7 +171,7 @@ def artifact_file(name,
 
     http_file(
         name = name,
-        urls = ["{}/{}/{}/{}".format(repository_url, group_name, version, artifact_name)],
+        urls = ["{}/names/{}/versions/{}/{}".format(repository_url.rstrip("/"), group_name, version, artifact_name)],
         downloaded_file_path = artifact_name,
         sha = sha,
         tags = tags + ["{}={}".format(versiontype, version)],
@@ -159,7 +189,7 @@ then
     unzip -qq {artifact_location} -d $tmp_dir
     mv -v $tmp_dir/*/* $BUILD_WORKSPACE_DIRECTORY/$1/
 else
-    tar -xzf {artifact_location} -C $BUILD_WORKSPACE_DIRECTORY/$1 --strip-components=2
+    tar -xzf {artifact_location} -C $BUILD_WORKSPACE_DIRECTORY/$1 --strip-components=1
 fi
 """
 
