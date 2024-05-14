@@ -5,7 +5,7 @@ def rules_python():
     git_repository(
         name = "rules_python",
         remote = "https://github.com/bazelbuild/rules_python.git",
-        tag = "0.24.0",
+        tag = "0.31.0",
     )
 
 def rules_pkg():

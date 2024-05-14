@@ -27,10 +27,10 @@ bzl_library(
     name = "lib",
     srcs = [
         "rules.bzl",
+    ],
+    deps = [
         "@vaticle_bazel_distribution_pip//:requirements.bzl",
-        "@rules_python//:bzl",
-        "@rules_python//:version.bzl",
-        "@bazel_skylib//lib:versions",
+        "@rules_python//python:pip_bzl",
     ],
     visibility = ["//visibility:public"]
 )
