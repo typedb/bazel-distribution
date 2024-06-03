@@ -191,7 +191,7 @@ class PomGenerator : Callable<Unit> {
     }
 
     override fun call() {
-        val version = tagToVersion(versionFile.readText())
+        val version = tagToVersion(versionFile.readText().trim())
         val workspaceRefs = Json.parse(workspaceRefsFile.readText()).asObject()
 
         // Create an XML document for constructing the POM

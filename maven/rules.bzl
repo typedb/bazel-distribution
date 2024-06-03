@@ -68,7 +68,6 @@ def _generate_pom_file(ctx, version_file):
         pom_dependency_coordinates = _parse_maven_coordinates(pom_dependency, False)
         pom_dependency_artifact = pom_dependency_coordinates.group_id + ":" + pom_dependency_coordinates.artifact_id
         pom_dependency_version = pom_dependency_coordinates.version
-
         version = ctx.attr.version_overrides.get(pom_dependency_artifact, pom_dependency_version)
         pom_deps.append(pom_dependency_artifact + ":" + version)
 
