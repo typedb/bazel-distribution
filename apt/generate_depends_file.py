@@ -28,8 +28,8 @@ WORKSPACE_REF_PATTERN = re.compile(r'.*%{@(?P<workspace_ref>.*)}.*')
 parser = argparse.ArgumentParser()
 parser.add_argument('--output', required=True, help='Output file')
 parser.add_argument('--version_file', required=True, help='File containing version of package being built')
-parser.add_argument('--workspace_refs', help='Optional file with workspace references')
-parser.add_argument('--deps', nargs='+', required=True, help='Dependency declarations')
+parser.add_argument('--workspace_refs', help='File with workspace references (optional)')
+parser.add_argument('--deps', nargs='+', help='Dependency declarations (optional)')
 args = parser.parse_args()
 
 workspace_refs = {
@@ -60,7 +60,7 @@ for ws, tag in workspace_refs['tags'].items():
 
 deps = []
 
-for dep in args.deps:
+for dep in (args.deps or []):
     match = WORKSPACE_REF_PATTERN.match(dep)
     if match:
         workspace_ref = match.group('workspace_ref')
