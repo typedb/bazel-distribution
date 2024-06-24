@@ -152,10 +152,12 @@ def assemble_apt(name,
         "$(location @vaticle_bazel_distribution//apt:generate_depends_file)",
         "--output", "$@",
         "--version_file", "$(location {})".format(version_file),
-        "--deps"
     ]
-    for dep in depends:
-        args.append('"{}"'.format(dep))
+    if len(depends):
+        args.append("--deps")
+        for dep in depends:
+            args.append('"{}"'.format(dep))
+
     srcs = [version_file]
 
     if workspace_refs:
