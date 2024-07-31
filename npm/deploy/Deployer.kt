@@ -40,11 +40,12 @@ class Deployer(private val options: Options) {
 
     fun deploy() {
         Shell(logger = logger, verbose = true).execute(
-                command = Shell.Command(
-                        arg("npm"), arg("publish"), arg("--registry=${options.registryURL}"),
-                        arg(authURI(options), printable = false),
-                        arg("deploy_npm.tgz")),
-                env = mapOf("PATH" to pathEnv()))
+            command = Shell.Command(
+                arg(options.npmPath), arg("publish"), arg("--registry=${options.registryURL}"),
+                arg(authURI(options), printable = false),
+                arg("deploy_npm.tgz"),
+            )
+        )
     }
 
     private fun authURI(options: Options): String {
@@ -88,22 +89,5 @@ class Deployer(private val options: Options) {
 
     private fun base64(string: String): String {
         return Base64.getEncoder().encodeToString(string.toByteArray())
-    }
-
-    private fun pathEnv(): String {
-        val commonPaths = listOf(realPath(options.npmPath).parent)
-        val otherPaths = when (currentOS) {
-            MAC, LINUX -> listOf("/usr/bin", "/bin/")
-            else -> listOf()
-        }
-        return (commonPaths + otherPaths).joinToString(":")
-    }
-
-    private fun realPath(path: String): Path {
-        val pathObj = Path.of(path)
-        return when (Files.exists(pathObj)) {
-            true -> pathObj.toRealPath()
-            false -> pathObj
-        }
     }
 }
