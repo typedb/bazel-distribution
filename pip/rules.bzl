@@ -142,9 +142,9 @@ def _assemble_pip_impl(ctx):
         elif '-alpha' in version:
             version = version.replace('-alpha', 'a')
         elif '-beta-' in version:
-            version = version.replace('-beta-', 'a')
+            version = version.replace('-beta-', 'b')
         elif '-beta' in version:
-            version = version.replace('-beta', 'a')
+            version = version.replace('-beta', 'b')
         elif '-rc-' in version:
             version = version.replace('-rc-', 'rc')
         elif '-rc' in version:
