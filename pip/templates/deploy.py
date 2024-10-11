@@ -42,6 +42,8 @@ repositories = {
     SNAPSHOT_KEY: "{snapshot}",
     RELEASE_KEY: "{release}"
 }
+publish_args = {publish_args}
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')
@@ -52,14 +54,14 @@ def upload_command(repo_type_key, packages):
         raise Exception(f"Selected repository must be one of: {list(repositories.keys())}")
 
     if repo_type_key == PYPIRC_KEY:
-        return packages + ['--repository', repositories[repo_type_key]]
+        return packages + ['--repository', repositories[repo_type_key]] + publish_args
     elif repo_type_key == SNAPSHOT_KEY or repo_type_key == RELEASE_KEY:
         pip_username, pip_password = (os.getenv(ENV_DEPLOY_PIP_USERNAME), os.getenv(ENV_DEPLOY_PIP_PASSWORD))
         if not pip_username:
             raise Exception(f"username should be passed via the {ENV_DEPLOY_PIP_USERNAME} environment variable")
         if not pip_password:
             raise Exception(f"password should be passed via the {ENV_DEPLOY_PIP_PASSWORD} environment variable")
-        return packages + ['-u', pip_username, '-p', pip_password, '--repository-url', repositories[repo_type_key]]
+        return packages + ['-u', pip_username, '-p', pip_password, '--repository-url', repositories[repo_type_key]] + publish_args
     else:
         raise Exception(f"Unrecognised repository selector: {repo_type_key}")
 

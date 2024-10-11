@@ -194,7 +194,8 @@ def _deploy_pip_impl(ctx):
             "{snapshot}": ctx.attr.snapshot,
             "{release}": ctx.attr.release,
             "{distribution_tag}": ctx.attr.distribution_tag,
-            "{suffix}": ctx.attr.suffix,
+            "{suffix}": ctx.attr.suffix,         
+            "{publish_args}": str(ctx.attr.publish_args),
         }
     )
 
@@ -337,6 +338,10 @@ _deploy_pip = rule(
             default = "",
             doc = "Repository name in the .pypirc profile to deploy to"
         ),
+        "publish_args": attr.string_list(
+            default = [],
+            doc = """Arguments passed to twine, e.g. ["--non-interactive", "--skip-existing"]"""
+        ),
         "distribution_tag": attr.string(
             mandatory = True,
             doc = "Specify tag for the package name. Format: {python tag}-{abi tag}-{platform tag} (PEP 425)",
@@ -390,7 +395,8 @@ _deploy_pip = rule(
         """
 )
 
-def deploy_pip(name, target, snapshot, release, suffix = "", distribution_tag = "py3-none-any"):
+def deploy_pip(name, target, snapshot, release, suffix = "", distribution_tag = "py3-none-any",  publish_args = []):
+
     deploy_script_target_name = name + "__deploy"
     deploy_script_name = deploy_script_target_name + "-deploy.py"
     _deploy_pip(
@@ -401,6 +407,7 @@ def deploy_pip(name, target, snapshot, release, suffix = "", distribution_tag = 
         release = release,
         suffix = suffix,
         distribution_tag = distribution_tag,
+        publish_args = publish_args
     )
 
     native.py_binary(
