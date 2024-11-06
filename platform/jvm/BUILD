@@ -44,7 +44,7 @@ kt_jvm_library(
 java_binary(
     name = "assembler-bin",
     runtime_deps = [":assembler-lib"],
-    main_class = "com.vaticle.bazel.distribution.platform.jvm.MainKt",
+    main_class = "com.typedb.bazel.distribution.platform.jvm.MainKt",
     visibility = ["//visibility:public"],
 )
 

@@ -1,18 +1,18 @@
-package com.vaticle.bazel.distribution.platform.jvm
+package com.typedb.bazel.distribution.platform.jvm
 
-import com.vaticle.bazel.distribution.common.shell.Shell
-import com.vaticle.bazel.distribution.platform.jvm.JVMPlatformAssembler.shell
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.APPLE_ID
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.NOTARYTOOL
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.ONE_HOUR
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.PASSWORD
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.STAPLE
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.STAPLER
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.SUBMIT
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.TEAM_ID
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.TIMEOUT
-import com.vaticle.bazel.distribution.platform.jvm.MacAppNotarizer.Args.WAIT
-import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Programs.XCRUN
+import com.typedb.bazel.distribution.common.shell.Shell
+import com.typedb.bazel.distribution.platform.jvm.JVMPlatformAssembler.shell
+import com.typedb.bazel.distribution.platform.jvm.MacAppNotarizer.Args.APPLE_ID
+import com.typedb.bazel.distribution.platform.jvm.MacAppNotarizer.Args.NOTARYTOOL
+import com.typedb.bazel.distribution.platform.jvm.MacAppNotarizer.Args.ONE_HOUR
+import com.typedb.bazel.distribution.platform.jvm.MacAppNotarizer.Args.PASSWORD
+import com.typedb.bazel.distribution.platform.jvm.MacAppNotarizer.Args.STAPLE
+import com.typedb.bazel.distribution.platform.jvm.MacAppNotarizer.Args.STAPLER
+import com.typedb.bazel.distribution.platform.jvm.MacAppNotarizer.Args.SUBMIT
+import com.typedb.bazel.distribution.platform.jvm.MacAppNotarizer.Args.TEAM_ID
+import com.typedb.bazel.distribution.platform.jvm.MacAppNotarizer.Args.TIMEOUT
+import com.typedb.bazel.distribution.platform.jvm.MacAppNotarizer.Args.WAIT
+import com.typedb.bazel.distribution.platform.jvm.ShellArgs.Programs.XCRUN
 import java.nio.file.Path
 
 class MacAppNotarizer(private val dmgPath: Path) {

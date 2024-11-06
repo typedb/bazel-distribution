@@ -1,7 +1,7 @@
-package com.vaticle.bazel.distribution.common.shell
+package com.typedb.bazel.distribution.common.shell
 
-import com.vaticle.bazel.distribution.common.shell.Shell.Command.Companion.arg
-import com.vaticle.bazel.distribution.common.Logging.Logger
+import com.typedb.bazel.distribution.common.shell.Shell.Command.Companion.arg
+import com.typedb.bazel.distribution.common.Logging.Logger
 import org.zeroturnaround.exec.ProcessExecutor
 import org.zeroturnaround.exec.ProcessResult
 import java.nio.file.Path

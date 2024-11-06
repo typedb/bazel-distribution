@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.vaticle.bazeldistribution.crates
+package com.typedb.bazel.distribution.crates
 
 import com.eclipsesource.json.Json
 import com.google.api.client.http.*

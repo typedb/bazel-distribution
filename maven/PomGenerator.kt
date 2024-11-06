@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.vaticle.bazel.distribution.maven
+package com.typedb.bazel.distribution.maven
 
 import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonObject

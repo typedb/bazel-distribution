@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.vaticle.bazel.distribution.common
+package com.typedb.bazel.distribution.common
 
 object Logging {
     class Logger(private val logLevel: LogLevel) {

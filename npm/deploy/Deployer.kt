@@ -17,18 +17,18 @@
  * under the License.
  */
 
-package com.vaticle.bazel.distribution.npm.deploy
+package com.typedb.bazel.distribution.npm.deploy
 
-import com.vaticle.bazel.distribution.common.Logging.LogLevel.DEBUG
-import com.vaticle.bazel.distribution.common.Logging.Logger
-import com.vaticle.bazel.distribution.common.OS.LINUX
-import com.vaticle.bazel.distribution.common.OS.MAC
-import com.vaticle.bazel.distribution.common.shell.Shell
-import com.vaticle.bazel.distribution.common.shell.Shell.Command.Companion.arg
-import com.vaticle.bazel.distribution.common.util.SystemUtil.currentOS
-import com.vaticle.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_PASSWORD
-import com.vaticle.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_TOKEN
-import com.vaticle.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_USERNAME
+import com.typedb.bazel.distribution.common.Logging.LogLevel.DEBUG
+import com.typedb.bazel.distribution.common.Logging.Logger
+import com.typedb.bazel.distribution.common.OS.LINUX
+import com.typedb.bazel.distribution.common.OS.MAC
+import com.typedb.bazel.distribution.common.shell.Shell
+import com.typedb.bazel.distribution.common.shell.Shell.Command.Companion.arg
+import com.typedb.bazel.distribution.common.util.SystemUtil.currentOS
+import com.typedb.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_PASSWORD
+import com.typedb.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_TOKEN
+import com.typedb.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_USERNAME
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*

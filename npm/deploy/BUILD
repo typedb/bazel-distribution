@@ -46,6 +46,6 @@ kt_jvm_library(
 java_binary(
     name = "deployer-bin",
     runtime_deps = [":deployer-lib"],
-    main_class = "com.vaticle.bazel.distribution.npm.deploy.DeployNPMKt",
+    main_class = "com.typedb.bazel.distribution.npm.deploy.DeployNPMKt",
     visibility = ["//visibility:public"],
 )

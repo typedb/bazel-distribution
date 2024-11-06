@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.vaticle.bazel.distribution.common.util
+package com.typedb.bazel.distribution.common.util
 
 import java.util.Properties
 

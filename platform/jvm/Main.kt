@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.vaticle.bazel.distribution.platform.jvm
+package com.typedb.bazel.distribution.platform.jvm
 
 import picocli.CommandLine
 

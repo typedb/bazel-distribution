@@ -1,4 +1,4 @@
-package com.vaticle.bazel.distribution.common
+package com.typedb.bazel.distribution.common
 
 enum class OS(private val displayName: String) {
     WINDOWS("Windows"),
