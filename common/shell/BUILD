@@ -23,7 +23,7 @@ kt_jvm_library(
     name = "shell",
     srcs = glob(["*.kt"]),
     deps = [
-        "@vaticle_bazel_distribution//common",
+        "@typedb_bazel_distribution//common",
 
         "@maven//:org_zeroturnaround_zt_exec",
     ],

@@ -17,7 +17,7 @@
 # under the License.
 #
 
-workspace(name="vaticle_bazel_distribution")
+workspace(name="typedb_bazel_distribution")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -38,7 +38,7 @@ load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_reg
 kotlin_repositories()
 kt_register_toolchains()
 
-load("@vaticle_bazel_distribution//maven:deps.bzl", "maven_artifacts_with_versions")
+load("@typedb_bazel_distribution//maven:deps.bzl", "maven_artifacts_with_versions")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 maven_install(
     artifacts = maven_artifacts_with_versions,
@@ -50,16 +50,16 @@ maven_install(
     fetch_sources = True,
 )
 
-# Load @vaticle_bazel_distribution_pip
+# Load @typedb_bazel_distribution_pip
 load("//pip:deps.bzl", pip_deps = "deps")
 pip_deps()
-load("@vaticle_bazel_distribution_pip//:requirements.bzl", "install_deps")
+load("@typedb_bazel_distribution_pip//:requirements.bzl", "install_deps")
 install_deps()
 
 # Load //docs
 load("//docs:python/deps.bzl", python_docs_deps = "deps")
 python_docs_deps()
-load("@vaticle_dependencies_tool_docs//:requirements.bzl", install_doc_deps = "install_deps")
+load("@typedb_bazel_distribution_docs_py//:requirements.bzl", install_doc_deps = "install_deps")
 install_doc_deps()
 
 # TODO: remove this declaration once we upgrade to @io_bazel_stardoc with Bazel 5 support
@@ -96,8 +96,8 @@ http_archive(
 load("@bazel_stardoc//:setup.bzl", "stardoc_repositories")
 stardoc_repositories()
 
-# Load @vaticle_bazel_distribution_uploader
+# Load @typedb_bazel_distribution_uploader
 load("//common/uploader:deps.bzl", uploader_deps = "deps")
 uploader_deps()
-load("@vaticle_bazel_distribution_uploader//:requirements.bzl", install_uploader_deps = "install_deps")
+load("@typedb_bazel_distribution_uploader//:requirements.bzl", install_uploader_deps = "install_deps")
 install_uploader_deps()

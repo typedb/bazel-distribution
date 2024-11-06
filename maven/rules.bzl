@@ -319,12 +319,12 @@ assemble_maven(
             """,
         ),
         "_pom_generator": attr.label(
-            default = "@vaticle_bazel_distribution//maven:pom-generator",
+            default = "@typedb_bazel_distribution//maven:pom-generator",
             executable = True,
             cfg = "host",
         ),
         "_jar_assembler": attr.label(
-            default = "@vaticle_bazel_distribution//maven:jar-assembler",
+            default = "@typedb_bazel_distribution//maven:jar-assembler",
             executable = True,
             cfg = "host",
         ),

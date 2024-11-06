@@ -74,7 +74,7 @@ deploy_packer = rule(
         ),
         "_deployment_script_template": attr.label(
             allow_single_file = True,
-            default = "@vaticle_bazel_distribution//packer/templates:deploy_packer.py",
+            default = "@typedb_bazel_distribution//packer/templates:deploy_packer.py",
         ),
         "_packer": attr.label_list(
             allow_files = True,

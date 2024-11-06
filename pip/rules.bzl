@@ -17,7 +17,7 @@
 # under the License.
 #
 
-load("@vaticle_bazel_distribution_pip//:requirements.bzl", vaticle_bazel_distribution_requirement = "requirement")
+load("@typedb_bazel_distribution_pip//:requirements.bzl", typedb_bazel_distribution_requirement = "requirement")
 
 
 def _python_repackage_impl(ctx):
@@ -355,23 +355,23 @@ _deploy_pip = rule(
         ),
         "_deps": attr.label_list(
             default = [
-                vaticle_bazel_distribution_requirement("twine"),
-                vaticle_bazel_distribution_requirement("setuptools"),
-                vaticle_bazel_distribution_requirement("wheel"),
-                vaticle_bazel_distribution_requirement("requests"),
-                vaticle_bazel_distribution_requirement("urllib3"),
-                vaticle_bazel_distribution_requirement("chardet"),
-                vaticle_bazel_distribution_requirement("certifi"),
-                vaticle_bazel_distribution_requirement("idna"),
-                vaticle_bazel_distribution_requirement("tqdm"),
-                vaticle_bazel_distribution_requirement("requests_toolbelt"),
-                vaticle_bazel_distribution_requirement("pkginfo"),
-                vaticle_bazel_distribution_requirement("readme_renderer"),
-                vaticle_bazel_distribution_requirement("Pygments"),
-                vaticle_bazel_distribution_requirement("docutils"),
-                vaticle_bazel_distribution_requirement("bleach"),
-                vaticle_bazel_distribution_requirement("webencodings"),
-                vaticle_bazel_distribution_requirement("packaging")
+                typedb_bazel_distribution_requirement("twine"),
+                typedb_bazel_distribution_requirement("setuptools"),
+                typedb_bazel_distribution_requirement("wheel"),
+                typedb_bazel_distribution_requirement("requests"),
+                typedb_bazel_distribution_requirement("urllib3"),
+                typedb_bazel_distribution_requirement("chardet"),
+                typedb_bazel_distribution_requirement("certifi"),
+                typedb_bazel_distribution_requirement("idna"),
+                typedb_bazel_distribution_requirement("tqdm"),
+                typedb_bazel_distribution_requirement("requests_toolbelt"),
+                typedb_bazel_distribution_requirement("pkginfo"),
+                typedb_bazel_distribution_requirement("readme_renderer"),
+                typedb_bazel_distribution_requirement("Pygments"),
+                typedb_bazel_distribution_requirement("docutils"),
+                typedb_bazel_distribution_requirement("bleach"),
+                typedb_bazel_distribution_requirement("webencodings"),
+                typedb_bazel_distribution_requirement("packaging")
             ]
         )
     },

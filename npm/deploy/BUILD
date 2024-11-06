@@ -34,9 +34,9 @@ kt_jvm_library(
     name = "deployer-lib",
     srcs = glob(["*.kt"]),
     deps = [
-        "@vaticle_bazel_distribution//common",
-        "@vaticle_bazel_distribution//common/shell",
-        "@vaticle_bazel_distribution//common/util",
+        "@typedb_bazel_distribution//common",
+        "@typedb_bazel_distribution//common/shell",
+        "@typedb_bazel_distribution//common/util",
 
         "@maven//:info_picocli_picocli",
         "@maven//:org_zeroturnaround_zt_exec",

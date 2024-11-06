@@ -18,7 +18,7 @@
 #
 
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("@vaticle_bazel_distribution//common/java_deps:rules.bzl", "java_deps")
+load("@typedb_bazel_distribution//common/java_deps:rules.bzl", "java_deps")
 
 def _assemble_targz_package_dir_file_impl(ctx):
     version = ctx.var.get('version', '')

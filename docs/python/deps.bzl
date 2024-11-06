@@ -1,7 +1,5 @@
 #
-# Copyright (C) 2022 Vaticle
-#
-# This program is free software: you can redistribute it and/or modify
+#  This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
@@ -19,6 +17,6 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 
 def deps():
     pip_parse(
-        name = "vaticle_dependencies_tool_docs",
-        requirements_lock = "@vaticle_bazel_distribution//docs:python/requirements.txt",
+        name = "typedb_bazel_distribution_docs_py",
+        requirements_lock = "@typedb_bazel_distribution//docs:python/requirements.txt",
     )

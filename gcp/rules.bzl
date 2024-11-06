@@ -51,7 +51,7 @@ def assemble_gcp(name,
     generated_config_target_name = name + "__do_not_reference_config"
     generate_json_config(
         name = generated_config_target_name,
-        template = "@vaticle_bazel_distribution//gcp:packer.template.json",
+        template = "@typedb_bazel_distribution//gcp:packer.template.json",
         substitutions = {
             "{project_id}": project_id,
             "{zone}": zone,

@@ -17,7 +17,7 @@
 # under the License.
 #
 
-load("@vaticle_bazel_distribution//common:rules.bzl", _assemble_zip = "assemble_zip", _java_deps = "java_deps")
+load("@typedb_bazel_distribution//common:rules.bzl", _assemble_zip = "assemble_zip", _java_deps = "java_deps")
 
 
 supported_oses = ["Mac", "Linux", "Windows"]
@@ -296,7 +296,7 @@ _assemble_zip_to_jvm_platform = rule(
             doc = "Archive containing the Windows WiX toolset",
         ),
         "_assemble_jvm_platform_bin": attr.label(
-            default = "@vaticle_bazel_distribution//platform/jvm:assembler-bin",
+            default = "@typedb_bazel_distribution//platform/jvm:assembler-bin",
             executable = True,
             cfg = "host",
         ),
@@ -311,11 +311,11 @@ _assemble_zip_to_jvm_platform = rule(
 
 def native_jdk17():
     return select({
-        "@vaticle_bazel_distribution//platform:is_linux_arm64": "@jdk17_linux_arm64//file",
-        "@vaticle_bazel_distribution//platform:is_linux_x86_64": "@jdk17_linux_x86_64//file",
-        "@vaticle_bazel_distribution//platform:is_mac_arm64": "@jdk17_mac_arm64//file",
-        "@vaticle_bazel_distribution//platform:is_mac_x86_64": "@jdk17_mac_x86_64//file",
-        "@vaticle_bazel_distribution//platform:is_windows_x86_64": "@jdk17_windows_x86_64//file",
+        "@typedb_bazel_distribution//platform:is_linux_arm64": "@jdk17_linux_arm64//file",
+        "@typedb_bazel_distribution//platform:is_linux_x86_64": "@jdk17_linux_x86_64//file",
+        "@typedb_bazel_distribution//platform:is_mac_arm64": "@jdk17_mac_arm64//file",
+        "@typedb_bazel_distribution//platform:is_mac_x86_64": "@jdk17_mac_x86_64//file",
+        "@typedb_bazel_distribution//platform:is_windows_x86_64": "@jdk17_windows_x86_64//file",
     })
 
 def assemble_jvm_platform(name,
@@ -370,9 +370,9 @@ def assemble_jvm_platform(name,
         main_class = main_class,
         jdk = jdk,
         os = select({
-            "@vaticle_bazel_distribution//platform:is_mac": "Mac",
-            "@vaticle_bazel_distribution//platform:is_linux": "Linux",
-            "@vaticle_bazel_distribution//platform:is_windows": "Windows",
+            "@typedb_bazel_distribution//platform:is_mac": "Mac",
+            "@typedb_bazel_distribution//platform:is_linux": "Linux",
+            "@typedb_bazel_distribution//platform:is_windows": "Windows",
         }),
         verbose = verbose,
         log_sensitive_data = log_sensitive_data,
@@ -382,13 +382,13 @@ def assemble_jvm_platform(name,
         mac_app_id = mac_app_id,
         mac_entitlements = mac_entitlements,
         mac_code_signing_cert = select({
-            "@vaticle_bazel_distribution//platform/jvm:apple-code-sign": mac_code_signing_cert,
+            "@typedb_bazel_distribution//platform/jvm:apple-code-sign": mac_code_signing_cert,
             "//conditions:default": None,
         }),
         mac_deep_sign_jars_regex = mac_deep_sign_jars_regex,
         windows_menu_group = windows_menu_group,
         windows_wix_toolset = select({
-            "@vaticle_bazel_distribution//platform:is_windows": windows_wix_toolset,
+            "@typedb_bazel_distribution//platform:is_windows": windows_wix_toolset,
             "//conditions:default": None,
         }),
     )
