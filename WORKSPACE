@@ -57,8 +57,8 @@ load("@typedb_bazel_distribution_pip//:requirements.bzl", "install_deps")
 install_deps()
 
 # Load //docs
-load("//docs:python/deps.bzl", python_docs_deps = "deps")
-python_docs_deps()
+load("//docs:python/deps.bzl", "typedb_bazel_distribution_docs_py")
+typedb_bazel_distribution_docs_py()
 load("@typedb_bazel_distribution_docs_py//:requirements.bzl", install_doc_deps = "install_deps")
 install_doc_deps()
 
