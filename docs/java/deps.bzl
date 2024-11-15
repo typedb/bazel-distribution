@@ -15,7 +15,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def deps():
+def google_bazel_common():
     # Bazel Common Libraries (with javadoc)
     http_archive(
         name = "google_bazel_common",

@@ -19,7 +19,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # under the License.
 #
 
-def deps():
+def packer_osx():
     http_archive(
         name = "packer_osx",
         build_file_content = 'exports_files(["packer"])',
@@ -27,6 +27,7 @@ def deps():
         sha256 = "ef1ceaaafcdada65bdbb45793ad6eedbc7c368d415864776b9d3fa26fb30b896"
     )
 
+def packer_linux():
     http_archive(
         name = "packer_linux",
         build_file_content = 'exports_files(["packer"])',

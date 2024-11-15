@@ -51,16 +51,16 @@ maven_install(
 )
 
 # Load @typedb_bazel_distribution_pip
-load("//pip:deps.bzl", pip_deps = "deps")
-pip_deps()
-load("@typedb_bazel_distribution_pip//:requirements.bzl", "install_deps")
-install_deps()
+load("//pip:deps.bzl", "typedb_bazel_distribution_pip")
+typedb_bazel_distribution_pip()
+load("@typedb_bazel_distribution_pip//:requirements.bzl", pip_install_deps = "install_deps")
+pip_install_deps()
 
 # Load //docs
 load("//docs:python/deps.bzl", "typedb_bazel_distribution_docs_py")
 typedb_bazel_distribution_docs_py()
-load("@typedb_bazel_distribution_docs_py//:requirements.bzl", install_doc_deps = "install_deps")
-install_doc_deps()
+load("@typedb_bazel_distribution_docs_py//:requirements.bzl", docs_py_install_deps = "install_deps")
+docs_py_install_deps()
 
 # TODO: remove this declaration once we upgrade to @io_bazel_stardoc with Bazel 5 support
 # Load @bazel_skylib
@@ -97,7 +97,7 @@ load("@bazel_stardoc//:setup.bzl", "stardoc_repositories")
 stardoc_repositories()
 
 # Load @typedb_bazel_distribution_uploader
-load("//common/uploader:deps.bzl", uploader_deps = "deps")
-uploader_deps()
-load("@typedb_bazel_distribution_uploader//:requirements.bzl", install_uploader_deps = "install_deps")
-install_uploader_deps()
+load("//common/uploader:deps.bzl", "typedb_bazel_distribution_uploader")
+typedb_bazel_distribution_uploader()
+load("@typedb_bazel_distribution_uploader//:requirements.bzl", uploader_install_deps = "install_deps")
+uploader_install_deps()
