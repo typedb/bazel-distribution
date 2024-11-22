@@ -230,8 +230,10 @@ object JVMPlatformAssembler {
                     null -> logger.debug { "Skipping notarizing step: Apple code signing is not enabled" }
                     else -> {
                         MacAppNotarizer(
-                            dmgPath = Path.of(distDir.path, "${options.image.filename}-$version.dmg")
-                        ).notarize(codeSigningOptions)
+                            dmgPath = Path.of(distDir.path, "${options.image.filename}-$version.dmg"),
+                            appleCodeSigning = codeSigningOptions,
+                            logging = options.logging,
+                        ).notarize()
                         appleCodeSigner!!.deleteKeychain()
                     }
                 }
