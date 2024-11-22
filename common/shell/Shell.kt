@@ -38,8 +38,8 @@ class Shell(private val logger: Logger, private val verbose: Boolean = false, pr
         return verbose && (!sensitive || printSensitiveData)
     }
 
-    class Command(vararg args: Argument) {
-        val args = args.toList()
+    class Command(val args: List<Argument>) {
+        constructor(vararg args: Argument): this(args.toList())
 
         override fun toString(): String {
             return args.toString()
