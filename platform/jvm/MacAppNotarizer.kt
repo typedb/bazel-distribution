@@ -1,5 +1,9 @@
 package com.typedb.bazel.distribution.platform.jvm
 
+import com.typedb.bazel.distribution.common.Logging.LogLevel
+import com.typedb.bazel.distribution.common.Logging.LogLevel.DEBUG
+import com.typedb.bazel.distribution.common.Logging.LogLevel.ERROR
+import com.typedb.bazel.distribution.common.Logging.Logger
 import com.typedb.bazel.distribution.common.shell.Shell
 import com.typedb.bazel.distribution.platform.jvm.JVMPlatformAssembler.shell
 import com.typedb.bazel.distribution.platform.jvm.MacAppNotarizer.Args.APPLE_ID
@@ -19,8 +23,11 @@ import java.nio.file.Path
 class MacAppNotarizer(
     private val dmgPath: Path, appleCodeSigning: Options.AppleCodeSigning, private val logging: Options.Logging
 ) {
+    private val logger = Logger(logLevel = if (logging.verbose) DEBUG else ERROR)
+
     fun notarize() {
         shell.execute(notarizeCommand).outputString()
+        logger.debug { "\nUse `xcrun notarytool log <submission-id>` to view further information about this notarization\n" }
         markPackageAsApproved()
     }
 
