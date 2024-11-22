@@ -7,12 +7,7 @@ import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.
 import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.KEYCHAIN
 import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.OPTIONS
 import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.SIGN
-import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.STRICT
 import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.TIMESTAMP
-import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.VERIFY
-import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Paths.CONTENTS
-import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Paths.MAC_OS
-import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Paths.RUNTIME
 import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Paths.TMP
 import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.CN
 import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.CREATE_KEYCHAIN
@@ -140,7 +135,7 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
 
             val nativeLibs = tmpDir.listFilesRecursively().filter { it.extension in listOf(JNILIB, DYLIB) }
             if (nativeLibs.isNotEmpty()) {
-                nativeLibs.forEach { signFile(file = it, skipIfSigned = true) }
+                nativeLibs.forEach { signFile(file = it) }
                 jar.setWritable(true)
                 jar.delete()
                 shell.execute(listOf(ShellArgs.Programs.JAR, "cMf", "../${jar.path}", "."), baseDir = tmpPath)
@@ -150,18 +145,7 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
         }
     }
 
-    fun signFile(file: File, skipIfSigned: Boolean = false) {
-        if (skipIfSigned) {
-            val verifySignatureResult = VerifySignatureResult(
-                shell.execute(listOf(CODESIGN, VERIFY, STRICT, file.path), throwOnError = false)
-            )
-            if (verifySignatureResult.status == VerifySignatureResult.Status.SIGNED) return
-            else if (verifySignatureResult.status == VerifySignatureResult.Status.ERROR) {
-                throw IllegalStateException("Command '${CODESIGN}' failed with exit code " +
-                        "${verifySignatureResult.exitValue} and output: ${verifySignatureResult.outputString()}")
-            }
-        }
-
+    fun signFile(file: File) {
         file.setWritable(true)
         val signCommand: MutableList<String> = mutableListOf(
             CODESIGN, SIGN, certSubject,
