@@ -5,6 +5,7 @@ import com.typedb.bazel.distribution.common.Logging.LogLevel.DEBUG
 import com.typedb.bazel.distribution.common.Logging.LogLevel.ERROR
 import com.typedb.bazel.distribution.common.Logging.Logger
 import com.typedb.bazel.distribution.common.shell.Shell
+import com.typedb.bazel.distribution.common.shell.Shell.Command.Companion.arg
 import com.typedb.bazel.distribution.platform.jvm.JVMPlatformAssembler.shell
 import com.typedb.bazel.distribution.platform.jvm.MacAppNotarizer.Args.APPLE_ID
 import com.typedb.bazel.distribution.platform.jvm.MacAppNotarizer.Args.NOTARYTOOL
@@ -31,17 +32,15 @@ class MacAppNotarizer(
         markPackageAsApproved()
     }
 
-    private val notarizeCommand = Shell.Command(
-        listOfNotNull(
-            Shell.Command.arg(XCRUN), Shell.Command.arg(NOTARYTOOL), Shell.Command.arg(SUBMIT),
-            if (logging.verbose) Shell.Command.arg(VERBOSE) else null,
-            Shell.Command.arg(APPLE_ID), Shell.Command.arg(appleCodeSigning.appleID),
-            Shell.Command.arg(PASSWORD), Shell.Command.arg(appleCodeSigning.appleIDPassword, printable = false),
-            Shell.Command.arg(TEAM_ID), Shell.Command.arg(appleCodeSigning.appleTeamID, printable = false),
-            Shell.Command.arg(WAIT), Shell.Command.arg(TIMEOUT), Shell.Command.arg(ONE_HOUR),
-            Shell.Command.arg(dmgPath.toString()),
-        )
-    )
+    private val notarizeCommand = Shell.Command(listOfNotNull(
+        arg(XCRUN), arg(NOTARYTOOL), arg(SUBMIT),
+        if (logging.verbose) arg(VERBOSE) else null,
+        arg(APPLE_ID), arg(appleCodeSigning.appleID),
+        arg(PASSWORD), arg(appleCodeSigning.appleIDPassword, printable = false),
+        arg(TEAM_ID), arg(appleCodeSigning.appleTeamID, printable = false),
+        arg(WAIT), arg(TIMEOUT), arg(ONE_HOUR),
+        arg(dmgPath.toString()),
+    ))
 
     private fun markPackageAsApproved() {
         shell.execute(listOfNotNull(XCRUN, STAPLER, STAPLE, if (logging.verbose) VERBOSE else null, dmgPath.toString()))
