@@ -37,3 +37,44 @@ java_deps = _java_deps
 tgz2zip = _tgz2zip
 unzip_file = _unzip_file
 workspace_refs = _workspace_refs
+
+# python_interpreter_symlink
+OS_NAMES = ("mac", "win", "linux")
+OS_ARCHS = ("aarch64", "x86_64")
+(MAC, WIN, LINUX) = OS_NAMES
+(ARM64, X64) = OS_ARCHS
+
+PYTHON_INTERPRETER_SUFFIXES = {
+    (MAC, ARM64) : "aarch64-apple-darwin",
+    (MAC, X64) : "x86_64-apple-darwin",
+    (LINUX, ARM64): "aarch64-unknown-linux-gnu",
+    (LINUX, X64): "x86_64-unknown-linux-gnu",
+    (WIN, "amd64") : "x86_64-pc-windows-msvc",
+}
+
+def _python_interpreter_symlink_impl(rctx):
+    os_name = None
+    for name in OS_NAMES:
+        if name in rctx.os.name:
+            os_name = name
+
+    if os_name == None:
+        fail
+    os_arch = rctx.os.arch
+    interpreter_suffix = PYTHON_INTERPRETER_SUFFIXES.get((os_name, os_arch))
+
+    resolved_interpreter_label = Label("@" + rctx.attr.interpreter_toolchain_name + "_" + interpreter_suffix + "//:python")
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+exports_files(["python"])
+    """
+    rctx.file("WORKSPACE", "workspace(name = \"%s\")"%rctx.attr.name)
+    rctx.file("BUILD.bazel", content=build_file_content, executable=False)
+    rctx.symlink(resolved_interpreter_label, "python")
+
+python_interpreter_symlink = repository_rule(
+    implementation= _python_interpreter_symlink_impl,
+    attrs={
+        "interpreter_toolchain_name" : attr.string(mandatory=True),
+    }
+)
