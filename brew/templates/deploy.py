@@ -27,6 +27,7 @@ import shutil
 import subprocess as sp
 import sys
 import tempfile
+from typing import Dict
 import zipfile
 
 
@@ -65,7 +66,7 @@ def verify_environment():
             sys.exit(1)
 
 
-def expand_formula_template(formula_template: str, substitution_files: dict[str, str]) -> str:
+def expand_formula_template(formula_template: str, substitution_files: Dict[str, str]) -> str:
     expanded = formula_template
     for key, filename in substitution_files.items():
         if os.path.isfile(filename):
