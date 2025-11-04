@@ -1,8 +1,8 @@
 load("@rules_python//python:pip.bzl", "pip_parse")
 
-def typedb_bazel_distribution_uploader(toolchain_name = None):
-    # uploader_toolchain_name is whatever the name passed to python_register_toolchains
-    python_interpreter_target = "@" + toolchain_name + "_host//:python" if toolchain_name else None
+def typedb_bazel_distribution_uploader(python_interpreter_target = None):
+    # Optionally specify the python interpreter to use instead of
+    # e.g. @<toolchain_name>_host//:python
     pip_parse(
         name = "typedb_bazel_distribution_uploader",
         requirements_lock = "@typedb_bazel_distribution//common/uploader:requirements.txt",
