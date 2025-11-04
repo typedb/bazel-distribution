@@ -25,10 +25,10 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
-
-toolchain(
-    name = "py39_for_uploader_toolchain",
-    toolchain = "@py39_for_uploader//:python_runtimes",
-    toolchain_type = "@bazel_tools//tools/python:toolchain_type",
-    visibility = ["//visibility:public"],
-)
+#
+#toolchain(
+#    name = "py39_for_uploader_toolchain",
+#    toolchain = "@py39_for_uploader//:python_runtimes",
+#    toolchain_type = "@bazel_tools//tools/python:toolchain_type",
+#    visibility = ["//visibility:public"],
+#)
