@@ -61,6 +61,7 @@ def _python_interpreter_symlink_impl(rctx):
     if os_name == None:
         fail
     os_arch = rctx.os.arch
+    print(rctx.attr.interpreter_toolchain_name + os_name + "," + os_arch )
     interpreter_suffix = PYTHON_INTERPRETER_SUFFIXES.get((os_name, os_arch))
 
     resolved_interpreter_label = Label("@" + rctx.attr.interpreter_toolchain_name + "_" + interpreter_suffix + "//:python")
