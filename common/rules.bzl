@@ -40,15 +40,13 @@ workspace_refs = _workspace_refs
 
 # python_interpreter_symlink
 OS_NAMES = ("mac", "win", "linux")
-OS_ARCHS = ("aarch64", "x86_64")
 (MAC, WIN, LINUX) = OS_NAMES
-(ARM64, X64) = OS_ARCHS
 
 PYTHON_INTERPRETER_SUFFIXES = {
-    (MAC, ARM64) : "aarch64-apple-darwin",
-    (MAC, X64) : "x86_64-apple-darwin",
-    (LINUX, ARM64): "aarch64-unknown-linux-gnu",
-    (LINUX, X64): "x86_64-unknown-linux-gnu",
+    (MAC, "aarch64") : "aarch64-apple-darwin",
+    (MAC, "x86_64") : "x86_64-apple-darwin",
+    (LINUX, "aarch64"): "aarch64-unknown-linux-gnu",
+    (LINUX, "amd64"): "x86_64-unknown-linux-gnu",
     (WIN, "amd64") : "x86_64-pc-windows-msvc",
 }
 
