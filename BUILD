@@ -17,93 +17,93 @@
 # under the License.
 #
 
-load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+# load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
+# load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 
-stardoc(
-    name = "docs",
-    input = "doc_hub.bzl",
-    out = "README.md",
-    deps = [
-        "//apt:lib",
-        "//aws:lib",
-        "//azure:lib",
-        "//brew:lib",
-        "//common:lib",
-        "//crates:lib",
-        "//docs:lib",
-        "//gcp:lib",
-        "//github:lib",
-        "//maven:lib",
-        "//npm:lib",
-        "//npm/assemble:lib",
-        "//npm/deploy:lib",
-        "//packer:lib",
-        "//pip:lib",
-    ],
-    symbol_names = [
-        # From: //apt:rules.bzl
-        "assemble_apt",
-        "deploy_apt",
+# stardoc(
+#     name = "docs",
+#     input = "doc_hub.bzl",
+#     out = "README.md",
+#     deps = [
+#         "//apt:lib",
+#         "//aws:lib",
+#         "//azure:lib",
+#         "//brew:lib",
+#         "//common:lib",
+#         "//crates:lib",
+#         "//docs:lib",
+#         "//gcp:lib",
+#         "//github:lib",
+#         "//maven:lib",
+#         "//npm:lib",
+#         "//npm/assemble:lib",
+#         "//npm/deploy:lib",
+#         "//packer:lib",
+#         "//pip:lib",
+#     ],
+#     symbol_names = [
+#         # From: //apt:rules.bzl
+#         "assemble_apt",
+#         "deploy_apt",
 
-        # From: //aws:rules.bzl
-        "assemble_aws",
+#         # From: //aws:rules.bzl
+#         "assemble_aws",
 
-        # From: //azure:rules.bzl
-        "assemble_azure",
+#         # From: //azure:rules.bzl
+#         "assemble_azure",
 
-        # From: //brew:rules.bzl
-        "deploy_brew",
+#         # From: //brew:rules.bzl
+#         "deploy_brew",
 
 
-        # From: //common/java_deps:rules.bzl
-        "MAVEN_COORDINATES_PREFIX",
-        "JarToMavenCoordinatesMapping",
-        "TransitiveJarToMavenCoordinatesMapping",
-        "java_deps",
+#         # From: //common/java_deps:rules.bzl
+#         "MAVEN_COORDINATES_PREFIX",
+#         "JarToMavenCoordinatesMapping",
+#         "TransitiveJarToMavenCoordinatesMapping",
+#         "java_deps",
 
-        # From: //common:rules.bzl
-        "assemble_targz",
-        "assemble_versioned",
-        "assemble_zip",
-        "checksum",
-        "file_rename",
-        "generate_json_config",
-        "tgz2zip",
-        "workspace_refs",
+#         # From: //common:rules.bzl
+#         "assemble_targz",
+#         "assemble_versioned",
+#         "assemble_zip",
+#         "checksum",
+#         "file_rename",
+#         "generate_json_config",
+#         "tgz2zip",
+#         "workspace_refs",
 
-        # From: //crates:rules.bzl
-        "assemble_crate",
-        "deploy_crate",
+#         # From: //crates:rules.bzl
+#         "assemble_crate",
+#         "deploy_crate",
 
-        # From: //docs:*/rules.bzl
-        "doxygen_docs",
-        "sphinx_docs",
+#         # From: //docs:*/rules.bzl
+#         "doxygen_docs",
+#         "sphinx_docs",
 
-        # From: //gcp:rules.bzl
-        "assemble_gcp",
+#         # From: //gcp:rules.bzl
+#         "assemble_gcp",
 
-        # From: //github:rules.bzl
-        "deploy_github",
+#         # From: //github:rules.bzl
+#         "deploy_github",
 
-        # From: //maven:rules.bzl
-        "JavaLibInfo",
-        "MavenPomInfo",
-        "MavenDeploymentInfo",
-        "assemble_maven",
-        "deploy_maven",
+#         # From: //maven:rules.bzl
+#         "JavaLibInfo",
+#         "MavenPomInfo",
+#         "MavenDeploymentInfo",
+#         "assemble_maven",
+#         "deploy_maven",
 
-        # From: //npm:rules.bzl
-        "assemble_npm",
-        "deploy_npm",
+#         # From: //npm:rules.bzl
+#         "assemble_npm",
+#         "deploy_npm",
 
-        # From: //packer:rules.bzl
-        "assemble_packer",
-        "deploy_packer",
+#         # From: //packer:rules.bzl
+#         "assemble_packer",
+#         "deploy_packer",
 
-        # From: //pip:rules.bzl
-        "assemble_pip",
-        "deploy_pip",
-    ],
-)
+#         # From: //pip:rules.bzl
+#         "assemble_pip",
+#         "deploy_pip",
+#     ],
+# )
