@@ -1,15 +1,18 @@
-Want to contribute? Your contribution is warmly welcomed! Please be aware of the following caveats:
+## Want to contribute?
+Your contributions are warmly welcomed! To make the process as smooth as possible, please note:
 
-### Large contributions
+### Large Contributions
+Before starting work on a major feature, architectural change, or large refactor, please get in touch to discuss your idea. This ensures your work aligns with the project roadmap and has the best chance of being merged.
 
-Before you start working on a larger contribution, you should get in touch with us first to
-explain your idea so we can help and possibly guide you, which you can do using:
+You can do this via:
 
-- The GitHub issue tracker;
-- [Discord](https://discord.gg/typedb).
+- [GitHub Issues](../../issues)
+- [Discord](https://typedb.com/discord)
 
-If you don't do this, large contributions are unlikely to be reviewed.
+Note: Large PRs submitted without prior discussion may be closed without review.
 
-### Code reviews and other contributions.
+### Bug Fixes & Small Changes
+Small improvements, documentation fixes, and bug reports are welcome via direct Pull Request or Issue.
 
-All submissions, including submissions by project members, require review.
+### Code Quality
+All submissions, including those from core maintainers, undergo a mandatory code review process.
