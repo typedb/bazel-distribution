@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2022 Vaticle
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,7 +17,7 @@
  * under the License.
  */
 
-package com.vaticle.bazel.distribution.maven
+package com.typedb.bazel.distribution.maven
 
 import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonObject
@@ -191,7 +189,7 @@ class PomGenerator : Callable<Unit> {
     }
 
     override fun call() {
-        val version = tagToVersion(versionFile.readText())
+        val version = tagToVersion(versionFile.readText().trim())
         val workspaceRefs = Json.parse(workspaceRefsFile.readText()).asObject()
 
         // Create an XML document for constructing the POM

@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,16 +16,24 @@
 # under the License.
 #
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+maven_artifacts = [
+    "com.eclipsesource.minimal-json:minimal-json",
+    "com.electronwill.night-config:core",
+    "com.electronwill.night-config:toml",
+    "com.google.http-client:google-http-client",
+    "info.picocli:picocli",
+    "org.apache.commons:commons-compress",
+    "org.jsoup:jsoup",
+    "org.zeroturnaround:zt-exec",
+]
 
-bzl_library(
-    name = "lib",
-    srcs = [ "rules.bzl" ],
-    visibility = ["//visibility:public"]
-)
-
-py_binary(
-    name = "tgz2zip",
-    srcs = ["tgz2zip.py"],
-    visibility = ["//visibility:public"]
-)
+maven_artifacts_with_versions = [
+    "com.eclipsesource.minimal-json:minimal-json:0.9.5",
+    "com.electronwill.night-config:core:3.6.5",
+    "com.electronwill.night-config:toml:3.6.5",
+    "com.google.http-client:google-http-client:1.34.2",
+    "info.picocli:picocli:4.3.2",
+    "org.apache.commons:commons-compress:1.21",
+    "org.jsoup:jsoup:1.16.1",
+    "org.zeroturnaround:zt-exec:1.10",
+]

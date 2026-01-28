@@ -1,36 +1,31 @@
-package com.vaticle.bazel.distribution.platform.jvm
+package com.typedb.bazel.distribution.platform.jvm
 
-import com.vaticle.bazel.distribution.common.shell.Shell
-import com.vaticle.bazel.distribution.common.util.FileUtil.listFilesRecursively
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.ENTITLEMENTS
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.FORCE
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.KEYCHAIN
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.OPTIONS
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.SIGN
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.STRICT
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.TIMESTAMP
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.VERIFY
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Paths.CONTENTS
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Paths.MAC_OS
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Paths.RUNTIME
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Paths.TMP
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.CN
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.CREATE_KEYCHAIN
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.DEFAULT_KEYCHAIN
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.DELETE_KEYCHAIN
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.IMPORT
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.LIST_KEYCHAINS
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.LOGIN_KEYCHAIN
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.PKCS12
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.SET_KEY_PARTITION_LIST
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.UNLOCK_KEYCHAIN
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.USER
-import com.vaticle.bazel.distribution.platform.jvm.AppleCodeSigner.Security.USR_BIN_CODESIGN
-import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Extensions.DYLIB
-import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Extensions.JAR
-import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Extensions.JNILIB
-import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Programs.CODESIGN
-import com.vaticle.bazel.distribution.platform.jvm.ShellArgs.Programs.SECURITY
+import com.typedb.bazel.distribution.common.shell.Shell
+import com.typedb.bazel.distribution.common.util.FileUtil.listFilesRecursively
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.ENTITLEMENTS
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.FORCE
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.KEYCHAIN
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.OPTIONS
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.SIGN
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Codesign.Args.TIMESTAMP
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Paths.TMP
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.CN
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.CREATE_KEYCHAIN
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.DEFAULT_KEYCHAIN
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.DELETE_KEYCHAIN
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.IMPORT
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.LIST_KEYCHAINS
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.LOGIN_KEYCHAIN
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.PKCS12
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.SET_KEY_PARTITION_LIST
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.UNLOCK_KEYCHAIN
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.USER
+import com.typedb.bazel.distribution.platform.jvm.AppleCodeSigner.Security.USR_BIN_CODESIGN
+import com.typedb.bazel.distribution.platform.jvm.ShellArgs.Extensions.DYLIB
+import com.typedb.bazel.distribution.platform.jvm.ShellArgs.Extensions.JAR
+import com.typedb.bazel.distribution.platform.jvm.ShellArgs.Extensions.JNILIB
+import com.typedb.bazel.distribution.platform.jvm.ShellArgs.Programs.CODESIGN
+import com.typedb.bazel.distribution.platform.jvm.ShellArgs.Programs.SECURITY
 import org.zeroturnaround.exec.ProcessResult
 import java.io.File
 import java.io.FileInputStream
@@ -140,7 +135,7 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
 
             val nativeLibs = tmpDir.listFilesRecursively().filter { it.extension in listOf(JNILIB, DYLIB) }
             if (nativeLibs.isNotEmpty()) {
-                nativeLibs.forEach { signFile(file = it, skipIfSigned = true) }
+                nativeLibs.forEach { signFile(file = it) }
                 jar.setWritable(true)
                 jar.delete()
                 shell.execute(listOf(ShellArgs.Programs.JAR, "cMf", "../${jar.path}", "."), baseDir = tmpPath)
@@ -150,18 +145,7 @@ class AppleCodeSigner(private val shell: Shell, private val macEntitlements: Fil
         }
     }
 
-    fun signFile(file: File, skipIfSigned: Boolean = false) {
-        if (skipIfSigned) {
-            val verifySignatureResult = VerifySignatureResult(
-                shell.execute(listOf(CODESIGN, VERIFY, STRICT, file.path), throwOnError = false)
-            )
-            if (verifySignatureResult.status == VerifySignatureResult.Status.SIGNED) return
-            else if (verifySignatureResult.status == VerifySignatureResult.Status.ERROR) {
-                throw IllegalStateException("Command '${CODESIGN}' failed with exit code " +
-                        "${verifySignatureResult.exitValue} and output: ${verifySignatureResult.outputString()}")
-            }
-        }
-
+    fun signFile(file: File) {
         file.setWritable(true)
         val signCommand: MutableList<String> = mutableListOf(
             CODESIGN, SIGN, certSubject,

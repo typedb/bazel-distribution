@@ -16,9 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-load("@vaticle_bazel_distribution_uploader//:requirements.bzl", cloudsmith_requirement = "requirement")
-
-exports_files(["requirements.txt"])
+load("@typedb_bazel_distribution_uploader//:requirements.bzl", cloudsmith_requirement = "requirement")
 
 py_library(
     name = "uploader",

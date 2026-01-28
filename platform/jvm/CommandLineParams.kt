@@ -1,10 +1,10 @@
-package com.vaticle.bazel.distribution.platform.jvm
+package com.typedb.bazel.distribution.platform.jvm
 
-import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_CODE_SIGNING_CERT_PASSWORD
-import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID
-import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID_PASSWORD
-import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_TEAM_ID
-import com.vaticle.bazel.distribution.platform.jvm.CommandLineParams.Keys.CONFIG_PATH
+import com.typedb.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_CODE_SIGNING_CERT_PASSWORD
+import com.typedb.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID
+import com.typedb.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_ID_PASSWORD
+import com.typedb.bazel.distribution.platform.jvm.CommandLineParams.Keys.APPLE_TEAM_ID
+import com.typedb.bazel.distribution.platform.jvm.CommandLineParams.Keys.CONFIG_PATH
 import picocli.CommandLine
 import java.io.File
 

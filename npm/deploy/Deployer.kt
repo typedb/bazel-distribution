@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2022 Vaticle
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,18 +17,18 @@
  * under the License.
  */
 
-package com.vaticle.bazel.distribution.npm.deploy
+package com.typedb.bazel.distribution.npm.deploy
 
-import com.vaticle.bazel.distribution.common.Logging.LogLevel.DEBUG
-import com.vaticle.bazel.distribution.common.Logging.Logger
-import com.vaticle.bazel.distribution.common.OS.LINUX
-import com.vaticle.bazel.distribution.common.OS.MAC
-import com.vaticle.bazel.distribution.common.shell.Shell
-import com.vaticle.bazel.distribution.common.shell.Shell.Command.Companion.arg
-import com.vaticle.bazel.distribution.common.util.SystemUtil.currentOS
-import com.vaticle.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_PASSWORD
-import com.vaticle.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_TOKEN
-import com.vaticle.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_USERNAME
+import com.typedb.bazel.distribution.common.Logging.LogLevel.DEBUG
+import com.typedb.bazel.distribution.common.Logging.Logger
+import com.typedb.bazel.distribution.common.OS.LINUX
+import com.typedb.bazel.distribution.common.OS.MAC
+import com.typedb.bazel.distribution.common.shell.Shell
+import com.typedb.bazel.distribution.common.shell.Shell.Command.Companion.arg
+import com.typedb.bazel.distribution.common.util.SystemUtil.currentOS
+import com.typedb.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_PASSWORD
+import com.typedb.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_TOKEN
+import com.typedb.bazel.distribution.npm.deploy.Options.Env.DEPLOY_NPM_USERNAME
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
@@ -40,11 +38,12 @@ class Deployer(private val options: Options) {
 
     fun deploy() {
         Shell(logger = logger, verbose = true).execute(
-                command = Shell.Command(
-                        arg("npm"), arg("publish"), arg("--registry=${options.registryURL}"),
-                        arg(authURI(options), printable = false),
-                        arg("deploy_npm.tgz")),
-                env = mapOf("PATH" to pathEnv()))
+            command = Shell.Command(
+                arg(options.npmPath), arg("publish"), arg("--registry=${options.registryURL}"),
+                arg(authURI(options), printable = false),
+                arg("deploy_npm.tgz"),
+            )
+        )
     }
 
     private fun authURI(options: Options): String {
@@ -88,22 +87,5 @@ class Deployer(private val options: Options) {
 
     private fun base64(string: String): String {
         return Base64.getEncoder().encodeToString(string.toByteArray())
-    }
-
-    private fun pathEnv(): String {
-        val commonPaths = listOf(realPath(options.npmPath).parent)
-        val otherPaths = when (currentOS) {
-            MAC, LINUX -> listOf("/usr/bin", "/bin/")
-            else -> listOf()
-        }
-        return (commonPaths + otherPaths).joinToString(":")
-    }
-
-    private fun realPath(path: String): Path {
-        val pathObj = Path.of(path)
-        return when (Files.exists(pathObj)) {
-            true -> pathObj.toRealPath()
-            false -> pathObj
-        }
     }
 }

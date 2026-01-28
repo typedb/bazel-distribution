@@ -59,11 +59,11 @@ deploy_npm = rule(
         ),
         "_npm_deployer": attr.label(
             allow_single_file = True,
-            default = "@vaticle_bazel_distribution//npm/deploy:deployer-bin_deploy.jar"
+            default = "@typedb_bazel_distribution//npm/deploy:deployer-bin_deploy.jar"
         ),
         "_npm_deployer_wrapper_template": attr.label(
             allow_single_file = True,
-            default = "@vaticle_bazel_distribution//npm/deploy:deploy.sh.template",
+            default = "@typedb_bazel_distribution//npm/deploy:deploy.sh.template",
         ),
         "_npm": attr.label(
             allow_single_file = True,

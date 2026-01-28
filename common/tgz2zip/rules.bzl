@@ -43,13 +43,12 @@ tgz2zip = rule(
         "_tgz2zip_py": attr.label(
             default = "//common/tgz2zip",
             executable = True,
-            cfg = "host"
+            cfg = "exec"
         )
     },
     implementation = _tgz2zip_impl,
     outputs = {
         "zip": "%{output_filename}.zip"
     },
-    output_to_genfiles = True,
     doc = 'Converts .tar.gz into .zip'
 )

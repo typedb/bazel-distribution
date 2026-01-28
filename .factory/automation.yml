@@ -1,7 +1,7 @@
 build:
   correctness:
     build:
-      image: vaticle-ubuntu-22.04
+      image: typedb-ubuntu-22.04
       type: foreground
       command: |
         bazel build //...

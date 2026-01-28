@@ -54,13 +54,12 @@ assemble_versioned = rule(
         "_assemble_versioned_py": attr.label(
             default = "//common/assemble_versioned:assemble-versioned",
             executable = True,
-            cfg = "host"
+            cfg = "exec"
         )
     },
     implementation = _assemble_versioned_impl,
     outputs = {
         "archive": "%{name}.zip"
     },
-    output_to_genfiles = True,
     doc = "Version multiple archives for subsequent simultaneous deployment"
 )

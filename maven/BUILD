@@ -19,7 +19,7 @@
 exports_files(["rules.bzl"])
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 
 bzl_library(
     name = "lib",
@@ -48,7 +48,7 @@ java_binary(
     runtime_deps = [
         ":pom-generator-lib"
     ],
-    main_class = "com.vaticle.bazel.distribution.maven.PomGeneratorKt",
+    main_class = "com.typedb.bazel.distribution.maven.PomGeneratorKt",
     visibility = ["//visibility:public"]
 )
 
@@ -68,6 +68,6 @@ java_binary(
     runtime_deps = [
         ":jar-assembler-lib"
     ],
-    main_class = "com.vaticle.bazel.distribution.maven.JarAssemblerKt",
+    main_class = "com.typedb.bazel.distribution.maven.JarAssemblerKt",
     visibility = ["//visibility:public"]
 )

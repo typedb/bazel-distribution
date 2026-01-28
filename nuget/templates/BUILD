@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,18 +14,5 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-
-bzl_library(
-    name = "lib",
-    srcs = [ "rules.bzl" ],
-    visibility = ["//visibility:public"]
-)
-
-py_binary(
-    name = "tgz2zip",
-    srcs = ["tgz2zip.py"],
-    visibility = ["//visibility:public"]
-)
+exports_files(["push.py"])

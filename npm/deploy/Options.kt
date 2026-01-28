@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2022 Vaticle
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,13 +17,13 @@
  * under the License.
  */
 
-package com.vaticle.bazel.distribution.npm.deploy
+package com.typedb.bazel.distribution.npm.deploy
 
-import com.vaticle.bazel.distribution.npm.deploy.Options.CommandLineParams.NPM_PATH
-import com.vaticle.bazel.distribution.npm.deploy.Options.CommandLineParams.RELEASE_REPO
-import com.vaticle.bazel.distribution.npm.deploy.Options.CommandLineParams.SNAPSHOT_REPO
-import com.vaticle.bazel.distribution.npm.deploy.Options.RepositoryType.RELEASE
-import com.vaticle.bazel.distribution.npm.deploy.Options.RepositoryType.SNAPSHOT
+import com.typedb.bazel.distribution.npm.deploy.Options.CommandLineParams.NPM_PATH
+import com.typedb.bazel.distribution.npm.deploy.Options.CommandLineParams.RELEASE_REPO
+import com.typedb.bazel.distribution.npm.deploy.Options.CommandLineParams.SNAPSHOT_REPO
+import com.typedb.bazel.distribution.npm.deploy.Options.RepositoryType.RELEASE
+import com.typedb.bazel.distribution.npm.deploy.Options.RepositoryType.SNAPSHOT
 import picocli.CommandLine
 
 class Options {

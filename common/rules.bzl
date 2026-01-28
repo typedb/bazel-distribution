@@ -17,15 +17,15 @@
 # under the License.
 #
 
-load("@vaticle_bazel_distribution//common/assemble_versioned:rules.bzl", _assemble_versioned = "assemble_versioned")
-load("@vaticle_bazel_distribution//common/checksum:rules.bzl", _checksum = "checksum")
-load("@vaticle_bazel_distribution//common/generate_json_config:rules.bzl", _generate_json_config = "generate_json_config")
-load("@vaticle_bazel_distribution//common/java_deps:rules.bzl", _java_deps = "java_deps")
-load("@vaticle_bazel_distribution//common/tgz2zip:rules.bzl", _tgz2zip = "tgz2zip")
-load("@vaticle_bazel_distribution//common/targz:rules.bzl", _assemble_targz = "assemble_targz")
-load("@vaticle_bazel_distribution//common/workspace_refs:rules.bzl", _workspace_refs = "workspace_refs")
-load("@vaticle_bazel_distribution//common/zip:rules.bzl", _assemble_zip = "assemble_zip", _unzip_file = "unzip_file")
-load("@vaticle_bazel_distribution//common/rename:rules.bzl", _file_rename = "file_rename")
+load("@typedb_bazel_distribution//common/assemble_versioned:rules.bzl", _assemble_versioned = "assemble_versioned")
+load("@typedb_bazel_distribution//common/checksum:rules.bzl", _checksum = "checksum")
+load("@typedb_bazel_distribution//common/generate_json_config:rules.bzl", _generate_json_config = "generate_json_config")
+load("@typedb_bazel_distribution//common/java_deps:rules.bzl", _java_deps = "java_deps")
+load("@typedb_bazel_distribution//common/tgz2zip:rules.bzl", _tgz2zip = "tgz2zip")
+load("@typedb_bazel_distribution//common/targz:rules.bzl", _assemble_targz = "assemble_targz")
+load("@typedb_bazel_distribution//common/workspace_refs:rules.bzl", _workspace_refs = "workspace_refs")
+load("@typedb_bazel_distribution//common/zip:rules.bzl", _assemble_zip = "assemble_zip", _unzip_file = "unzip_file")
+load("@typedb_bazel_distribution//common/rename:rules.bzl", _file_rename = "file_rename")
 
 assemble_targz = _assemble_targz
 assemble_versioned = _assemble_versioned

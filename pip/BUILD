@@ -20,20 +20,17 @@
 exports_files(["replace_imports.py", "requirements.txt"])
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@vaticle_bazel_distribution_pip//:requirements.bzl", vaticle_bazel_distribution_requirement = "requirement")
+load("@typedb_bazel_distribution_pip//:requirements.bzl", typedb_bazel_distribution_requirement = "requirement")
 
 
 bzl_library(
     name = "lib",
     srcs = [
         "rules.bzl",
-        "@vaticle_bazel_distribution_pip//:requirements.bzl",
-        "@rules_python//:bzl",
-        "@rules_python//:version.bzl",
-        "@bazel_skylib//lib:versions",
     ],
     deps = [
-        "@rules_python//python:defs_bzl",
+        "@typedb_bazel_distribution_pip//:requirements.bzl",
+        "@rules_python//python:pip_bzl",
     ],
     visibility = ["//visibility:public"]
 )
@@ -42,8 +39,8 @@ py_binary(
     name = "assemble",
     srcs = ["assemble.py"],
     deps = [
-        vaticle_bazel_distribution_requirement("setuptools"),
-        vaticle_bazel_distribution_requirement("wheel")
+        typedb_bazel_distribution_requirement("setuptools"),
+        typedb_bazel_distribution_requirement("wheel")
     ],
     visibility = ["//visibility:public"]
 )

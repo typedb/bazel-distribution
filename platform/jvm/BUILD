@@ -18,7 +18,7 @@
 #
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 
 bzl_library(
     name = "lib",
@@ -32,9 +32,9 @@ kt_jvm_library(
     name = "assembler-lib",
     srcs = glob(["*.kt"]),
     deps = [
-        "@vaticle_bazel_distribution//common",
-        "@vaticle_bazel_distribution//common/shell",
-        "@vaticle_bazel_distribution//common/util",
+        "@typedb_bazel_distribution//common",
+        "@typedb_bazel_distribution//common/shell",
+        "@typedb_bazel_distribution//common/util",
 
         "@maven//:info_picocli_picocli",
         "@maven//:org_zeroturnaround_zt_exec",
@@ -44,7 +44,7 @@ kt_jvm_library(
 java_binary(
     name = "assembler-bin",
     runtime_deps = [":assembler-lib"],
-    main_class = "com.vaticle.bazel.distribution.platform.jvm.MainKt",
+    main_class = "com.typedb.bazel.distribution.platform.jvm.MainKt",
     visibility = ["//visibility:public"],
 )
 

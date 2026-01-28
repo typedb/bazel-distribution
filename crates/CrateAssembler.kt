@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2022 Vaticle
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,7 +17,7 @@
  * under the License.
  */
 
-package com.vaticle.bazeldistribution.crates
+package com.typedb.bazel.distribution.crates
 
 import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonArray
@@ -180,7 +178,7 @@ class CrateAssembler : Callable<Unit> {
     }
 
     private fun writeCrateArchive(config: UnmodifiableConfig) {
-        val prefix = "$name-${versionFile.readText()}"
+        val prefix = "$name-${versionFile.readText().trim()}"
         outputCrateFile.outputStream().use { fos ->
             BufferedOutputStream(fos).use { bos ->
                 GZIPOutputStream(bos).use { gzos ->
@@ -235,7 +233,7 @@ class CrateAssembler : Callable<Unit> {
             cargoToml.set<Config>("package", this)
             set<String>("name", name)
             set<String>("edition", edition)
-            set<String>("version", tagToVersion(versionFile.readText()))
+            set<String>("version", tagToVersion(versionFile.readText().trim()))
             set<Array<String>>("authors", authors.filter { it != "" })
             set<String>("homepage", homepage)
             set<String>("repository", repository)

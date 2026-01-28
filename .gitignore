@@ -2,4 +2,3 @@
 *.iml
 .ijwb/
 bazel-*
-.idea

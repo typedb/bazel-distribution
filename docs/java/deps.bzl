@@ -1,7 +1,5 @@
 #
-# Copyright (C) 2022 Vaticle
-#
-# This program is free software: you can redistribute it and/or modify
+#  This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
@@ -17,7 +15,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def deps():
+def google_bazel_common():
     # Bazel Common Libraries (with javadoc)
     http_archive(
         name = "google_bazel_common",

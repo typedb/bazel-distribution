@@ -1,7 +1,7 @@
-package com.vaticle.bazel.distribution.common.shell
+package com.typedb.bazel.distribution.common.shell
 
-import com.vaticle.bazel.distribution.common.shell.Shell.Command.Companion.arg
-import com.vaticle.bazel.distribution.common.Logging.Logger
+import com.typedb.bazel.distribution.common.shell.Shell.Command.Companion.arg
+import com.typedb.bazel.distribution.common.Logging.Logger
 import org.zeroturnaround.exec.ProcessExecutor
 import org.zeroturnaround.exec.ProcessResult
 import java.nio.file.Path
@@ -38,8 +38,8 @@ class Shell(private val logger: Logger, private val verbose: Boolean = false, pr
         return verbose && (!sensitive || printSensitiveData)
     }
 
-    class Command(vararg args: Argument) {
-        val args = args.toList()
+    class Command(val args: List<Argument>) {
+        constructor(vararg args: Argument): this(args.toList())
 
         override fun toString(): String {
             return args.toString()

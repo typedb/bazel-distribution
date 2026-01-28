@@ -19,19 +19,6 @@
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-# FIXME For some reason @rules_pkg//doc_build:rules_pkg_lib cannot be accessed from here
-#  so I duplicated its content here and added "@bazel_skylib//lib:sets" because it was missing
-bzl_library(
-    name = "rules_pkg_lib",
-    srcs = [
-        "@rules_pkg//:version.bzl",
-        "@rules_pkg//pkg:bzl_srcs",
-        "@bazel_skylib//lib:paths",
-        "@bazel_skylib//lib:sets",
-    ],
-    visibility = ["//visibility:public"],
-)
-
 bzl_library(
     name = "lib",
     srcs = [
@@ -40,7 +27,7 @@ bzl_library(
         "@rules_pkg//pkg:pkg.bzl",
     ],
     deps = [
-        ":rules_pkg_lib",
+        "@rules_pkg//doc_build:rules_pkg_lib",
     ],
     visibility = ["//visibility:public"]
 )
