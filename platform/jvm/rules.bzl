@@ -298,7 +298,7 @@ _assemble_zip_to_jvm_platform = rule(
         "_assemble_jvm_platform_bin": attr.label(
             default = "@typedb_bazel_distribution//platform/jvm:assembler-bin",
             executable = True,
-            cfg = "host",
+            cfg = "exec",
         ),
     },
     outputs = {

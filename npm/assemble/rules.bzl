@@ -71,7 +71,7 @@ assemble_npm = rule(
         "_assemble_script": attr.label(
             default = "//npm/assemble",
             executable = True,
-            cfg = "host"
+            cfg = "exec"
         ),
         "_npm": attr.label(
             default = Label("@nodejs//:npm"),

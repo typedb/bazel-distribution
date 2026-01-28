@@ -221,7 +221,7 @@ java_deps = rule(
         "_java_deps_builder": attr.label(
             default = "//common/java_deps",
             executable = True,
-            cfg = "host"
+            cfg = "exec"
         )
     },
     implementation = _java_deps_impl,

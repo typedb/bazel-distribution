@@ -262,7 +262,7 @@ assemble_crate = rule(
         ),
         "_crate_assembler_tool": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = "@typedb_bazel_distribution//crates:crate-assembler",
         ),
     },
