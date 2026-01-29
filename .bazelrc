@@ -1,1 +1,2 @@
-common --enable_workspace=true
+# Bzlmod is now the default (Bazel 7+)
+# WORKSPACE is kept for backward compatibility but is deprecated
