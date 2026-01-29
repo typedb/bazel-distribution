@@ -17,6 +17,12 @@
 # under the License.
 #
 
+###############################################################################
+# DEPRECATED: This WORKSPACE file is kept for backward compatibility only.
+# New projects should use MODULE.bazel (Bzlmod) instead.
+# To use WORKSPACE mode, add `common --enable_workspace=true` to .bazelrc
+###############################################################################
+
 workspace(name="typedb_bazel_distribution")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
