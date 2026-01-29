@@ -1,5 +1,5 @@
 #
-#  Licensed to the Apache Software Foundation (ASF) under one
+# Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
 # regarding copyright ownership.  The ASF licenses this file
@@ -19,19 +19,10 @@
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-# sphinx_runner is now in //docs/python package
-alias(
-    name = "sphinx_runner",
-    actual = "//docs/python:sphinx_runner",
-    visibility = ["//visibility:public"],
-)
+exports_files(["doxyfile.template"])
 
 bzl_library(
     name = "lib",
-    srcs = [],
-    deps = [
-        "//docs/doxygen:lib",
-        "//docs/python:lib",
-    ],
+    srcs = ["rules.bzl"],
     visibility = ["//visibility:public"],
 )
