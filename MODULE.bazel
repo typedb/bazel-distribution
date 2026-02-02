@@ -25,6 +25,7 @@ module(
 
 # BCR dependencies
 bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "rules_nodejs", version = "6.3.2")
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.0.0")
@@ -116,8 +117,27 @@ llvm.sysroot(
 )
 use_repo(llvm, "llvm_toolchain")
 
-# Chromium sysroot for ARM64 (used by LLVM toolchain when building standalone)
+# http_archive for external dependencies
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# GitHub Release tool (ghr) - required for deploy_github rule
+http_archive(
+    name = "ghr_osx_zip",
+    build_file_content = 'exports_files(["ghr"])',
+    sha256 = "b5d1379e519fc3b795f3b81e5404d427e0abd8837d9e249f483a72f999dd4f47",
+    strip_prefix = "ghr_v0.12.1_darwin_amd64",
+    urls = ["https://github.com/tcnksm/ghr/releases/download/v0.12.1/ghr_v0.12.1_darwin_amd64.zip"],
+)
+
+http_archive(
+    name = "ghr_linux_tar",
+    build_file_content = 'exports_files(["ghr"])',
+    sha256 = "471c2eb1aee20dedffd00254f6c445abb5eb7d479bcae32c4210fdcf036b2dce",
+    strip_prefix = "ghr_v0.12.1_linux_amd64",
+    urls = ["https://github.com/tcnksm/ghr/releases/download/v0.12.1/ghr_v0.12.1_linux_amd64.tar.gz"],
+)
+
+# Chromium sysroot for ARM64 (used by LLVM toolchain when building standalone)
 http_archive(
     name = "org_chromium_sysroot_linux_arm64",
     build_file_content = """
@@ -135,3 +155,11 @@ register_toolchains("@llvm_toolchain//:all", dev_dependency = True)
 
 # Kotlin toolchain
 register_toolchains("@io_bazel_rules_kotlin//kotlin/internal:default_toolchain")
+
+# Node.js toolchain - required for npm rules
+node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node")
+node.toolchain(
+    name = "nodejs",
+    node_version = "17.9.1",
+)
+use_repo(node, "nodejs")
