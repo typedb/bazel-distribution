@@ -37,7 +37,10 @@ def _sphinx_docs_impl(ctx):
         outputs = [ctx.outputs.out],
         arguments = [args],
         executable = ctx.executable._script,
-        env = {"PYTHONPATH": package.path},
+        env = {
+            "PYTHONPATH": package.path,
+            "TZ": "UTC",  # Fix for babel/zoneinfo in sandboxed builds
+        },
     )
 
     return DefaultInfo(files = depset([ctx.outputs.out]))
