@@ -4,6 +4,6 @@ build:
       image: typedb-ubuntu-22.04
       type: foreground
       command: |
-        bazel build //...
+        bazel build //... --extra_toolchains=@llvm_toolchain//:all -- -//:docs -//:docs.extract
   execution:
     - build
