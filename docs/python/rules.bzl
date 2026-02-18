@@ -19,7 +19,7 @@
 
 def _sphinx_docs_impl(ctx):
     package = ctx.actions.declare_directory("package")
-
+    out_dir = ctx.actions.declare_directory(ctx.attr.out)
     ctx.actions.run_shell(
         inputs = ctx.files.target,
         outputs = [package],
@@ -28,19 +28,19 @@ def _sphinx_docs_impl(ctx):
     )
 
     args = ctx.actions.args()
-    args.add('--output', ctx.outputs.out.path)
+    args.add('--output', out_dir.path)
     args.add('--package', package.path)
     args.add('--source_dir', ctx.files.sphinx_conf[0].dirname)
 
     ctx.actions.run(
         inputs = [ctx.executable._script, package] + ctx.files.sphinx_conf + ctx.files.sphinx_rst,
-        outputs = [ctx.outputs.out],
+        outputs = [out_dir],
         arguments = [args],
         executable = ctx.executable._script,
         env = {"PYTHONPATH": package.path},
     )
 
-    return DefaultInfo(files = depset([ctx.outputs.out]))
+    return DefaultInfo(files = depset([out_dir]))
 
 
 sphinx_docs = rule(
@@ -66,7 +66,7 @@ sphinx_docs = rule(
             allow_files = True,
             doc = "Sphinx documentation master file for the package",
         ),
-        "out": attr.output(
+        "out": attr.string(
             mandatory = True,
             doc = "Output directory",
         ),
