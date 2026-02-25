@@ -16,8 +16,12 @@
 # under the License.
 #
 
+# DEPRECATED: This file is for WORKSPACE mode only.
+# New projects should use MODULE.bazel (Bzlmod) instead.
+# These functions will be removed in a future release.
+
 maven_artifacts = [
-    "com.eclipsesource.minimal-json:minimal-json",
+    "com.eclipsesource.minimal-json:minimal-jsonz",
     "com.electronwill.night-config:core",
     "com.electronwill.night-config:toml",
     "com.google.http-client:google-http-client",
