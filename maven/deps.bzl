@@ -21,7 +21,7 @@
 # These functions will be removed in a future release.
 
 maven_artifacts = [
-    "com.eclipsesource.minimal-json:minimal-jsonz",
+    "com.eclipsesource.minimal-json:minimal-json",
     "com.electronwill.night-config:core",
     "com.electronwill.night-config:toml",
     "com.google.http-client:google-http-client",
