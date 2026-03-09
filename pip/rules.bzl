@@ -407,4 +407,5 @@ def deploy_pip(name, target, snapshot, release, suffix = "", distribution_tag = 
         name = name,
         srcs = [deploy_script_target_name],
         main = deploy_script_name,
+        deps = ["//common/uploader:uploader"],
     )

@@ -258,4 +258,5 @@ def deploy_apt(name, target, snapshot, release, **kwargs):
         name = name,
         srcs = [deploy_script_target_name],
         main = deploy_script_name,
+        deps = ["//common/uploader:uploader"],
     )
