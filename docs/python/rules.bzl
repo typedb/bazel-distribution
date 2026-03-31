@@ -19,7 +19,7 @@
 
 def _sphinx_docs_impl(ctx):
     package = ctx.actions.declare_directory("package")
-    out_dir = ctx.actions.declare_directory(ctx.attr.out)
+
     ctx.actions.run_shell(
         inputs = ctx.files.target,
         outputs = [package],
@@ -27,20 +27,25 @@ def _sphinx_docs_impl(ctx):
             % (ctx.attr.package_subdir, package.path),
     )
 
+    out = ctx.actions.declare_directory(ctx.attr.out)
+
     args = ctx.actions.args()
-    args.add('--output', out_dir.path)
+    args.add('--output', out.path)
     args.add('--package', package.path)
     args.add('--source_dir', ctx.files.sphinx_conf[0].dirname)
 
     ctx.actions.run(
         inputs = [ctx.executable._script, package] + ctx.files.sphinx_conf + ctx.files.sphinx_rst,
-        outputs = [out_dir],
+        outputs = [out],
         arguments = [args],
         executable = ctx.executable._script,
-        env = {"PYTHONPATH": package.path},
+        env = {
+            "PYTHONPATH": package.path,
+            "TZ": "UTC",  # Fix for babel/zoneinfo in sandboxed builds
+        },
     )
 
-    return DefaultInfo(files = depset([out_dir]))
+    return DefaultInfo(files = depset([out]))
 
 
 sphinx_docs = rule(
@@ -68,7 +73,7 @@ sphinx_docs = rule(
         ),
         "out": attr.string(
             mandatory = True,
-            doc = "Output directory",
+            doc = "Output directory name",
         ),
         "package_subdir": attr.string(
             mandatory = True,

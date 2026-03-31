@@ -88,7 +88,7 @@ doxygen_docs = rule(
         ),
         "_doxyfile_template" : attr.label(
              allow_single_file = True,
-             default = "//docs:doxygen/doxyfile.template"
+             default = "//docs/doxygen:doxyfile.template"
         ),
         "_output_directory" : attr.string(
              doc = "The output directory for the doxygen docs",

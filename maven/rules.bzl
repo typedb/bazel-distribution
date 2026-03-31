@@ -321,12 +321,12 @@ assemble_maven(
         "_pom_generator": attr.label(
             default = "@typedb_bazel_distribution//maven:pom-generator",
             executable = True,
-            cfg = "host",
+            cfg = "exec",
         ),
         "_jar_assembler": attr.label(
             default = "@typedb_bazel_distribution//maven:jar-assembler",
             executable = True,
-            cfg = "host",
+            cfg = "exec",
         ),
     },
     implementation = _assemble_maven_impl,
@@ -436,5 +436,6 @@ def deploy_maven(name, target, snapshot, release, **kwargs):
     native.py_binary(
         name = name,
         srcs = [deploy_script_target_name],
-        main = deploy_script_name
+        main = deploy_script_name,
+        deps = [Label("//common/uploader:uploader")],
     )

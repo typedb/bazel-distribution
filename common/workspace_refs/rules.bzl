@@ -23,7 +23,7 @@ def _workspace_refs_impl(repository_ctx):
         "commits": repository_ctx.attr.workspace_commit_dict,
         "tags": repository_ctx.attr.workspace_tag_dict,
     }
-    repository_ctx.file('refs.json', content=struct(**workspace_refs_dict).to_json(), executable=False)
+    repository_ctx.file('refs.json', content=json.encode(workspace_refs_dict), executable=False)
 
 
 _workspace_refs = repository_rule(

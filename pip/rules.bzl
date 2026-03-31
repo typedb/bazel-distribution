@@ -228,7 +228,7 @@ python_repackage = rule(
         "_repackage_script": attr.label(
             default = "//pip:repackage",
             executable = True,
-            cfg = "host"
+            cfg = "exec"
         )
 
     },
@@ -307,7 +307,7 @@ assemble_pip = rule(
         "_assemble_script": attr.label(
             default = "//pip:assemble",
             executable = True,
-            cfg = "host"
+            cfg = "exec"
         ),
     },
     implementation = _assemble_pip_impl,
@@ -407,4 +407,5 @@ def deploy_pip(name, target, snapshot, release, suffix = "", distribution_tag = 
         name = name,
         srcs = [deploy_script_target_name],
         main = deploy_script_name,
+        deps = [Label("//common/uploader:uploader")],
     )

@@ -62,6 +62,7 @@ def _transitive_collect_maven_coordinate_impl(_target, ctx):
 
 
 def _collect_maven_coordinate_impl(_target, ctx):
+    jar_file = ""
     for file in _target.files.to_list():
         if file.extension == 'jar':
             jar_file = file.path
@@ -221,7 +222,7 @@ java_deps = rule(
         "_java_deps_builder": attr.label(
             default = "//common/java_deps",
             executable = True,
-            cfg = "host"
+            cfg = "exec"
         )
     },
     implementation = _java_deps_impl,

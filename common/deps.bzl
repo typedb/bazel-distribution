@@ -1,11 +1,16 @@
+# DEPRECATED: This file is for WORKSPACE mode only.
+# New projects should use MODULE.bazel (Bzlmod) instead.
+# These functions will be removed in a future release.
+
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 def rules_python():
-    git_repository(
+    http_archive(
         name = "rules_python",
-        remote = "https://github.com/bazelbuild/rules_python.git",
-        tag = "0.31.0",
+        sha256 = "4f7e2aa1eb9aa722d96498f5ef514f426c1f55161c3c9ae628c857a7128ceb07",
+        strip_prefix = "rules_python-1.0.0",
+        url = "https://github.com/bazelbuild/rules_python/releases/download/1.0.0/rules_python-1.0.0.tar.gz",
     )
 
 def rules_pkg():
@@ -27,14 +32,22 @@ def rules_kotlin():
 def rules_jvm_external():
     http_archive(
         name = "rules_jvm_external",
-        strip_prefix = "rules_jvm_external-3.2",
-        sha256 = "82262ff4223c5fda6fb7ff8bd63db8131b51b413d26eb49e3131037e79e324af",
-        url = "https://github.com/bazelbuild/rules_jvm_external/archive/3.2.zip",
+        strip_prefix = "rules_jvm_external-6.6",
+        sha256 = "3aadb9db3af0d7da2bd737d576f7e1c7db570ff99594bbd336a174e88e1c4bb2",
+        url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/6.6/rules_jvm_external-6.6.tar.gz",
+    )
+
+def rules_cc():
+    http_archive(
+        name = "rules_cc",
+        urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.17/rules_cc-0.0.17.tar.gz"],
+        sha256 = "abc605dd850f813bb37004b77db20106a19311a96b2da1c92b789da529d28fe1",
+        strip_prefix = "rules_cc-0.0.17",
     )
 
 def rules_rust():
     http_archive(
         name = "rules_rust",
-        sha256 = "9d04e658878d23f4b00163a72da3db03ddb451273eb347df7d7c50838d698f49",
-        urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.26.0/rules_rust-v0.26.0.tar.gz"],
+        integrity = "sha256-8TBqrAsli3kN8BrZq8arsN8LZUFsdLTvJ/Sqsph4CmQ=",
+        urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.56.0/rules_rust-0.56.0.tar.gz"],
     )

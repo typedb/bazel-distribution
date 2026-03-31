@@ -17,16 +17,23 @@
 # under the License.
 #
 
+###############################################################################
+# DEPRECATED: This WORKSPACE file is kept for backward compatibility only.
+# New projects should use MODULE.bazel (Bzlmod) instead.
+# To use WORKSPACE mode, add `common --enable_workspace=true` to .bazelrc
+###############################################################################
+
 workspace(name="typedb_bazel_distribution")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# Load @rules_python, @io_bazel_rules_kotlin and @rules_jvm_external
-load("//common:deps.bzl", "rules_python", "rules_kotlin", "rules_jvm_external", "rules_rust")
+# Load @rules_python, @io_bazel_rules_kotlin, @rules_jvm_external, @rules_cc and @rules_rust
+load("//common:deps.bzl", "rules_python", "rules_kotlin", "rules_jvm_external", "rules_cc", "rules_rust")
 rules_python()
 rules_kotlin()
 rules_jvm_external()
+rules_cc()
 rules_rust()
 
 # Load @rules_python

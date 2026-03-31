@@ -71,6 +71,7 @@ subprocess.check_call([
     'npm_config_cache': npm_cache,
     'PATH': ':'.join([
         '/usr/bin/',
+        '/usr/local/bin/',
         '/bin/',
         os.path.realpath('external/nodejs/bin/nodejs/bin/'),
         os.path.realpath('external/nodejs_darwin_amd64/bin/'),
