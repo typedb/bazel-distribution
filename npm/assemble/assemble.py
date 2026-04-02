@@ -32,6 +32,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--package', help="NPM package to pack")
 parser.add_argument('--version_file', help="Version file")
 parser.add_argument('--output', help="Output archive")
+parser.add_argument('--npm_dir', help="Directory containing the npm binary")
 
 args = parser.parse_args()
 
@@ -64,21 +65,20 @@ for root, dirs, files in os.walk(new_package_root):
         os.chmod(os.path.join(root, f), 0o755)
 npm_cache = tempfile.mktemp()
 
+npm_path_entries = [
+    '/usr/bin/',
+    '/usr/local/bin/',
+    '/bin/',
+]
+if args.npm_dir:
+    npm_path_entries.insert(0, os.path.realpath(args.npm_dir))
+
 subprocess.check_call([
     'npm',
     'pack'
 ], env={
     'npm_config_cache': npm_cache,
-    'PATH': ':'.join([
-        '/usr/bin/',
-        '/usr/local/bin/',
-        '/bin/',
-        os.path.realpath('external/nodejs/bin/nodejs/bin/'),
-        os.path.realpath('external/nodejs_darwin_amd64/bin/'),
-        os.path.realpath('external/nodejs_darwin_arm64/bin/'),
-        os.path.realpath('external/nodejs_linux_amd64/bin/'),
-        os.path.realpath('external/nodejs_windows_amd64/bin/'),
-    ])
+    'PATH': ':'.join(npm_path_entries),
 }, cwd=new_package_root)
 
 archives = glob.glob(os.path.join(new_package_root, '*.tgz'))

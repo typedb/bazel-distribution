@@ -39,13 +39,18 @@ def _assemble_npm_impl(ctx):
     else:
         version_file = ctx.file.version_file
 
+    npm_files = ctx.files._npm
+    npm_dir = npm_files[0].dirname if npm_files else None
+
     args = ctx.actions.args()
     args.add('--package', ctx.files.target[0].path)
     args.add('--output', ctx.outputs.npm_package.path)
     args.add('--version_file', version_file.path)
+    if npm_dir:
+        args.add('--npm_dir', npm_dir)
 
     ctx.actions.run(
-        inputs = ctx.files.target + ctx.files._npm + [version_file],
+        inputs = ctx.files.target + npm_files + [version_file],
         outputs = [ctx.outputs.npm_package],
         arguments = [args],
         executable = ctx.executable._assemble_script,
