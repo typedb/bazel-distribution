@@ -31,12 +31,7 @@ import tarfile
 import tempfile
 from runpy import run_path
 
-import sys, glob
-# Prefer using the runfile dependency than system dependency
-runfile_deps = [path for path in map(os.path.abspath, glob.glob('external/*/*'))]
-sys.path = runfile_deps + sys.path
-
-from common.uploader.uploader import Uploader
+from uploader import Uploader
 
 parser = argparse.ArgumentParser()
 parser.add_argument('repo_type')

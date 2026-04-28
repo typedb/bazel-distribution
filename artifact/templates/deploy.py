@@ -27,12 +27,7 @@ import subprocess as sp
 import sys
 from posixpath import join as urljoin
 
-import glob
-# Prefer using the runfile dependency than system dependency
-runfile_deps = [path for path in map(os.path.abspath, glob.glob('external/*/*'))]
-sys.path = runfile_deps + sys.path
-
-from common.uploader.uploader import Uploader
+from uploader import Uploader
 
 if len(sys.argv) != 2:
     raise ValueError('Should pass only <snapshot|release> as arguments')

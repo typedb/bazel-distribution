@@ -21,6 +21,7 @@ load("@typedb_bazel_distribution_uploader//:requirements.bzl", cloudsmith_requir
 py_library(
     name = "uploader",
     srcs = glob(["*.py"]),
+    imports = ["."],
     deps = [cloudsmith_requirement("requests")],
     visibility = ["//visibility:public"],
 )

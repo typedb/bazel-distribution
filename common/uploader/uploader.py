@@ -16,10 +16,10 @@ class Uploader(ABC):
     @staticmethod
     def create(username, password, repo_url):
         if repo_url.startswith("cloudsmith"):
-            from .cloudsmith import CloudsmithUploader
+            from cloudsmith import CloudsmithUploader
             return CloudsmithUploader(username, password, repo_url)
         elif repo_url.startswith("http"):
-            from .nexus import NexusUploader
+            from nexus import NexusUploader
             return NexusUploader(username, password, repo_url)
         else:
             raise ValueError("Unrecognised url: ", repo_url)

@@ -2,7 +2,7 @@ import os
 import re
 import requests
 import time
-from .uploader import Uploader, DeploymentException
+from uploader import Uploader, DeploymentException
 
 class CloudsmithUploader(Uploader):
     COMMON_OPTS = {"tags"}
