@@ -30,13 +30,7 @@ import sys
 import tempfile
 from posixpath import join as urljoin
 
-import sys, glob
-
-# Prefer using the runfile dependency than system dependency
-runfile_deps = [path for path in map(os.path.abspath, glob.glob('external/*/*'))]
-sys.path = runfile_deps + sys.path
-
-from common.uploader.uploader import Uploader
+from uploader import Uploader
 
 
 def unpack_args(_, a, b=False):

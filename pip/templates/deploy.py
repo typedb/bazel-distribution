@@ -19,14 +19,10 @@
 # under the License.
 #
 import argparse
-import glob
 import os
 import shutil
 import sys
 
-# Prefer using the runfile dependency than system dependency
-runfile_deps = [path for path in map(os.path.abspath, glob.glob('external/*/*'))]
-sys.path = runfile_deps + sys.path
 # noinspection PyUnresolvedReferences
 import twine.commands.upload
 

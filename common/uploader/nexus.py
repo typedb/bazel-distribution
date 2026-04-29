@@ -2,7 +2,7 @@ import hashlib
 import os
 import requests
 
-from .uploader import Uploader, DeploymentException
+from uploader import Uploader, DeploymentException
 
 class NexusUploader(Uploader):
     COMMON_OPTS = set()
@@ -55,7 +55,7 @@ class NexusUploader(Uploader):
             success = (response.status_code // 100)== 2
 
         if not success:
-            from .cloudsmith import  DeploymentException
+            from cloudsmith import DeploymentException
             raise DeploymentException("HTTP request for %s failed" % stage, response)
         else:
             return True
