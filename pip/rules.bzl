@@ -407,5 +407,10 @@ def deploy_pip(name, target, snapshot, release, suffix = "", distribution_tag = 
         name = name,
         srcs = [deploy_script_target_name],
         main = deploy_script_name,
-        deps = [Label("//common/uploader:uploader")],
+        deps = [
+            Label("//common/uploader:uploader"),
+            typedb_bazel_distribution_requirement("twine"),
+            typedb_bazel_distribution_requirement("setuptools"),
+            typedb_bazel_distribution_requirement("wheel"),
+        ],
     )
