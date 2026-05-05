@@ -198,15 +198,10 @@ def _deploy_pip_impl(ctx):
         }
     )
 
-    all_python_files = []
-    for dep in ctx.attr._deps:
-        all_python_files.extend(dep.data_runfiles.files.to_list())
-        all_python_files.extend(dep.default_runfiles.files.to_list())
-
     return DefaultInfo(
         executable = deployment_script,
         runfiles = ctx.runfiles(
-                files=[ctx.attr.target[PyDeploymentInfo].package, ctx.attr.target[PyDeploymentInfo].wheel, ctx.attr.target[PyDeploymentInfo].version_file] + all_python_files
+                files=[ctx.attr.target[PyDeploymentInfo].package, ctx.attr.target[PyDeploymentInfo].wheel, ctx.attr.target[PyDeploymentInfo].version_file]
             )
         )
 
@@ -353,27 +348,6 @@ _deploy_pip = rule(
             mandatory = True,
             doc = 'Name of instantiated deployment script'
         ),
-        "_deps": attr.label_list(
-            default = [
-                typedb_bazel_distribution_requirement("twine"),
-                typedb_bazel_distribution_requirement("setuptools"),
-                typedb_bazel_distribution_requirement("wheel"),
-                typedb_bazel_distribution_requirement("requests"),
-                typedb_bazel_distribution_requirement("urllib3"),
-                typedb_bazel_distribution_requirement("chardet"),
-                typedb_bazel_distribution_requirement("certifi"),
-                typedb_bazel_distribution_requirement("idna"),
-                typedb_bazel_distribution_requirement("tqdm"),
-                typedb_bazel_distribution_requirement("requests_toolbelt"),
-                typedb_bazel_distribution_requirement("pkginfo"),
-                typedb_bazel_distribution_requirement("readme_renderer"),
-                typedb_bazel_distribution_requirement("Pygments"),
-                typedb_bazel_distribution_requirement("docutils"),
-                typedb_bazel_distribution_requirement("bleach"),
-                typedb_bazel_distribution_requirement("webencodings"),
-                typedb_bazel_distribution_requirement("packaging")
-            ]
-        )
     },
     executable = True,
     implementation = _deploy_pip_impl,
@@ -407,5 +381,24 @@ def deploy_pip(name, target, snapshot, release, suffix = "", distribution_tag = 
         name = name,
         srcs = [deploy_script_target_name],
         main = deploy_script_name,
-        deps = [Label("//common/uploader:uploader")],
+        deps = [
+            Label("//common/uploader:uploader"),
+            typedb_bazel_distribution_requirement("twine"),
+            typedb_bazel_distribution_requirement("setuptools"),
+            typedb_bazel_distribution_requirement("wheel"),
+            typedb_bazel_distribution_requirement("requests"),
+            typedb_bazel_distribution_requirement("urllib3"),
+            typedb_bazel_distribution_requirement("chardet"),
+            typedb_bazel_distribution_requirement("certifi"),
+            typedb_bazel_distribution_requirement("idna"),
+            typedb_bazel_distribution_requirement("tqdm"),
+            typedb_bazel_distribution_requirement("requests_toolbelt"),
+            typedb_bazel_distribution_requirement("pkginfo"),
+            typedb_bazel_distribution_requirement("readme_renderer"),
+            typedb_bazel_distribution_requirement("Pygments"),
+            typedb_bazel_distribution_requirement("docutils"),
+            typedb_bazel_distribution_requirement("bleach"),
+            typedb_bazel_distribution_requirement("webencodings"),
+            typedb_bazel_distribution_requirement("packaging"),
+        ],
     )
