@@ -68,6 +68,9 @@ python.toolchain(is_default = True, python_version = "3.11")
 # C/C++
 bazel_dep(name = "rules_cc", version = "0.0.17")
 
+# .NET (used by //nuget:rules.bzl)
+bazel_dep(name = "rules_dotnet", version = "0.14.0")
+
 # Node.js
 bazel_dep(name = "rules_nodejs", version = "6.3.2")
 node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node")
