@@ -25,7 +25,7 @@ kt_jvm_library(
     deps = [
         "@typedb_bazel_distribution//common",
 
-        "@maven//:org_zeroturnaround_zt_exec",
+        "@bazel_distribution_maven//:org_zeroturnaround_zt_exec",
     ],
     visibility = ["//visibility:public"],
 )

@@ -35,8 +35,8 @@ bzl_library(
 kt_jvm_library(
     name = "pom-generator-lib",
     deps = [
-      "@maven//:com_eclipsesource_minimal_json_minimal_json",
-      "@maven//:info_picocli_picocli",
+      "@bazel_distribution_maven//:com_eclipsesource_minimal_json_minimal_json",
+      "@bazel_distribution_maven//:info_picocli_picocli",
     ],
     srcs = [
         "PomGenerator.kt",
@@ -56,7 +56,7 @@ java_binary(
 kt_jvm_library(
     name = "jar-assembler-lib",
     deps = [
-      "@maven//:info_picocli_picocli",
+      "@bazel_distribution_maven//:info_picocli_picocli",
     ],
     srcs = [
         "JarAssembler.kt"

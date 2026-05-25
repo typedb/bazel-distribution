@@ -38,8 +38,8 @@ kt_jvm_library(
         "@typedb_bazel_distribution//common/shell",
         "@typedb_bazel_distribution//common/util",
 
-        "@maven//:info_picocli_picocli",
-        "@maven//:org_zeroturnaround_zt_exec",
+        "@bazel_distribution_maven//:info_picocli_picocli",
+        "@bazel_distribution_maven//:org_zeroturnaround_zt_exec",
     ],
 )
 

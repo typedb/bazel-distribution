@@ -109,6 +109,7 @@ use_repo(
 bazel_dep(name = "rules_jvm_external", version = "6.6")
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
+    name = "bazel_distribution_maven",
     artifacts = [
         "com.eclipsesource.minimal-json:minimal-json:0.9.5",
         "com.electronwill.night-config:core:3.6.5",
@@ -124,7 +125,7 @@ maven.install(
     ],
     strict_visibility = True,
 )
-use_repo(maven, "maven")
+use_repo(maven, "bazel_distribution_maven")
 
 # ===========================================================
 # Assembly & deployments
