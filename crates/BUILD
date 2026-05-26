@@ -38,11 +38,11 @@ kt_jvm_library(
         "CrateAssembler.kt",
     ],
     deps = [
-        "@maven//:com_eclipsesource_minimal_json_minimal_json",
-        "@maven//:com_electronwill_night_config_core",
-        "@maven//:com_electronwill_night_config_toml",
-        "@maven//:info_picocli_picocli",
-        "@maven//:org_apache_commons_commons_compress",
+        "@bazel_distribution_maven//:com_eclipsesource_minimal_json_minimal_json",
+        "@bazel_distribution_maven//:com_electronwill_night_config_core",
+        "@bazel_distribution_maven//:com_electronwill_night_config_toml",
+        "@bazel_distribution_maven//:info_picocli_picocli",
+        "@bazel_distribution_maven//:org_apache_commons_commons_compress",
     ],
 )
 
@@ -61,9 +61,9 @@ kt_jvm_library(
         "CrateDeployer.kt",
     ],
     deps = [
-        "@maven//:com_eclipsesource_minimal_json_minimal_json",
-        "@maven//:com_google_http_client_google_http_client",
-        "@maven//:info_picocli_picocli",
+        "@bazel_distribution_maven//:com_eclipsesource_minimal_json_minimal_json",
+        "@bazel_distribution_maven//:com_google_http_client_google_http_client",
+        "@bazel_distribution_maven//:info_picocli_picocli",
     ],
 )
 

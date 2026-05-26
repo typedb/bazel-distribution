@@ -66,7 +66,9 @@ def _parse_version(ctx):
     version = ctx.attr.version
     if not version:
         version = ctx.var.get("version", "0.0.0")
-
+    if len(version) == 40:
+        # this is a commit SHA, most likely
+        version = "0.0.0-{}".format(version)
     return version
 
 
