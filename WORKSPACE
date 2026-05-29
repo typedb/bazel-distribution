@@ -57,10 +57,10 @@ maven_install(
     fetch_sources = True,
 )
 
-# Load @typedb_bazel_distribution_pip
-load("//pip:deps.bzl", "typedb_bazel_distribution_pip")
-typedb_bazel_distribution_pip()
-load("@typedb_bazel_distribution_pip//:requirements.bzl", pip_install_deps = "install_deps")
+# Load @pip_tdb
+load("//pip:deps.bzl", "pip_tdb")
+pip_tdb()
+load("@pip_tdb//:requirements.bzl", pip_install_deps = "install_deps")
 pip_install_deps()
 
 # Load //docs
@@ -103,8 +103,8 @@ http_archive(
 load("@bazel_stardoc//:setup.bzl", "stardoc_repositories")
 stardoc_repositories()
 
-# Load @typedb_bazel_distribution_uploader
-load("//common/uploader:deps.bzl", "typedb_bazel_distribution_uploader")
-typedb_bazel_distribution_uploader()
-load("@typedb_bazel_distribution_uploader//:requirements.bzl", uploader_install_deps = "install_deps")
+# Load @pip_uploader
+load("//common/uploader:deps.bzl", "pip_uploader")
+pip_uploader()
+load("@pip_uploader//:requirements.bzl", uploader_install_deps = "install_deps")
 uploader_install_deps()
