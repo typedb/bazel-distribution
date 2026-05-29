@@ -32,6 +32,8 @@ load("//common/assemble_versioned:rules.bzl", _assemble_versioned = "assemble_ve
 
 load("//common/checksum:rules.bzl", _checksum = "checksum")
 
+load("//common/package_versioning:rules.bzl", _package_version_vars = "package_version_vars")
+
 load("//common/generate_json_config:rules.bzl", _generate_json_config = "generate_json_config")
 
 load("//common/java_deps:rules.bzl",

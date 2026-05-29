@@ -17,32 +17,10 @@
 # under the License.
 #
 
-exports_files(["archiver.py", "common.py"])
-
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 
 bzl_library(
     name = "lib",
     srcs = [ "rules.bzl" ],
-    deps = [
-        "//common/assemble_versioned:lib",
-        "//common/checksum:lib",
-        "//common/generate_json_config:lib",
-        "//common/java_deps:lib",
-        "//common/rename:lib",
-        "//common/package_versioning:lib",
-        "//common/targz:lib",
-        "//common/tgz2zip:lib",
-        "//common/workspace_refs:lib",
-        "//common/zip:lib"
-    ],
     visibility = ["//visibility:public"]
-)
-
-kt_jvm_library(
-    name = "common",
-    srcs = glob(["*.kt"]),
-    deps = [],
-    visibility = ["//visibility:public"],
 )
