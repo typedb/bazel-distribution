@@ -16,12 +16,11 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-load("@pip_uploader//:requirements.bzl", cloudsmith_requirement = "requirement")
 
-py_library(
-    name = "uploader",
-    srcs = glob(["*.py"]),
-    imports = ["."],
-    deps = [cloudsmith_requirement("requests")],
-    visibility = ["//visibility:public"],
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+bzl_library(
+    name = "lib",
+    srcs = [ "rules.bzl" ],
+    visibility = ["//visibility:public"]
 )

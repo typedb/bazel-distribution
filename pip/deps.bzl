@@ -3,8 +3,8 @@
 
 load("@rules_python//python:pip.bzl", "pip_parse")
 
-def typedb_bazel_distribution_pip():
+def pip_tdb():
     pip_parse(
-        name = "typedb_bazel_distribution_pip",
+        name = "pip_tdb",
         requirements_lock = "@typedb_bazel_distribution//pip:requirements.txt",
     )

@@ -31,6 +31,7 @@ bzl_library(
         "//common/generate_json_config:lib",
         "//common/java_deps:lib",
         "//common/rename:lib",
+        "//common/package_versioning:lib",
         "//common/targz:lib",
         "//common/tgz2zip:lib",
         "//common/workspace_refs:lib",

@@ -90,19 +90,19 @@ bazel_dep(name = "platforms", version = "0.0.10")
 # Pip
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
-    hub_name = "typedb_bazel_distribution_pip",
+    hub_name = "pip_tdb",
     python_version = "3.11",
     requirements_lock = "//:pip/requirements.txt",
 )
 pip.parse(
-    hub_name = "typedb_bazel_distribution_uploader",
+    hub_name = "pip_uploader",
     python_version = "3.11",
     requirements_lock = "//:common/uploader/requirements.txt",
 )
 use_repo(
     pip,
-    "typedb_bazel_distribution_pip",
-    "typedb_bazel_distribution_uploader",
+    "pip_tdb",
+    "pip_uploader",
 )
 
 # Maven

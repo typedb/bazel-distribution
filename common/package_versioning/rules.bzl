@@ -16,12 +16,14 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-load("@pip_uploader//:requirements.bzl", cloudsmith_requirement = "requirement")
 
-py_library(
-    name = "uploader",
-    srcs = glob(["*.py"]),
-    imports = ["."],
-    deps = [cloudsmith_requirement("requests")],
-    visibility = ["//visibility:public"],
+load("@rules_pkg//pkg:providers.bzl", "PackageVariablesInfo")
+
+def _package_version_vars_impl(ctx):
+    version = ctx.var.get("version", "0.0.0")
+    return PackageVariablesInfo(values = {"version": version})
+
+package_version_vars = rule(
+    implementation = _package_version_vars_impl,
+    attrs = {}
 )

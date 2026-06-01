@@ -17,7 +17,7 @@
 # under the License.
 #
 
-load("@typedb_bazel_distribution_pip//:requirements.bzl", typedb_bazel_distribution_requirement = "requirement")
+load("@pip_tdb//:requirements.bzl", typedb_bazel_distribution_requirement = "requirement")
 
 
 def _python_repackage_impl(ctx):

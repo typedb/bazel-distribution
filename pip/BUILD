@@ -20,7 +20,7 @@
 exports_files(["replace_imports.py", "requirements.txt"])
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@typedb_bazel_distribution_pip//:requirements.bzl", typedb_bazel_distribution_requirement = "requirement")
+load("@pip_tdb//:requirements.bzl", typedb_bazel_distribution_requirement = "requirement")
 
 
 bzl_library(
@@ -29,7 +29,7 @@ bzl_library(
         "rules.bzl",
     ],
     deps = [
-        "@typedb_bazel_distribution_pip//:requirements.bzl",
+        "@pip_tdb//:requirements.bzl",
         "@rules_python//python:pip_bzl",
     ],
     visibility = ["//visibility:public"]
