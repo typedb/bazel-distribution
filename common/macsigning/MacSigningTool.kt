@@ -5,6 +5,8 @@ import com.typedb.bazel.distribution.common.Logging.LogLevel
 import com.typedb.bazel.distribution.common.shell.Shell
 import java.io.File
 import java.nio.file.Files
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 class MacSigningTool(private val params: MacSigningCommandLineParams) {
     private val shell = Shell(Logging.Logger(logLevel = if (params.verbose) LogLevel.DEBUG else LogLevel.ERROR), params.verbose)
@@ -60,7 +62,7 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
     private object Keychain {
         fun checkUnlocked(shell: Shell, name: String) {
             try {
-                shell.execute(listOf("security", "show-keychain-info", name))
+                shell.execute(listOf("security", "show-keychain-info", name), timeout = Duration.ofSeconds(10))
             } catch (e: Exception) {
                 throw IllegalStateException(
                     "Signing keychain '$name' is not available or is locked. " +
@@ -78,7 +80,7 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
             if (entitlements != null) command += listOf("--entitlements", entitlements.path)
             command += listOf("--options", "runtime", "--timestamp", "--keychain", keychainName, file.path)
             if (verbose) command += "-vvv"
-            shell.execute(command)
+            shell.execute(command, timeout = Duration.ofSeconds(10))
         }
     }
 
@@ -87,7 +89,7 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
             val command: MutableList<String> = mutableListOf("productsign")
             if (verbose) command += "-v"
             command += listOf("--sign", installerCertSubject, inputPkg.path, outputPkg.path)
-            shell.execute(command)
+            shell.execute(command, timeout = Duration.ofSeconds(10))
         }
     }
 
@@ -105,7 +107,7 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
                 command += listOf("--scripts", scriptsDir.absolutePath)
             }
             command += output.absolutePath
-            shell.execute(command)
+            shell.execute(command, timeout = Duration.ofSeconds(10))
         }
     }
 
@@ -116,7 +118,8 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
                 "--distribution", distributionXml.absolutePath,
                 "--package-path", packageDir.absolutePath,
                 output.absolutePath,
-            ))
+            ), timeout = Duration.ofSeconds(10)
+            )
         }
     }
 
@@ -131,16 +134,16 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
                 Shell.Command.arg("--team-id"), Shell.Command.arg(appleTeamId),
                 Shell.Command.arg("--wait"), Shell.Command.arg("--timeout"), Shell.Command.arg("1h"),
                 Shell.Command.arg(file.path)
-            )))
+            ), timeout = Duration.ofSeconds(600)))
         }
 
         private fun retrieveSecret(shell: Shell, keychainName: String, account: String): String =
-            shell.execute(listOf("security", "find-generic-password", "-a", account, "-s", keychainName, "-w", keychainName))
+            shell.execute(listOf("security", "find-generic-password", "-a", account, "-s", keychainName, "-w", keychainName), timeout = Duration.ofSeconds(10))
                 .outputString().trim()
 
 
         fun staple(shell: Shell, verbose: Boolean, file: File) {
-            shell.execute(listOfNotNull("xcrun", "stapler", "staple", if (verbose) "-v" else null, file.path))
+            shell.execute(listOfNotNull("xcrun", "stapler", "staple", if (verbose) "-v" else null, file.path), timeout = Duration.ofSeconds(10))
         }
     }
 }
