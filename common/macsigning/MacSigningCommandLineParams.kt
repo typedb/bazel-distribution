@@ -7,9 +7,6 @@ class MacSigningCommandLineParams {
     @CommandLine.Option(names = ["--src"], required = true)
     lateinit var src: File
 
-    @CommandLine.Option(names = ["--signing_identities"], required = true)
-    lateinit var signingIdentities: File
-
     @CommandLine.Option(names = ["--distribution_xml"], required = true)
     lateinit var distributionXml: File
 
@@ -31,11 +28,20 @@ class MacSigningCommandLineParams {
     @CommandLine.Option(names = ["--intermediate_pkg_name"], required = true)
     lateinit var intermediatePkgName: String
 
+    @CommandLine.Option(names = ["--keychain_name"], required = true)
+    lateinit var keychainName: String
+
     @CommandLine.Option(names = ["--entitlements"], required = true)
     lateinit var entitlements: File
 
     @CommandLine.Option(names = ["--sign_binaries"], arity = "0..*")
     var signBinaries: List<String> = emptyList()
+
+    @CommandLine.Option(names = ["--apple_id"])
+    var appleId: String = ""
+
+    @CommandLine.Option(names = ["--apple_team_id"])
+    var appleTeamId: String = ""
 
     @CommandLine.Option(names = ["--notarize"])
     var notarize: Boolean = false

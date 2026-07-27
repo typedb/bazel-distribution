@@ -8,27 +8,25 @@ import java.nio.file.Files
 
 class MacSigningTool(private val params: MacSigningCommandLineParams) {
     private val shell = Shell(Logging.Logger(logLevel = if (params.verbose) LogLevel.DEBUG else LogLevel.ERROR), params.verbose)
-    private val signer = AppleSigner(shell = shell, verbose = params.verbose)
 
     fun run() {
+        Keychain.checkUnlocked(shell, params.keychainName)
         val workDir = Files.createTempDirectory("macsigning").toFile()
         val srcDir = extractArchive(workDir)
         try {
-            signer.init(listOf(params.signingIdentities to requireEnv(Env.SIGNING_IDENTITIES_PASSWORD)))
             signBinaries(srcDir)
             val intermediatePkg = File(workDir, params.intermediatePkgName)
-            pkgbuild(srcDir, intermediatePkg)
+            Pkgbuild.run(shell, params.identifier, srcDir, params.installLocation, intermediatePkg)
             val packedPkg = File(workDir, "packed.pkg")
-            productbuild(params.distributionXml, workDir, packedPkg)
+            Productbuild.run(shell, params.distributionXml, workDir, packedPkg)
             val signedPkg = File(workDir, "signed.pkg")
-            signer.productsign(params.installerCertSubject, packedPkg, signedPkg)
+            Productsign.sign(shell, params.verbose, params.installerCertSubject, packedPkg, signedPkg)
             if (params.notarize) {
-                signer.notarize(signedPkg, requireEnv(Env.APPLE_ID), requireEnv(Env.APPLE_ID_PASSWORD), requireEnv(Env.APPLE_TEAM_ID))
-                signer.staple(signedPkg)
+                Notarytool.submit(shell, params.verbose, params.keychainName, params.appleId, params.appleTeamId, signedPkg)
+                Notarytool.staple(shell, params.verbose, signedPkg)
             }
             signedPkg.copyTo(params.output, overwrite = true)
         } finally {
-            signer.close()
             workDir.deleteRecursively()
         }
     }
@@ -42,36 +40,88 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
 
     private fun signBinaries(srcDir: File) {
         for (relativePath in params.signBinaries) {
-            signer.codesign(params.certSubject, File(srcDir, relativePath), params.entitlements)
+            Codesign.sign(shell, params.verbose, params.certSubject, params.keychainName, File(srcDir, relativePath), params.entitlements)
         }
     }
 
-    private fun pkgbuild(rootDir: File, output: File) {
-        shell.execute(listOf(
-            "pkgbuild",
-            "--identifier", params.identifier,
-            "--root", rootDir.absolutePath,
-            "--install-location", params.installLocation,
-            output.absolutePath,
-        ))
+    private object Keychain {
+        fun checkUnlocked(shell: Shell, name: String) {
+            try {
+                shell.execute(listOf("security", "show-keychain-info", name))
+            } catch (e: Exception) {
+                throw IllegalStateException(
+                    "Signing keychain '$name' is not available or is locked. " +
+                    "Run the keychain setup first: bazel run @typedb_bazel_distribution//common/macsigning:keychain-setup -- --signing_identities=<path/to/identities.p12> --keychain_name=$name",
+                    e
+                )
+            }
+        }
     }
 
-    private fun productbuild(distributionXml: File, packageDir: File, output: File) {
-        shell.execute(listOf(
-            "productbuild",
-            "--distribution", distributionXml.absolutePath,
-            "--package-path", packageDir.absolutePath,
-            output.absolutePath,
-        ))
+    private object Codesign {
+        fun sign(shell: Shell, verbose: Boolean, certSubject: String, keychainName: String, file: File, entitlements: File?) {
+            file.setWritable(true)
+            val command: MutableList<String> = mutableListOf("codesign", "-s", certSubject, "-f")
+            if (entitlements != null) command += listOf("--entitlements", entitlements.path)
+            command += listOf("--options", "runtime", "--timestamp", "--keychain", keychainName, file.path)
+            if (verbose) command += "-vvv"
+            shell.execute(command)
+        }
     }
 
-    private fun requireEnv(name: String): String =
-        System.getenv(name) ?: error("Required environment variable $name is not set")
+    private object Productsign {
+        fun sign(shell: Shell, verbose: Boolean, installerCertSubject: String, inputPkg: File, outputPkg: File) {
+            val command: MutableList<String> = mutableListOf("productsign")
+            if (verbose) command += "-v"
+            command += listOf("--sign", installerCertSubject, inputPkg.path, outputPkg.path)
+            shell.execute(command)
+        }
+    }
 
-    private object Env {
-        const val SIGNING_IDENTITIES_PASSWORD = "APPLE_SIGNING_IDENTITIES_PASSWORD"
-        const val APPLE_ID = "APPLE_ID"
-        const val APPLE_ID_PASSWORD = "APPLE_ID_PASSWORD"
-        const val APPLE_TEAM_ID = "APPLE_TEAM_ID"
+    private object Pkgbuild {
+        fun run(shell: Shell, identifier: String, rootDir: File, installLocation: String, output: File) {
+            shell.execute(listOf(
+                "pkgbuild",
+                "--identifier", identifier,
+                "--root", rootDir.absolutePath,
+                "--install-location", installLocation,
+                output.absolutePath,
+            ))
+        }
+    }
+
+    private object Productbuild {
+        fun run(shell: Shell, distributionXml: File, packageDir: File, output: File) {
+            shell.execute(listOf(
+                "productbuild",
+                "--distribution", distributionXml.absolutePath,
+                "--package-path", packageDir.absolutePath,
+                output.absolutePath,
+            ))
+        }
+    }
+
+    private object Notarytool {
+        fun submit(shell: Shell, verbose: Boolean, keychainName: String, appleId: String, appleTeamId: String, file: File) {
+            val appleIdPassword = retrieveSecret(shell, keychainName, appleId)
+            shell.execute(Shell.Command(listOfNotNull(
+                Shell.Command.arg("xcrun"), Shell.Command.arg("notarytool"), Shell.Command.arg("submit"),
+                if (verbose) Shell.Command.arg("-v") else null,
+                Shell.Command.arg("--apple-id"), Shell.Command.arg(appleId),
+                Shell.Command.arg("--password"), Shell.Command.arg(appleIdPassword, printable = false),
+                Shell.Command.arg("--team-id"), Shell.Command.arg(appleTeamId),
+                Shell.Command.arg("--wait"), Shell.Command.arg("--timeout"), Shell.Command.arg("1h"),
+                Shell.Command.arg(file.path)
+            )))
+        }
+
+        private fun retrieveSecret(shell: Shell, keychainName: String, account: String): String =
+            shell.execute(listOf("security", "find-generic-password", "-a", account, "-s", keychainName, "-w", keychainName))
+                .outputString().trim()
+
+
+        fun staple(shell: Shell, verbose: Boolean, file: File) {
+            shell.execute(listOfNotNull("xcrun", "stapler", "staple", if (verbose) "-v" else null, file.path))
+        }
     }
 }

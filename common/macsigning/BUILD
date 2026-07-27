@@ -18,6 +18,13 @@ java_binary(
     visibility = ["//visibility:public"],
 )
 
+java_binary(
+    name = "keychain-setup",
+    runtime_deps = [":macsigning-lib"],
+    main_class = "com.typedb.bazel.distribution.common.macsigning.KeychainSetupMainKt",
+    visibility = ["//visibility:public"],
+)
+
 exports_files([
     "default_entitlements.plist",
     "distribution_template.xml",
