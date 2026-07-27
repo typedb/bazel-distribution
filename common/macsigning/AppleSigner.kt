@@ -2,33 +2,21 @@ package com.typedb.bazel.distribution.common.macsigning
 
 import com.typedb.bazel.distribution.common.shell.Shell
 import java.io.File
-import java.io.FileInputStream
-import java.security.KeyStore
-import java.security.cert.Certificate
-import java.security.cert.X509Certificate
-import javax.naming.ldap.LdapName
-import javax.naming.ldap.Rdn
 
 class AppleSigner(
     private val shell: Shell,
     private val verbose: Boolean,
 ) : AutoCloseable {
-    fun init(cert: File, certPassword: String, certSubject: String, installerCert: File, installerCertPassword: String, installerCertSubject: String) {
-        val actualCertSubject = Keychain.findCertSubject(cert, certPassword)
-        if (actualCertSubject != certSubject) throw IllegalArgumentException(
-            "cert subject mismatch: expected '$certSubject' but cert contains '$actualCertSubject'"
-        )
-        val actualInstallerCertSubject = Keychain.findCertSubject(installerCert, installerCertPassword)
-        if (actualInstallerCertSubject != installerCertSubject) throw IllegalArgumentException(
-            "installer cert subject mismatch: expected '$installerCertSubject' but cert contains '$actualInstallerCertSubject'"
-        )
+    fun init(certs: List<Pair<File, String>>) {
+        val (firstCert, firstPassword) = certs.first()
         Keychain.delete(shell)
-        Keychain.create(shell, certPassword)
+        Keychain.create(shell, firstPassword)
         Keychain.setDefault(shell)
-        Keychain.unlock(shell, certPassword)
-        Keychain.importIdentity(shell, cert, certPassword, "/usr/bin/codesign")
-        Keychain.importIdentity(shell, installerCert, installerCertPassword, "/usr/bin/productsign")
-        Keychain.makeAccessible(shell, certPassword)
+        Keychain.unlock(shell, firstPassword)
+        certs.forEach { (cert, password) ->
+            Keychain.importIdentity(shell, cert, password, "/usr/bin/codesign", "/usr/bin/productsign")
+        }
+        Keychain.makeAccessible(shell, firstPassword)
     }
 
     override fun close() = Keychain.delete(shell)
@@ -39,8 +27,8 @@ class AppleSigner(
     fun staple(file: File) = Notarytool.staple(shell, verbose, file)
 
     private object Keychain {
-        const val NAME = "macsigning.keychain"
-        const val PASSWORD = "macsigning-keychain"
+        val NAME = "macsigning-${java.util.UUID.randomUUID()}.keychain"
+        val PASSWORD = java.util.UUID.randomUUID().toString()
 
         fun delete(shell: Shell) {
             val keychainListInfo = shell.execute(listOf("security", "list-keychains")).outputString()
@@ -85,18 +73,6 @@ class AppleSigner(
                 Shell.Command.arg("-k"), Shell.Command.arg(PASSWORD, printable = false),
                 Shell.Command.arg(NAME)
             ))
-        }
-
-        fun findCertSubject(cert: File, certPassword: String): String {
-            val keystore = KeyStore.getInstance("PKCS12")
-            keystore.load(FileInputStream(cert.path), certPassword.toCharArray())
-            assert(keystore.aliases().toList().size == 1)
-            val certificate: Certificate = keystore.getCertificate(keystore.aliases().nextElement())
-            if (certificate !is X509Certificate) throw IllegalStateException("Imported cert is not an X509 certificate (type = ${certificate.type})")
-            val subject = certificate.subjectX500Principal.name
-            val subjectCommonName: Rdn = LdapName(subject).rdns.find { it.type == "CN" }
-                ?: throw IllegalStateException("Imported X509 cert subject does not specify a common name (CN)! (subject = $subject)")
-            return subjectCommonName.value.toString()
         }
     }
 

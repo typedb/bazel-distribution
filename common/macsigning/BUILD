@@ -6,8 +6,6 @@ kt_jvm_library(
     deps = [
         "@typedb_bazel_distribution//common",
         "@typedb_bazel_distribution//common/shell",
-        "@typedb_bazel_distribution//common/util",
-
         "@bazel_distribution_maven//:info_picocli_picocli",
     ],
     visibility = ["//visibility:public"],

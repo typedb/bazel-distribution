@@ -39,38 +39,25 @@ def _mac_pkg_installer_impl(ctx):
         ),
     )
 
-    config = "certSubject: {}\n".format(ctx.attr.cert_subject)
-    config += "identifier: {}\n".format(ctx.attr.identifier)
-    config += "installLocation: {}\n".format(ctx.attr.install_location)
-    config += "installerCertSubject: {}\n".format(ctx.attr.installer_cert_subject)
-    config += "intermediatePkgName: {}\n".format(intermediate_pkg_name)
-    config += "notarize: {}\n".format(str(ctx.attr.notarize).lower())
-    config += "verbose: {}\n".format(str(ctx.attr.verbose).lower())
-
-    if ctx.attr.sign_binaries:
-        config += "signBinaries: {}\n".format(",".join(ctx.attr.sign_binaries))
-
-    config += "entitlements: {}\n".format(ctx.file.entitlements.path)
-
-    config_file = ctx.actions.declare_file(ctx.attr.name + "__config.properties")
-    ctx.actions.run_shell(
-        inputs = [],
-        outputs = [config_file],
-        command = "printf '%s' '{}' > {}".format(config, config_file.path),
-    )
-
-    inputs = [ctx.file.src, ctx.file.cert, ctx.file.installer_cert, ctx.file.entitlements, distribution_xml, config_file, version_file]
+    inputs = [ctx.file.src, ctx.file.entitlements, ctx.file.signing_identities, distribution_xml, version_file]
 
     output_pkg = ctx.outputs.pkg
 
-    arguments = [
-        "--config_path={}".format(config_file.path),
-        "--src={}".format(ctx.file.src.path),
-        "--cert={}".format(ctx.file.cert.path),
-        "--installer_cert={}".format(ctx.file.installer_cert.path),
-        "--distribution_xml={}".format(distribution_xml.path),
-        "--output={}".format(output_pkg.path),
-    ]
+    arguments = (
+        ["--src={}".format(ctx.file.src.path),
+         "--signing_identities={}".format(ctx.file.signing_identities.path)] +
+        ["--distribution_xml={}".format(distribution_xml.path),
+         "--output={}".format(output_pkg.path),
+         "--cert_subject={}".format(ctx.attr.cert_subject),
+         "--identifier={}".format(ctx.attr.identifier),
+         "--install_location={}".format(ctx.attr.install_location),
+         "--installer_cert_subject={}".format(ctx.attr.installer_cert_subject),
+         "--intermediate_pkg_name={}".format(intermediate_pkg_name),
+         "--entitlements={}".format(ctx.file.entitlements.path)] +
+        ["--sign_binaries={}".format(b) for b in ctx.attr.sign_binaries] +
+        (["--notarize"] if ctx.attr.notarize else []) +
+        (["--verbose"] if ctx.attr.verbose else [])
+    )
 
     ctx.actions.run(
         inputs = inputs,
@@ -113,26 +100,21 @@ mac_pkg_installer = rule(
             doc = "Bundle identifier passed to pkgbuild (e.g. 'com.typedb.typedb')",
         ),
         "install_location": attr.string(
-            mandatory = True,
-            doc = "Installation path passed to pkgbuild (e.g. '/Applications/typedb')",
+            default = "/usr/local",
+            doc = "Installation path passed to pkgbuild (e.g. '/Applications/typedb'); defaults to '/usr/local'",
         ),
         "installer_cert_subject": attr.string(
             mandatory = True,
             doc = "Developer ID Installer identity string for productsign (e.g. 'Developer ID Installer: Acme Ltd (XXXXXXXXXX)')",
         ),
-        "cert": attr.label(
+        "signing_identities": attr.label(
             mandatory = True,
             allow_single_file = True,
-            doc = "Developer ID Application certificate (.p12) for codesigning the binaries",
+            doc = "PKCS12 (.p12) file containing the signing identities to import; password read from APPLE_SIGNING_IDENTITIES_PASSWORD env var",
         ),
         "cert_subject": attr.string(
             mandatory = True,
-            doc = "Developer ID Application identity string for codesign (e.g. 'Developer ID Application: Acme Ltd (XXXXXXXXXX)'); must match the CN in cert",
-        ),
-        "installer_cert": attr.label(
-            mandatory = True,
-            allow_single_file = True,
-            doc = "Developer ID Installer certificate (.p12) for productsign; password read from APPLE_INSTALLER_CERT_PASSWORD env var",
+            doc = "Developer ID Application identity string for codesign (e.g. 'Developer ID Application: Acme Ltd (XXXXXXXXXX)')",
         ),
         "distribution_template": attr.label(
             allow_single_file = True,
@@ -156,5 +138,12 @@ mac_pkg_installer = rule(
     outputs = {
         "pkg": "%{name}.pkg",
     },
-    doc = "Signs binaries inside a tar archive, packages them into a macOS installer .pkg, and optionally notarizes it.",
+    doc = """Signs binaries inside a tar archive, packages them into a macOS installer .pkg, and optionally notarizes it.
+
+Requires the following env vars to be forwarded to the build action via --action_env (e.g. in .bazelrc):
+  APPLE_SIGNING_IDENTITIES_PASSWORD  -- password for the signing_identities .p12 file
+  APPLE_ID                           -- Apple ID for notarization (only if notarize = True)
+  APPLE_ID_PASSWORD                  -- app-specific password for notarization (only if notarize = True)
+  APPLE_TEAM_ID                      -- Apple team ID for notarization (only if notarize = True)
+""",
 )
