@@ -95,7 +95,8 @@ def _mac_pkg_installer_impl(ctx):
 
     inputs = [ctx.file.src, ctx.file.entitlements, distribution_xml, version_file]
 
-    output_pkg = ctx.outputs.pkg
+    pkg_filename = (ctx.attr.pkg_name if ctx.attr.pkg_name else ctx.attr.name) + ".pkg"
+    output_pkg = ctx.actions.declare_file(pkg_filename)
 
     arguments = (
         ["--src={}".format(ctx.file.src.path)] +
@@ -186,7 +187,11 @@ mac_pkg_installer = rule(
         ),
         "notarize": attr.bool(
             default = False,
-            doc = "If True, submit to Apple notarization and staple the ticket after productsign; requires apple_id and apple_team_id to be set, and the app-specific password to be stored in the keychain via keychain_setup",
+            doc = "If True, submit to Apple notarization and staple the ticket after productsign; requires apple_id and apple_team_id to be set, and the app-specific password to be stored in the keychain via keychain_setup. If notarization fails, set verbose, get submission-id, and `xcrun notarytool log` ",
+        ),
+        "pkg_name": attr.string(
+            default = "",
+            doc = "Output filename (without .pkg extension); defaults to the rule name",
         ),
         "verbose": attr.bool(
             default = False,
@@ -197,9 +202,6 @@ mac_pkg_installer = rule(
             executable = True,
             cfg = "exec",
         ),
-    },
-    outputs = {
-        "pkg": "%{name}.pkg",
     },
     doc = "Signs binaries inside a tar archive, packages them into a macOS installer .pkg, and optionally notarizes it. Requires the signing keychain to be set up beforehand via the keychain_setup rule.",
 )
