@@ -134,7 +134,7 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
                 Shell.Command.arg("--team-id"), Shell.Command.arg(appleTeamId),
                 Shell.Command.arg("--wait"), Shell.Command.arg("--timeout"), Shell.Command.arg("1h"),
                 Shell.Command.arg(file.path)
-            ), timeout = Duration.ofSeconds(600)))
+            )), timeout = Duration.ofSeconds(600))
         }
 
         private fun retrieveSecret(shell: Shell, keychainName: String, account: String): String =
