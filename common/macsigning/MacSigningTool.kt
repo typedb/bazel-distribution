@@ -16,7 +16,7 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
         try {
             signBinaries(srcDir)
             val intermediatePkg = File(workDir, params.intermediatePkgName)
-            Pkgbuild.run(shell, params.identifier, srcDir, params.installLocation, intermediatePkg)
+            Pkgbuild.run(shell, params.identifier, srcDir, params.installLocation, params.postinstallScript, intermediatePkg)
             val packedPkg = File(workDir, "packed.pkg")
             Productbuild.run(shell, params.distributionXml, workDir, packedPkg)
             val signedPkg = File(workDir, "signed.pkg")
@@ -79,14 +79,20 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
     }
 
     private object Pkgbuild {
-        fun run(shell: Shell, identifier: String, rootDir: File, installLocation: String, output: File) {
-            shell.execute(listOf(
+        fun run(shell: Shell, identifier: String, rootDir: File, installLocation: String, postinstallScript: File?, output: File) {
+            val command = mutableListOf(
                 "pkgbuild",
                 "--identifier", identifier,
                 "--root", rootDir.absolutePath,
                 "--install-location", installLocation,
-                output.absolutePath,
-            ))
+            )
+            if (postinstallScript != null) {
+                val scriptsDir = File(output.parentFile, "scripts").also { it.mkdirs() }
+                postinstallScript.copyTo(File(scriptsDir, "postinstall"), overwrite = true)
+                command += listOf("--scripts", scriptsDir.absolutePath)
+            }
+            command += output.absolutePath
+            shell.execute(command)
         }
     }
 

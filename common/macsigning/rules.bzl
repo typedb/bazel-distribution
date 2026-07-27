@@ -94,7 +94,19 @@ def _mac_pkg_installer_impl(ctx):
         ),
     )
 
-    inputs = [ctx.file.src, ctx.file.entitlements, distribution_xml, version_file]
+    postinstall_script = None
+    if ctx.attr.symlinks:
+        postinstall_script = ctx.actions.declare_file(ctx.attr.name + ".postinstall")
+        ctx.actions.write(
+            output = postinstall_script,
+            content = "#!/bin/bash\n" + "\n".join([
+                "ln -sf {} {}".format(s.split(":")[1], s.split(":")[0])
+                for s in ctx.attr.symlinks
+            ]),
+            is_executable = True,
+        )
+
+    inputs = [ctx.file.src, ctx.file.entitlements, distribution_xml, version_file] + ([postinstall_script] if postinstall_script else [])
 
     pkg_filename = (ctx.attr.pkg_name if ctx.attr.pkg_name else ctx.attr.name) + ".pkg"
     output_pkg = ctx.actions.declare_file(pkg_filename)
@@ -113,6 +125,7 @@ def _mac_pkg_installer_impl(ctx):
         ["--sign_binaries={}".format(b) for b in ctx.attr.sign_binaries] +
         (["--apple_id={}".format(ctx.attr.apple_id)] if ctx.attr.apple_id else []) +
         (["--apple_team_id={}".format(ctx.attr.apple_team_id)] if ctx.attr.apple_team_id else []) +
+        (["--postinstall_script={}".format(postinstall_script.path)] if postinstall_script else []) +
         (["--notarize"] if ctx.attr.notarize else []) +
         (["--verbose"] if ctx.attr.verbose else [])
     )
@@ -189,6 +202,10 @@ mac_pkg_installer = rule(
         "notarize": attr.bool(
             default = False,
             doc = "If True, submit to Apple notarization and staple the ticket after productsign; requires apple_id and apple_team_id to be set, and the app-specific password to be stored in the keychain via keychain_setup. If notarization fails, set verbose, get submission-id, and `xcrun notarytool log` ",
+        ),
+        "symlinks": attr.string_list(
+            default = [],
+            doc = "Symlinks to create post-install, as 'link:target' pairs (e.g. '/usr/local/bin/typedb:/usr/local/typedb/bin/typedb')",
         ),
         "pkg_name": attr.string(
             default = "",

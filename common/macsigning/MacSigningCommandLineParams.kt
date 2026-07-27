@@ -34,6 +34,9 @@ class MacSigningCommandLineParams {
     @CommandLine.Option(names = ["--entitlements"], required = true)
     lateinit var entitlements: File
 
+    @CommandLine.Option(names = ["--postinstall_script"])
+    var postinstallScript: File? = null
+
     @CommandLine.Option(names = ["--sign_binaries"], arity = "0..*")
     var signBinaries: List<String> = emptyList()
 
