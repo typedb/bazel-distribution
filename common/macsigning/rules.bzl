@@ -54,6 +54,7 @@ keychain_setup = rule(
 
 def _mac_pkg_installer_impl(ctx):
     intermediate_pkg_name = ctx.attr.name + "-intermediate.pkg"
+    install_location = ctx.attr.install_location if ctx.attr.install_location else "/usr/local/{}".format(ctx.attr.identifier)
 
     # Resolve version: ctx.var overrides version_file
     if "version" in ctx.var:
@@ -104,7 +105,7 @@ def _mac_pkg_installer_impl(ctx):
          "--output={}".format(output_pkg.path),
          "--application_cert_subject={}".format(ctx.attr.application_cert_subject),
          "--identifier={}".format(ctx.attr.identifier),
-         "--install_location={}".format(ctx.attr.install_location),
+         "--install_location={}".format(install_location),
          "--installer_cert_subject={}".format(ctx.attr.installer_cert_subject),
          "--intermediate_pkg_name={}".format(intermediate_pkg_name),
          "--entitlements={}".format(ctx.file.entitlements.path),
@@ -157,8 +158,8 @@ mac_pkg_installer = rule(
             doc = "Bundle identifier passed to pkgbuild (e.g. 'com.typedb.typedb')",
         ),
         "install_location": attr.string(
-            default = "/usr/local",
-            doc = "Installation path passed to pkgbuild (e.g. '/Applications/typedb'); defaults to '/usr/local'",
+            default = "",
+            doc = "Installation path passed to pkgbuild (e.g. '/usr/local/typedb'); defaults to '/usr/local/{identifier}'",
         ),
         "installer_cert_subject": attr.string(
             mandatory = True,
