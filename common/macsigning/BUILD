@@ -20,4 +20,7 @@ java_binary(
     visibility = ["//visibility:public"],
 )
 
-exports_files(["distribution_template.xml"])
+exports_files([
+    "default_entitlements.plist",
+    "distribution_template.xml",
+])

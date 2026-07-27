@@ -13,21 +13,27 @@ class AppleSigner(
     private val shell: Shell,
     private val verbose: Boolean,
 ) : AutoCloseable {
-    lateinit var certSubject: String
-
-    fun init(cert: File, certPassword: String) {
+    fun init(cert: File, certPassword: String, certSubject: String, installerCert: File, installerCertPassword: String, installerCertSubject: String) {
+        val actualCertSubject = Keychain.findCertSubject(cert, certPassword)
+        if (actualCertSubject != certSubject) throw IllegalArgumentException(
+            "cert subject mismatch: expected '$certSubject' but cert contains '$actualCertSubject'"
+        )
+        val actualInstallerCertSubject = Keychain.findCertSubject(installerCert, installerCertPassword)
+        if (actualInstallerCertSubject != installerCertSubject) throw IllegalArgumentException(
+            "installer cert subject mismatch: expected '$installerCertSubject' but cert contains '$actualInstallerCertSubject'"
+        )
         Keychain.delete(shell)
         Keychain.create(shell, certPassword)
         Keychain.setDefault(shell)
         Keychain.unlock(shell, certPassword)
-        Keychain.importSigningIdentity(shell, cert, certPassword)
+        Keychain.importIdentity(shell, cert, certPassword, "/usr/bin/codesign")
+        Keychain.importIdentity(shell, installerCert, installerCertPassword, "/usr/bin/productsign")
         Keychain.makeAccessible(shell, certPassword)
-        certSubject = Keychain.findCertSubject(cert, certPassword)
     }
 
     override fun close() = Keychain.delete(shell)
 
-    fun codesign(file: File, entitlements: File? = null) = Codesign.sign(shell, verbose, certSubject, file, entitlements)
+    fun codesign(certSubject: String, file: File, entitlements: File? = null) = Codesign.sign(shell, verbose, certSubject, file, entitlements)
     fun productsign(installerCertSubject: String, inputPkg: File, outputPkg: File) = Productsign.sign(shell, verbose, installerCertSubject, inputPkg, outputPkg)
     fun notarize(file: File, appleID: String, appleIDPassword: String, appleTeamID: String) = Notarytool.submit(shell, verbose, appleID, appleIDPassword, appleTeamID, file)
     fun staple(file: File) = Notarytool.staple(shell, verbose, file)
@@ -62,14 +68,13 @@ class AppleSigner(
             ))
         }
 
-        fun importSigningIdentity(shell: Shell, cert: File, certPassword: String) {
-            shell.execute(Shell.Command(
+        fun importIdentity(shell: Shell, cert: File, certPassword: String, vararg trustedApps: String) {
+            shell.execute(Shell.Command(listOfNotNull(
                 Shell.Command.arg("security"), Shell.Command.arg("import"),
                 Shell.Command.arg(cert.path),
                 Shell.Command.arg("-k"), Shell.Command.arg(NAME),
                 Shell.Command.arg("-P"), Shell.Command.arg(certPassword, printable = false),
-                Shell.Command.arg("-T"), Shell.Command.arg("/usr/bin/codesign")
-            ))
+            ) + trustedApps.flatMap { listOf(Shell.Command.arg("-T"), Shell.Command.arg(it)) }))
         }
 
         fun makeAccessible(shell: Shell, certPassword: String) {

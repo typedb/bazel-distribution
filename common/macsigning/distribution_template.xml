@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <installer-gui-script minSpecVersion="1">
     <pkg-ref id="{IDENTIFIER}"/>
-    <options customize="never" require-scripts="false" rootVolumeOnly="true"/>
+    <options customize="never" require-scripts="false" rootVolumeOnly="true" hostArchitectures="{HOST_ARCHITECTURE}"/>
     <domains enable_anywhere="false" enable_currentUserHome="true" enable_localSystem="false"/>
     <choices-outline>
         <line choice="default">
@@ -12,5 +12,5 @@
     <choice id="{IDENTIFIER}" visible="false">
         <pkg-ref id="{IDENTIFIER}"/>
     </choice>
-    <pkg-ref id="{IDENTIFIER}" version="0" onConclusion="none">{PKG_FILENAME}</pkg-ref>
+    <pkg-ref id="{IDENTIFIER}" version="{VERSION}" onConclusion="none">{PKG_FILENAME}</pkg-ref>
 </installer-gui-script>
