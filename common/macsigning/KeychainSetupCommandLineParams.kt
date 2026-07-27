@@ -10,9 +10,6 @@ class KeychainSetupCommandLineParams {
     @CommandLine.Option(names = ["--keychain_name"], required = true)
     lateinit var keychainName: String
 
-    @CommandLine.Option(names = ["--apple_id"])
-    var appleId: String? = null
-
-    @CommandLine.Option(names = ["--apple_team_id"])
-    var appleTeamId: String? = null
+    @CommandLine.Option(names = ["--passwords"], arity = "0..*")
+    var passwords: List<String> = emptyList()
 }

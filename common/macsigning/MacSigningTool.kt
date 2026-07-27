@@ -40,7 +40,7 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
 
     private fun signBinaries(srcDir: File) {
         for (relativePath in params.signBinaries) {
-            Codesign.sign(shell, params.verbose, params.certSubject, params.keychainName, File(srcDir, relativePath), params.entitlements)
+            Codesign.sign(shell, params.verbose, params.applicationCertSubject, params.keychainName, File(srcDir, relativePath), params.entitlements)
         }
     }
 

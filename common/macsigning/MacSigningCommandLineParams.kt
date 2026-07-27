@@ -13,8 +13,8 @@ class MacSigningCommandLineParams {
     @CommandLine.Option(names = ["--output"], required = true)
     lateinit var output: File
 
-    @CommandLine.Option(names = ["--cert_subject"], required = true)
-    lateinit var certSubject: String
+    @CommandLine.Option(names = ["--application_cert_subject"], required = true)
+    lateinit var applicationCertSubject: String
 
     @CommandLine.Option(names = ["--identifier"], required = true)
     lateinit var identifier: String

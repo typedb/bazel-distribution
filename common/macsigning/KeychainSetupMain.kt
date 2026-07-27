@@ -5,5 +5,5 @@ import picocli.CommandLine
 fun main(args: Array<String>) {
     val params = KeychainSetupCommandLineParams()
     CommandLine(params).parseArgs(*args)
-    KeychainSetupTool(params.signingIdentities, params.keychainName, params.appleId, params.appleTeamId).run()
+    KeychainSetupTool(params.signingIdentities, params.keychainName, params.passwords).run()
 }

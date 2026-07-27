@@ -8,11 +8,10 @@ import java.io.File
 class KeychainSetupTool(
     private val signingIdentities: File,
     private val keychainName: String,
-    private val appleId: String?,
-    private val appleTeamId: String?,
+    private val passwords: List<String>,
 ) {
     private val shell = Shell(Logging.Logger(logLevel = LogLevel.DEBUG), true)
-    private val password = java.util.UUID.randomUUID().toString()
+    private val keychainPassword = java.util.UUID.randomUUID().toString()
 
     fun run() {
         delete()
@@ -21,7 +20,11 @@ class KeychainSetupTool(
         unlock()
         importIdentity()
         makeAccessible()
-        if (appleId != null && appleTeamId != null) storeNotarizationCredentials(appleId, appleTeamId)
+        passwords.forEach { entry ->
+            val (account, envVar) = entry.split(":", limit = 2)
+            val secret = System.getenv(envVar) ?: error("Required environment variable $envVar is not set")
+            storeSecret(account, secret)
+        }
     }
 
     private fun delete() {
@@ -32,7 +35,7 @@ class KeychainSetupTool(
     private fun create() {
         shell.execute(Shell.Command(
             Shell.Command.arg("security"), Shell.Command.arg("create-keychain"),
-            Shell.Command.arg("-p"), Shell.Command.arg(password, printable = false),
+            Shell.Command.arg("-p"), Shell.Command.arg(keychainPassword, printable = false),
             Shell.Command.arg(keychainName),
         ))
     }
@@ -45,7 +48,7 @@ class KeychainSetupTool(
     private fun unlock() {
         shell.execute(Shell.Command(
             Shell.Command.arg("security"), Shell.Command.arg("unlock-keychain"),
-            Shell.Command.arg("-p"), Shell.Command.arg(password, printable = false),
+            Shell.Command.arg("-p"), Shell.Command.arg(keychainPassword, printable = false),
             Shell.Command.arg(keychainName),
         ))
     }
@@ -68,16 +71,9 @@ class KeychainSetupTool(
             Shell.Command.arg("security"), Shell.Command.arg("set-key-partition-list"),
             Shell.Command.arg("-S"), Shell.Command.arg("apple-tool:,apple:,codesign:"),
             Shell.Command.arg("-s"),
-            Shell.Command.arg("-k"), Shell.Command.arg(password, printable = false),
+            Shell.Command.arg("-k"), Shell.Command.arg(keychainPassword, printable = false),
             Shell.Command.arg(keychainName),
         ))
-    }
-
-    private fun storeNotarizationCredentials(appleId: String, appleTeamId: String) {
-        val appleIdPassword = System.getenv(APPLE_ID_PASSWORD_ENV)
-            ?: error("Required environment variable $APPLE_ID_PASSWORD_ENV is not set")
-        storeSecret(appleId, appleIdPassword)
-        storeSecret(ACCOUNT_APPLE_TEAM_ID, appleTeamId)
     }
 
     private fun storeSecret(account: String, value: String) {
@@ -92,7 +88,5 @@ class KeychainSetupTool(
 
     companion object {
         const val SIGNING_IDENTITIES_PASSWORD_ENV = "APPLE_SIGNING_IDENTITIES_PASSWORD"
-        const val APPLE_ID_PASSWORD_ENV = "APPLE_ID_PASSWORD"
-        const val ACCOUNT_APPLE_TEAM_ID = "apple-team-id"
     }
 }

@@ -4,11 +4,7 @@ def _rlocation(ctx, f):
     return ctx.workspace_name + "/" + f.short_path
 
 def _keychain_setup_impl(ctx):
-    optional_args = ""
-    if ctx.attr.apple_id:
-        optional_args += ' --apple_id="{}"'.format(ctx.attr.apple_id)
-    if ctx.attr.apple_team_id:
-        optional_args += ' --apple_team_id="{}"'.format(ctx.attr.apple_team_id)
+    passwords_args = " ".join(['--passwords="{}"'.format(p) for p in ctx.attr.passwords])
 
     script = ctx.actions.declare_file(ctx.attr.name + ".sh")
     ctx.actions.write(
@@ -16,12 +12,12 @@ def _keychain_setup_impl(ctx):
         content = """#!/usr/bin/env bash
 set -euo pipefail
 RUNFILES="${{RUNFILES_DIR:-${{BASH_SOURCE[0]}}.runfiles}}"
-exec "$RUNFILES/{binary}" --signing_identities="$RUNFILES/{p12}" --keychain_name="{keychain_name}"{optional_args}
+exec "$RUNFILES/{binary}" --signing_identities="$RUNFILES/{p12}" --keychain_name="{keychain_name}" {passwords_args}
 """.format(
             binary = _rlocation(ctx, ctx.executable._keychain_setup_bin),
             p12 = _rlocation(ctx, ctx.file.signing_identities),
             keychain_name = ctx.attr.keychain_name,
-            optional_args = optional_args,
+            passwords_args = passwords_args,
         ),
         is_executable = True,
     )
@@ -43,13 +39,9 @@ keychain_setup = rule(
             default = "macsigning.keychain",
             doc = "Name of the keychain to create; must match the keychain_name used in the corresponding mac_pkg_installer rule",
         ),
-        "apple_id": attr.string(
-            default = "",
-            doc = "Apple ID for notarization (e.g. 'user@example.com'); if set with apple_team_id, notarization credentials are stored in the keychain; password read from APPLE_ID_PASSWORD env var",
-        ),
-        "apple_team_id": attr.string(
-            default = "",
-            doc = "Apple Team ID for notarization (e.g. 'XXXXXXXXXX')",
+        "passwords": attr.string_list(
+            default = [],
+            doc = "List of 'account_name:ENV_VAR_NAME' pairs; each env var is read at runtime and stored in the keychain under the given account name",
         ),
         "_keychain_setup_bin": attr.label(
             default = "@typedb_bazel_distribution//common/macsigning:keychain-setup",
@@ -109,7 +101,7 @@ def _mac_pkg_installer_impl(ctx):
         ["--src={}".format(ctx.file.src.path)] +
         ["--distribution_xml={}".format(distribution_xml.path),
          "--output={}".format(output_pkg.path),
-         "--cert_subject={}".format(ctx.attr.cert_subject),
+         "--application_cert_subject={}".format(ctx.attr.application_cert_subject),
          "--identifier={}".format(ctx.attr.identifier),
          "--install_location={}".format(ctx.attr.install_location),
          "--installer_cert_subject={}".format(ctx.attr.installer_cert_subject),
@@ -175,7 +167,7 @@ mac_pkg_installer = rule(
             default = "macsigning.keychain",
             doc = "Name of the keychain to use for signing; must match the keychain_name used in the corresponding keychain_setup rule",
         ),
-        "cert_subject": attr.string(
+        "application_cert_subject": attr.string(
             mandatory = True,
             doc = "Developer ID Application identity string for codesign (e.g. 'Developer ID Application: Acme Ltd (XXXXXXXXXX)')",
         ),
@@ -194,7 +186,7 @@ mac_pkg_installer = rule(
         ),
         "notarize": attr.bool(
             default = False,
-            doc = "If True, submit to Apple notarization and staple the ticket after productsign; requires apple_id and apple_team_id to be set, and APPLE_ID_PASSWORD to be stored in the keychain via keychain_setup",
+            doc = "If True, submit to Apple notarization and staple the ticket after productsign; requires apple_id and apple_team_id to be set, and the app-specific password to be stored in the keychain via keychain_setup",
         ),
         "verbose": attr.bool(
             default = False,
@@ -209,12 +201,5 @@ mac_pkg_installer = rule(
     outputs = {
         "pkg": "%{name}.pkg",
     },
-    doc = """Signs binaries inside a tar archive, packages them into a macOS installer .pkg, and optionally notarizes it.
-
-Requires the following env vars to be forwarded to the build action via --action_env (e.g. in .bazelrc):
-  APPLE_SIGNING_IDENTITIES_PASSWORD  -- password for the signing_identities .p12 file
-  APPLE_ID                           -- Apple ID for notarization (only if notarize = True)
-  APPLE_ID_PASSWORD                  -- app-specific password for notarization (only if notarize = True)
-  APPLE_TEAM_ID                      -- Apple team ID for notarization (only if notarize = True)
-""",
+    doc = "Signs binaries inside a tar archive, packages them into a macOS installer .pkg, and optionally notarizes it. Requires the signing keychain to be set up beforehand via the keychain_setup rule.",
 )
