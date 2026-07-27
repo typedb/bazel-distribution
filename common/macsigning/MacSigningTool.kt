@@ -10,25 +10,37 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
     private val shell = Shell(Logging.Logger(logLevel = if (params.verbose) LogLevel.DEBUG else LogLevel.ERROR), params.verbose)
 
     fun run() {
+        progress("Checking keychain '${params.keychainName}'...")
         Keychain.checkUnlocked(shell, params.keychainName)
         val workDir = Files.createTempDirectory("macsigning").toFile()
+        progress("Extracting archive '${params.src.name}'...")
         val srcDir = extractArchive(workDir)
         try {
             signBinaries(srcDir)
             val intermediatePkg = File(workDir, params.intermediatePkgName)
+            progress("Running pkgbuild...")
             Pkgbuild.run(shell, params.identifier, srcDir, params.installLocation, params.postinstallScript, intermediatePkg)
             val packedPkg = File(workDir, "packed.pkg")
+            progress("Running productbuild...")
             Productbuild.run(shell, params.distributionXml, workDir, packedPkg)
             val signedPkg = File(workDir, "signed.pkg")
+            progress("Running productsign...")
             Productsign.sign(shell, params.verbose, params.installerCertSubject, packedPkg, signedPkg)
             if (params.notarize) {
+                progress("Submitting for notarization...")
                 Notarytool.submit(shell, params.verbose, params.keychainName, params.appleId, params.appleTeamId, signedPkg)
+                progress("Stapling notarization ticket...")
                 Notarytool.staple(shell, params.verbose, signedPkg)
             }
+            progress("Copying output to '${params.output}'...")
             signedPkg.copyTo(params.output, overwrite = true)
         } finally {
             workDir.deleteRecursively()
         }
+    }
+
+    private fun progress(message: String) {
+        if (params.verbose) System.err.println(message)
     }
 
     private fun extractArchive(workDir: File): File {
@@ -40,6 +52,7 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
 
     private fun signBinaries(srcDir: File) {
         for (relativePath in params.signBinaries) {
+            progress("Codesigning '$relativePath'...")
             Codesign.sign(shell, params.verbose, params.applicationCertSubject, params.keychainName, File(srcDir, relativePath), params.entitlements)
         }
     }
