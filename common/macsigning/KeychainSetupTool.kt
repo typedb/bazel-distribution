@@ -19,7 +19,6 @@ class KeychainSetupTool(
     fun run() {
         delete()
         create()
-        setDefault()
         unlock()
         importIdentity()
         makeAccessible()
@@ -43,12 +42,7 @@ class KeychainSetupTool(
         ))
     }
 
-    private fun setDefault() {
-        shell.execute(listOf("security", "default-keychain", "-s", keychainName))
-        shell.execute(listOf("security", "list-keychains", "-d", "user", "-s", "login.keychain", keychainName))
-    }
-
-    private fun unlock() {
+private fun unlock() {
         shell.execute(Shell.Command(
             Shell.Command.arg("security"), Shell.Command.arg("unlock-keychain"),
             Shell.Command.arg("-p"), Shell.Command.arg(keychainPassword, printable = false),
