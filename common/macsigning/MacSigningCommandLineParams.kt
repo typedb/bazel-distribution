@@ -22,6 +22,9 @@ class MacSigningCommandLineParams {
     @CommandLine.Option(names = ["--install_location"], required = true)
     lateinit var installLocation: String
 
+    @CommandLine.Option(names = ["--version_file"], required = true)
+    lateinit var versionFile: File
+
     @CommandLine.Option(names = ["--installer_cert_subject"], required = true)
     lateinit var installerCertSubject: String
 

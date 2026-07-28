@@ -11,6 +11,13 @@ import java.util.concurrent.TimeUnit
 class MacSigningTool(private val params: MacSigningCommandLineParams) {
     private val shell = Shell(Logging.Logger(logLevel = if (params.verbose) LogLevel.DEBUG else LogLevel.ERROR), params.verbose)
 
+    private val installLocation: String by lazy {
+        var location = params.installLocation
+        if ("{IDENTIFIER}" in location) location = location.replace("{IDENTIFIER}", params.identifier)
+        if ("{VERSION}" in location) location = location.replace("{VERSION}", params.versionFile.readText().trim())
+        location
+    }
+
     fun run() {
         progress("Checking keychain '${params.keychainName}'...")
         Keychain.checkUnlocked(shell, params.keychainName)
@@ -21,7 +28,7 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
             signBinaries(srcDir)
             val intermediatePkg = File(workDir, params.intermediatePkgName)
             progress("Running pkgbuild...")
-            Pkgbuild.run(shell, params.identifier, srcDir, params.installLocation, params.postinstallScript, intermediatePkg)
+            Pkgbuild.run(shell, params.identifier, srcDir, installLocation, params.postinstallScript, intermediatePkg)
             val packedPkg = File(workDir, "packed.pkg")
             progress("Running productbuild...")
             Productbuild.run(shell, params.distributionXml, workDir, packedPkg)
