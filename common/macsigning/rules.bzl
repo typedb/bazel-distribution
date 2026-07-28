@@ -53,6 +53,9 @@ keychain_setup = rule(
 )
 
 def _mac_pkg_installer_impl(ctx):
+    if not ctx.attr.enable_anywhere and not ctx.attr.enable_current_user_home and not ctx.attr.enable_local_system:
+        fail("At least one of 'enable_anywhere', 'enable_current_user_home', or 'enable_local_system' must be True")
+
     intermediate_pkg_name = ctx.attr.name + "-intermediate.pkg"
     install_location = ctx.attr.install_location if ctx.attr.install_location else "/usr/local/{IDENTIFIER}"
 
@@ -85,6 +88,7 @@ def _mac_pkg_installer_impl(ctx):
             "{ENABLE_ANYWHERE}": str(ctx.attr.enable_anywhere).lower(),
             "{ENABLE_CURRENT_USER_HOME}": str(ctx.attr.enable_current_user_home).lower(),
             "{ENABLE_LOCAL_SYSTEM}": str(ctx.attr.enable_local_system).lower(),
+            "{ROOT_VOLUME_ONLY}": str(ctx.attr.enable_local_system and not ctx.attr.enable_current_user_home).lower(),
         },
     )
 
@@ -175,7 +179,7 @@ mac_pkg_installer = rule(
             doc = "Allow installation at any location in the Distribution.xml domains element",
         ),
         "enable_current_user_home": attr.bool(
-            default = True,
+            default = False,
             doc = "Allow installation in the current user's home directory in the Distribution.xml domains element",
         ),
         "enable_local_system": attr.bool(
