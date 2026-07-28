@@ -11,12 +11,13 @@ import java.util.concurrent.TimeUnit
 class MacSigningTool(private val params: MacSigningCommandLineParams) {
     private val shell = Shell(Logging.Logger(logLevel = if (params.verbose) LogLevel.DEBUG else LogLevel.ERROR), params.verbose)
 
-    private val installLocation: String by lazy {
-        var location = params.installLocation
-        if ("{IDENTIFIER}" in location) location = location.replace("{IDENTIFIER}", params.identifier)
-        if ("{VERSION}" in location) location = location.replace("{VERSION}", params.versionFile.readText().trim())
-        location
-    }
+    private val version: String by lazy { params.versionFile.readText().trim() }
+
+    private fun resolveTemplate(s: String) = s
+        .replace("{IDENTIFIER}", params.identifier)
+        .replace("{VERSION}", version)
+
+    private val installLocation: String by lazy { resolveTemplate(params.installLocation) }
 
     fun run() {
         progress("Checking keychain '${params.keychainName}'...")

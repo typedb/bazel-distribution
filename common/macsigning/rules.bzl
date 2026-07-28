@@ -120,14 +120,25 @@ def _mac_pkg_installer_impl(ctx):
 
     postinstall_script = None
     if ctx.attr.symlinks:
-        postinstall_script = ctx.actions.declare_file(ctx.attr.name + ".postinstall")
+        partial_postinstall = ctx.actions.declare_file(ctx.attr.name + ".postinstall.partial")
         ctx.actions.write(
-            output = postinstall_script,
+            output = partial_postinstall,
             content = "#!/bin/bash\n" + "\n".join([
-                "ln -sf {} {}".format(s.split(":")[1], s.split(":")[0])
+                "ln -sf {} {}".format(
+                    s.replace("{IDENTIFIER}", ctx.attr.identifier).split(":")[1],
+                    s.replace("{IDENTIFIER}", ctx.attr.identifier).split(":")[0],
+                )
                 for s in ctx.attr.symlinks
             ]),
             is_executable = True,
+        )
+        postinstall_script = ctx.actions.declare_file(ctx.attr.name + ".postinstall")
+        ctx.actions.run_shell(
+            inputs = [partial_postinstall, version_file],
+            outputs = [postinstall_script],
+            command = "sed \"s/{{VERSION}}/$(cat {} | tr -d '[:space:]')/g\" {} > {} && chmod +x {}".format(
+                version_file.path, partial_postinstall.path, postinstall_script.path, postinstall_script.path,
+            ),
         )
 
     inputs = [ctx.file.src, ctx.file.entitlements, distribution_xml, version_file] + ([postinstall_script] if postinstall_script else [])
