@@ -82,6 +82,9 @@ def _mac_pkg_installer_impl(ctx):
             "{IDENTIFIER}": ctx.attr.identifier,
             "{PKG_FILENAME}": intermediate_pkg_name,
             "{HOST_ARCHITECTURE}": ctx.attr.host_architecture,
+            "{ENABLE_ANYWHERE}": str(ctx.attr.enable_anywhere).lower(),
+            "{ENABLE_CURRENT_USER_HOME}": str(ctx.attr.enable_current_user_home).lower(),
+            "{ENABLE_LOCAL_SYSTEM}": str(ctx.attr.enable_local_system).lower(),
         },
     )
 
@@ -166,6 +169,18 @@ mac_pkg_installer = rule(
         "host_architecture": attr.string(
             mandatory = True,
             doc = "Target CPU architecture for the installer (e.g. 'arm64' or 'x86_64'); written into the Distribution.xml hostArchitectures field",
+        ),
+        "enable_anywhere": attr.bool(
+            default = False,
+            doc = "Allow installation at any location in the Distribution.xml domains element",
+        ),
+        "enable_current_user_home": attr.bool(
+            default = True,
+            doc = "Allow installation in the current user's home directory in the Distribution.xml domains element",
+        ),
+        "enable_local_system": attr.bool(
+            default = False,
+            doc = "Allow installation on the local system volume in the Distribution.xml domains element",
         ),
         "identifier": attr.string(
             mandatory = True,

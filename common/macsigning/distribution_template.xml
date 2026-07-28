@@ -2,7 +2,7 @@
 <installer-gui-script minSpecVersion="1">
     <pkg-ref id="{IDENTIFIER}"/>
     <options customize="never" require-scripts="false" rootVolumeOnly="true" hostArchitectures="{HOST_ARCHITECTURE}"/>
-    <domains enable_anywhere="false" enable_currentUserHome="true" enable_localSystem="false"/>
+    <domains enable_anywhere="{ENABLE_ANYWHERE}" enable_currentUserHome="{ENABLE_CURRENT_USER_HOME}" enable_localSystem="{ENABLE_LOCAL_SYSTEM}"/>
     <choices-outline>
         <line choice="default">
             <line choice="{IDENTIFIER}"/>
