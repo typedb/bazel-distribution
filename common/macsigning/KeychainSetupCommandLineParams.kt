@@ -13,8 +13,8 @@ class KeychainSetupCommandLineParams {
     @CommandLine.Option(names = ["--passwords"], arity = "0..*")
     var passwords: List<String> = emptyList()
 
-    @CommandLine.Option(names = ["--signing_identities_password_env"], required = true)
-    lateinit var signingIdentitiesPasswordEnv: String
+    @CommandLine.Option(names = ["--signing_identities_password_env"])
+    var signingIdentitiesPasswordEnv: String = ""
 
     @CommandLine.Option(names = ["--partition_list"], required = true)
     lateinit var partitionList: String

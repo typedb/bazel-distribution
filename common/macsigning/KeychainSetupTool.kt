@@ -57,8 +57,9 @@ class KeychainSetupTool(
     }
 
     private fun importIdentity() {
-        val certPassword = System.getenv(signingIdentitiesPasswordEnv)
-            ?: error("Required environment variable $signingIdentitiesPasswordEnv is not set")
+        val certPassword = if (signingIdentitiesPasswordEnv.isNotEmpty())
+            System.getenv(signingIdentitiesPasswordEnv) ?: error("Environment variable $signingIdentitiesPasswordEnv is not set")
+        else ""
         shell.execute(Shell.Command(
             Shell.Command.arg("security"), Shell.Command.arg("import"),
             Shell.Command.arg(signingIdentities.path),

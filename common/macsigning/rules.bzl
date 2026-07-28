@@ -6,6 +6,7 @@ def _rlocation(ctx, f):
 def _keychain_setup_impl(ctx):
     passwords_args = " ".join(['--passwords="{}"'.format(p) for p in ctx.attr.passwords])
     trusted_apps_args = " ".join(['--trusted_apps="{}"'.format(a) for a in ctx.attr.trusted_apps])
+    signing_identities_password_env_arg = '--signing_identities_password_env="{}"'.format(ctx.attr.signing_identities_password_env) if ctx.attr.signing_identities_password_env else ""
 
     script = ctx.actions.declare_file(ctx.attr.name + ".sh")
     ctx.actions.write(
@@ -13,12 +14,12 @@ def _keychain_setup_impl(ctx):
         content = """#!/usr/bin/env bash
 set -euo pipefail
 RUNFILES="${{RUNFILES_DIR:-${{BASH_SOURCE[0]}}.runfiles}}"
-exec "$RUNFILES/{binary}" --signing_identities="$RUNFILES/{p12}" --keychain_name="{keychain_name}" --signing_identities_password_env="{signing_identities_password_env}" --partition_list="{partition_list}" {trusted_apps_args} {passwords_args}
+exec "$RUNFILES/{binary}" --signing_identities="$RUNFILES/{p12}" --keychain_name="{keychain_name}" {signing_identities_password_env_arg} --partition_list="{partition_list}" {trusted_apps_args} {passwords_args}
 """.format(
             binary = _rlocation(ctx, ctx.executable._keychain_setup_bin),
             p12 = _rlocation(ctx, ctx.file.signing_identities),
             keychain_name = ctx.attr.keychain_name,
-            signing_identities_password_env = ctx.attr.signing_identities_password_env,
+            signing_identities_password_env_arg = signing_identities_password_env_arg,
             partition_list = ctx.attr.partition_list,
             trusted_apps_args = trusted_apps_args,
             passwords_args = passwords_args,
@@ -48,8 +49,8 @@ keychain_setup = rule(
             doc = "List of 'account_name:ENV_VAR_NAME' pairs; each env var is read at runtime and stored in the keychain under the given account name",
         ),
         "signing_identities_password_env": attr.string(
-            default = "APPLE_SIGNING_IDENTITIES_PASSWORD",
-            doc = "Name of the env var containing the password for the signing_identities .p12 file",
+            default = "",
+            doc = "Name of the env var containing the password for the signing_identities .p12 file; omit if the .p12 has no password",
         ),
         "partition_list": attr.string(
             default = "apple-tool:,apple:,codesign:",
