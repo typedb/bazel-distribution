@@ -14,7 +14,7 @@ kt_jvm_library(
 java_binary(
     name = "macsigning-bin",
     runtime_deps = [":macsigning-lib"],
-    main_class = "com.typedb.bazel.distribution.common.macsigning.MainKt",
+    main_class = "com.typedb.bazel.distribution.common.macsigning.MacSigningToolMainKt",
     visibility = ["//visibility:public"],
 )
 
