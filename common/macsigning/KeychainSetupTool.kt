@@ -19,6 +19,7 @@ class KeychainSetupTool(
     fun run() {
         delete()
         create()
+        addToSearchList()
         unlock()
         importIdentity()
         makeAccessible()
@@ -42,7 +43,11 @@ class KeychainSetupTool(
         ))
     }
 
-private fun unlock() {
+    private fun addToSearchList() {
+        shell.execute(listOf("security", "list-keychains", "-d", "user", "-s", "login.keychain", keychainName))
+    }
+
+    private fun unlock() {
         shell.execute(Shell.Command(
             Shell.Command.arg("security"), Shell.Command.arg("unlock-keychain"),
             Shell.Command.arg("-p"), Shell.Command.arg(keychainPassword, printable = false),
