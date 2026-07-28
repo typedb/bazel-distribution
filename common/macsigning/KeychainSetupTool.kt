@@ -9,6 +9,9 @@ class KeychainSetupTool(
     private val signingIdentities: File,
     private val keychainName: String,
     private val passwords: List<String>,
+    private val signingIdentitiesPasswordEnv: String,
+    private val partitionList: String,
+    private val trustedApps: List<String>,
 ) {
     private val shell = Shell(Logging.Logger(logLevel = LogLevel.DEBUG), true)
     private val keychainPassword = java.util.UUID.randomUUID().toString()
@@ -54,22 +57,20 @@ class KeychainSetupTool(
     }
 
     private fun importIdentity() {
-        val certPassword = System.getenv(SIGNING_IDENTITIES_PASSWORD_ENV)
-            ?: error("Required environment variable $SIGNING_IDENTITIES_PASSWORD_ENV is not set")
+        val certPassword = System.getenv(signingIdentitiesPasswordEnv)
+            ?: error("Required environment variable $signingIdentitiesPasswordEnv is not set")
         shell.execute(Shell.Command(
             Shell.Command.arg("security"), Shell.Command.arg("import"),
             Shell.Command.arg(signingIdentities.path),
             Shell.Command.arg("-k"), Shell.Command.arg(keychainName),
             Shell.Command.arg("-P"), Shell.Command.arg(certPassword, printable = false),
-            Shell.Command.arg("-T"), Shell.Command.arg("/usr/bin/codesign"),
-            Shell.Command.arg("-T"), Shell.Command.arg("/usr/bin/productsign"),
-        ))
+        ) + trustedApps.flatMap { listOf(Shell.Command.arg("-T"), Shell.Command.arg(it)) }))
     }
 
     private fun makeAccessible() {
         shell.execute(Shell.Command(
             Shell.Command.arg("security"), Shell.Command.arg("set-key-partition-list"),
-            Shell.Command.arg("-S"), Shell.Command.arg("apple-tool:,apple:,codesign:"),
+            Shell.Command.arg("-S"), Shell.Command.arg(partitionList),
             Shell.Command.arg("-s"),
             Shell.Command.arg("-k"), Shell.Command.arg(keychainPassword, printable = false),
             Shell.Command.arg(keychainName),
@@ -86,7 +87,4 @@ class KeychainSetupTool(
         ))
     }
 
-    companion object {
-        const val SIGNING_IDENTITIES_PASSWORD_ENV = "APPLE_SIGNING_IDENTITIES_PASSWORD"
-    }
 }
