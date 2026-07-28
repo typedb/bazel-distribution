@@ -60,7 +60,7 @@ class KeychainSetupTool(
         val certPassword = if (signingIdentitiesPasswordEnv.isNotEmpty())
             System.getenv(signingIdentitiesPasswordEnv) ?: error("Environment variable $signingIdentitiesPasswordEnv is not set")
         else ""
-        shell.execute(Shell.Command(
+        shell.execute(Shell.Command(listOf(
             Shell.Command.arg("security"), Shell.Command.arg("import"),
             Shell.Command.arg(signingIdentities.path),
             Shell.Command.arg("-k"), Shell.Command.arg(keychainName),
