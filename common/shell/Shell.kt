@@ -6,18 +6,22 @@ import org.zeroturnaround.exec.ProcessExecutor
 import org.zeroturnaround.exec.ProcessResult
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 class Shell(private val logger: Logger, private val verbose: Boolean = false, private val printSensitiveData: Boolean = false) {
     fun execute(
         command: List<String>, baseDir: Path = Paths.get("."),
-        env: Map<String, String> = mapOf(), outputIsSensitive: Boolean = false, throwOnError: Boolean = true
+        env: Map<String, String> = mapOf(), outputIsSensitive: Boolean = false, throwOnError: Boolean = true,
+        timeout: Duration? = null,
     ): ProcessResult {
-        return execute(Command(*command.map { arg(it) }.toTypedArray()), baseDir, env, outputIsSensitive, throwOnError)
+        return execute(Command(*command.map { arg(it) }.toTypedArray()), baseDir, env, outputIsSensitive, throwOnError, timeout)
     }
 
     fun execute(
         command: Command, baseDir: Path = Paths.get("."),
-        env: Map<String, String> = mapOf(), outputIsSensitive: Boolean = false, throwOnError: Boolean = true
+        env: Map<String, String> = mapOf(), outputIsSensitive: Boolean = false, throwOnError: Boolean = true,
+        timeout: Duration? = null,
     ): ProcessResult {
         val executor = ProcessExecutor(command.args.map { it.value }).apply {
             readOutput(true)
@@ -25,6 +29,7 @@ class Shell(private val logger: Logger, private val verbose: Boolean = false, pr
             directory(baseDir.toFile())
             environment(env)
             if (shouldPrintOutput(outputIsSensitive)) redirectOutput(System.out)
+            if (timeout != null) timeout(timeout.toMillis(), TimeUnit.MILLISECONDS)
         }
 
         return executor.execute().also {

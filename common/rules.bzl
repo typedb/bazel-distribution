@@ -21,6 +21,7 @@ load("@typedb_bazel_distribution//common/assemble_versioned:rules.bzl", _assembl
 load("@typedb_bazel_distribution//common/checksum:rules.bzl", _checksum = "checksum")
 load("@typedb_bazel_distribution//common/generate_json_config:rules.bzl", _generate_json_config = "generate_json_config")
 load("@typedb_bazel_distribution//common/java_deps:rules.bzl", _java_deps = "java_deps")
+load("@typedb_bazel_distribution//common/macsigning:rules.bzl", _keychain_setup = "keychain_setup", _mac_pkg_installer = "mac_pkg_installer")
 load("@typedb_bazel_distribution//common/package_versioning:rules.bzl", _package_version_vars = "package_version_vars")
 load("@typedb_bazel_distribution//common/tgz2zip:rules.bzl", _tgz2zip = "tgz2zip")
 load("@typedb_bazel_distribution//common/targz:rules.bzl", _assemble_targz = "assemble_targz")
@@ -35,6 +36,8 @@ checksum = _checksum
 file_rename = _file_rename
 generate_json_config = _generate_json_config
 java_deps = _java_deps
+keychain_setup = _keychain_setup
+mac_pkg_installer = _mac_pkg_installer
 package_version_vars = _package_version_vars
 tgz2zip = _tgz2zip
 unzip_file = _unzip_file

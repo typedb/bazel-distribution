@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<installer-gui-script minSpecVersion="1">
+    <pkg-ref id="{IDENTIFIER}"/>
+    <options customize="never" require-scripts="false" rootVolumeOnly="{ROOT_VOLUME_ONLY}" hostArchitectures="{HOST_ARCHITECTURE}"/>
+    <domains enable_anywhere="{ENABLE_ANYWHERE}" enable_currentUserHome="{ENABLE_CURRENT_USER_HOME}" enable_localSystem="{ENABLE_LOCAL_SYSTEM}"/>
+    <choices-outline>
+        <line choice="default">
+            <line choice="{IDENTIFIER}"/>
+        </line>
+    </choices-outline>
+    <choice id="default"/>
+    <choice id="{IDENTIFIER}" visible="false">
+        <pkg-ref id="{IDENTIFIER}"/>
+    </choice>
+    <pkg-ref id="{IDENTIFIER}" version="{VERSION}" onConclusion="none">{PKG_FILENAME}</pkg-ref>
+</installer-gui-script>
