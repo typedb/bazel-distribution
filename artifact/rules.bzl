@@ -112,7 +112,7 @@ _deploy_artifact = rule(
     doc = "Deploy archive target into a raw repo",
 )
 
-def deploy_artifact(name, target, snapshot, release, **kwargs):
+def deploy_artifact(name, target, snapshot, release, tags = [], **kwargs):
     deploy_script_target_name = name + "__deploy"
     deploy_script_name = deploy_script_target_name + "-deploy.py"
 
@@ -122,6 +122,7 @@ def deploy_artifact(name, target, snapshot, release, **kwargs):
         target = target,
         snapshot = snapshot,
         release = release,
+        tags = tags,
         **kwargs
     )
 
@@ -130,6 +131,7 @@ def deploy_artifact(name, target, snapshot, release, **kwargs):
         srcs = [deploy_script_target_name],
         main = deploy_script_name,
         deps = [Label("//common/uploader:uploader")],
+        tags = tags,
     )
 
 
