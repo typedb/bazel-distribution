@@ -21,4 +21,7 @@ class KeychainSetupCommandLineParams {
 
     @CommandLine.Option(names = ["--trusted_apps"], required = true, arity = "1..*")
     lateinit var trustedApps: List<String>
+
+    @CommandLine.Option(names = ["--login_keychain_certificates"], arity = "0..*")
+    var loginKeychainCertificates: List<String> = emptyList()
 }
