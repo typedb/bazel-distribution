@@ -6,6 +6,7 @@ def _rlocation(ctx, f):
 def _keychain_setup_impl(ctx):
     passwords_args = " ".join(['--passwords="{}"'.format(p) for p in ctx.attr.passwords])
     trusted_apps_args = " ".join(['--trusted_apps="{}"'.format(a) for a in ctx.attr.trusted_apps])
+    login_keychain_certificates_args = " ".join(['--login_keychain_certificates="{}"'.format(c) for c in ctx.attr.login_keychain_certificates])
     signing_identities_password_env_arg = '--signing_identities_password_env="{}"'.format(ctx.attr.signing_identities_password_env) if ctx.attr.signing_identities_password_env else ""
 
     script = ctx.actions.declare_file(ctx.attr.name + ".sh")
@@ -14,7 +15,7 @@ def _keychain_setup_impl(ctx):
         content = """#!/usr/bin/env bash
 set -euo pipefail
 RUNFILES="${{RUNFILES_DIR:-${{BASH_SOURCE[0]}}.runfiles}}"
-exec "$RUNFILES/{binary}" --signing_identities="$RUNFILES/{p12}" --keychain_name="{keychain_name}" {signing_identities_password_env_arg} --partition_list="{partition_list}" {trusted_apps_args} {passwords_args}
+exec "$RUNFILES/{binary}" --signing_identities="$RUNFILES/{p12}" --keychain_name="{keychain_name}" {signing_identities_password_env_arg} --partition_list="{partition_list}" {trusted_apps_args} {passwords_args} {login_keychain_certificates_args}
 """.format(
             binary = _rlocation(ctx, ctx.executable._keychain_setup_bin),
             p12 = _rlocation(ctx, ctx.file.signing_identities),
@@ -23,6 +24,7 @@ exec "$RUNFILES/{binary}" --signing_identities="$RUNFILES/{p12}" --keychain_name
             partition_list = ctx.attr.partition_list,
             trusted_apps_args = trusted_apps_args,
             passwords_args = passwords_args,
+            login_keychain_certificates_args = login_keychain_certificates_args,
         ),
         is_executable = True,
     )
@@ -59,6 +61,10 @@ keychain_setup = rule(
         "trusted_apps": attr.string_list(
             mandatory = True,
             doc = "Paths to apps granted access to the signing keys via -T flags on security import",
+        ),
+        "login_keychain_certificates": attr.string_list(
+            default = [],
+            doc = "Subjects of certificates to copy into the login keychain, matched by prefix. codesign builds the chain it embeds from the login keychain, so intermediates shipped in the .p12 must be listed here (e.g. 'Developer ID Certification Authority'). Fails if a subject matches nothing.",
         ),
         "_keychain_setup_bin": attr.label(
             default = "@typedb_bazel_distribution//common/macsigning:keychain-setup",
