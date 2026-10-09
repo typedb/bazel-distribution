@@ -22,6 +22,7 @@ class KeychainSetupTool(
         addToSearchList()
         unlock()
         importIdentity()
+        shareCertificatesWithLoginKeychain()
         makeAccessible()
         passwords.forEach { entry ->
             val (account, envVar) = entry.split(":", limit = 2)
@@ -67,6 +68,22 @@ class KeychainSetupTool(
         ) + trustedApps.flatMap { listOf(Shell.Command.arg("-T"), Shell.Command.arg(it)) }))
     }
 
+    // codesign builds the chain it embeds from the login keychain, not from this one
+    private fun shareCertificatesWithLoginKeychain() {
+        val pem = shell.execute(listOf("security", "find-certificate", "-a", "-p", keychainName)).outputString()
+        val certs = CERTIFICATE_PATTERN.findAll(pem).map { it.value }.toList()
+        certs.forEach { cert ->
+            // add-certificates only reads the first certificate in a file, so add them one at a time
+            val file = File.createTempFile("signing-identity-cert", ".pem")
+            try {
+                file.writeText(cert + "\n")
+                shell.execute(listOf("security", "add-certificates", "-k", LOGIN_KEYCHAIN, file.path))
+            } finally {
+                file.delete()
+            }
+        }
+    }
+
     private fun makeAccessible() {
         shell.execute(Shell.Command(
             Shell.Command.arg("security"), Shell.Command.arg("set-key-partition-list"),
@@ -87,4 +104,9 @@ class KeychainSetupTool(
         ))
     }
 
+    companion object {
+        private const val LOGIN_KEYCHAIN = "login.keychain"
+        private val CERTIFICATE_PATTERN =
+            Regex("-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----", RegexOption.DOT_MATCHES_ALL)
+    }
 }

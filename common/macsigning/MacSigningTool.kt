@@ -35,7 +35,7 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
             Productbuild.run(shell, params.distributionXml, workDir, packedPkg)
             val signedPkg = File(workDir, "signed.pkg")
             progress("Running productsign...")
-            Productsign.sign(shell, params.verbose, params.installerCertSubject, params.keychainName, packedPkg, signedPkg)
+            Productsign.sign(shell, params.installerCertSubject, params.keychainName, packedPkg, signedPkg)
             if (params.notarize) {
                 progress("Submitting for notarization...")
                 Notarytool.submit(shell, params.verbose, params.keychainName, params.appleId, params.appleTeamId, signedPkg)
@@ -93,9 +93,9 @@ class MacSigningTool(private val params: MacSigningCommandLineParams) {
     }
 
     private object Productsign {
-        fun sign(shell: Shell, verbose: Boolean, installerCertSubject: String, keychainName: String, inputPkg: File, outputPkg: File) {
+        // productsign has no verbosity option
+        fun sign(shell: Shell, installerCertSubject: String, keychainName: String, inputPkg: File, outputPkg: File) {
             val command: MutableList<String> = mutableListOf("productsign")
-            if (verbose) command += "-v"
             command += listOf("--keychain", keychainName, "--sign", installerCertSubject, inputPkg.path, outputPkg.path)
             shell.execute(command, timeout = Duration.ofSeconds(30))
         }
