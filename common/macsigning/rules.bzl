@@ -6,7 +6,7 @@ def _rlocation(ctx, f):
 def _keychain_setup_impl(ctx):
     passwords_args = " ".join(['--passwords="{}"'.format(p) for p in ctx.attr.passwords])
     trusted_apps_args = " ".join(['--trusted_apps="{}"'.format(a) for a in ctx.attr.trusted_apps])
-    login_keychain_certificates_args = " ".join(['--login_keychain_certificates="{}"'.format(c) for c in ctx.attr.login_keychain_certificates])
+    login_keychain_certificates_args = " ".join(['--login_keychain_certificates="$RUNFILES/{}"'.format(_rlocation(ctx, c)) for c in ctx.files.login_keychain_certificates])
     signing_identities_password_env_arg = '--signing_identities_password_env="{}"'.format(ctx.attr.signing_identities_password_env) if ctx.attr.signing_identities_password_env else ""
 
     script = ctx.actions.declare_file(ctx.attr.name + ".sh")
@@ -28,7 +28,7 @@ exec "$RUNFILES/{binary}" --signing_identities="$RUNFILES/{p12}" --keychain_name
         ),
         is_executable = True,
     )
-    runfiles = ctx.runfiles(files = [ctx.file.signing_identities]).merge(
+    runfiles = ctx.runfiles(files = [ctx.file.signing_identities] + ctx.files.login_keychain_certificates).merge(
         ctx.attr._keychain_setup_bin[DefaultInfo].default_runfiles,
     )
     return DefaultInfo(executable = script, runfiles = runfiles)
@@ -62,9 +62,10 @@ keychain_setup = rule(
             mandatory = True,
             doc = "Paths to apps granted access to the signing keys via -T flags on security import",
         ),
-        "login_keychain_certificates": attr.string_list(
-            default = [],
-            doc = "Subjects of certificates to copy into the login keychain, matched by prefix. codesign builds the chain it embeds from the login keychain, so intermediates shipped in the .p12 must be listed here (e.g. 'Developer ID Certification Authority'). Fails if a subject matches nothing.",
+        "login_keychain_certificates": attr.label_list(
+            default = ["@apple_developer_id_g2_ca//file"],
+            allow_files = True,
+            doc = "Certificate files, one certificate per file, to add to the login keychain. codesign builds the chain it embeds from the login keychain, so Developer ID intermediates belong here - typically an http_file of Apple's DeveloperIDG2CA.cer, which macOS does not ship.",
         ),
         "_keychain_setup_bin": attr.label(
             default = "@typedb_bazel_distribution//common/macsigning:keychain-setup",

@@ -14,7 +14,15 @@ module(
 # ===========================================================
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
+
+http_file(
+    name = "apple_developer_id_g2_ca",
+    url = "https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer",
+    sha256 = "f16cd3c54c7f83cea4bf1a3e6a0819c8aaa8e4a1528fd144715f350643d2df3a",
+    downloaded_file_path = "DeveloperIDG2CA.cer",
+)
 
 # ===========================================================
 # Build dependencies
