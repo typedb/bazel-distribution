@@ -47,9 +47,13 @@ def get_checksums_from_formula(content):
     ]
 
 
-def url_with_credential(url, credential):
-    scheme, rest = url.split('://')
-    return scheme + '://"' + credential + '"@' + rest
+# Pass the token via a credential helper, not the URL: libcurl patched for CVE-2026-94266 strips URL credentials,
+# so git drops them. The empty credential.helper entry clears any helpers already configured.
+git_credential_config = [
+    '-c', 'credential.helper=',
+    '-c', 'credential.helper=!f() { test "$1" = get && echo username=x-access-token && echo "password=$DEPLOY_BREW_TOKEN"; }; f',
+]
+git_env = dict(os.environ, GIT_TERMINAL_PROMPT='0')
 
 
 def verify_zip_file(fn):
@@ -104,7 +108,7 @@ tap_url = tap_repositories[tap_type]
 tap_localpath = tempfile.mkdtemp()
 try:
     print('Cloning brew tap: "{}"...'.format(tap_url))
-    sp.check_call(['bash', '-c', 'git clone ' + url_with_credential(tap_url, '$DEPLOY_BREW_TOKEN') + ' ' + tap_localpath])
+    sp.check_call(['git'] + git_credential_config + ['clone', tap_url, tap_localpath], env=git_env)
     sp.check_call(["git", "config", "user.email", git_email], cwd=tap_localpath)
     sp.check_call(["git", "config", "user.name", git_username], cwd=tap_localpath)
     sp.check_call(['mkdir', '-p', '{brew_folder}'], cwd=tap_localpath)
@@ -155,7 +159,7 @@ try:
         print('Error - unable to proceed with deploying to brew due to the following error:')
         raise e
 
-    sp.check_call(['bash', '-c', 'git push ' + url_with_credential(tap_url, '$DEPLOY_BREW_TOKEN') + ' master'], cwd=tap_localpath)
+    sp.check_call(['git'] + git_credential_config + ['push', tap_url, 'master'], cwd=tap_localpath, env=git_env)
     print("Done! Enjoy the beer.")
 finally:
     shutil.rmtree(tap_localpath)
