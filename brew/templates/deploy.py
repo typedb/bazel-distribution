@@ -52,8 +52,7 @@ def get_checksums_from_formula(content):
 git_credential_config = [
     '-c', 'credential.helper=!f() { test "$1" = get && echo username=x-access-token && echo "password=$DEPLOY_BREW_TOKEN"; }; f',
 ]
-# Ignore the host's global and system git config, which CI may have set up to redirect GitHub URLs to its own
-# credentials: CircleCI's checkout rewrites https://github.com to SSH, authenticating with a read-only deploy key.
+# Ignore the host's global and system git config, which CI may have set up to redirect GitHub URLs to its own credentials.
 os.environ.update(GIT_TERMINAL_PROMPT='0', GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1')
 
 
