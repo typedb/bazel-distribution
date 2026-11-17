@@ -17,4 +17,6 @@
 # under the License.
 #
 
-# Empty on purpose: Bazelisk before 1.19 (like in CI) finds the workspace root, and so .bazelversion, only by this file.
+# This file intentionally left empty.
+# It serves as a workspace root marker for old versions of Bazel.
+# All dependency management is done via MODULE.bazel (Bzlmod).
