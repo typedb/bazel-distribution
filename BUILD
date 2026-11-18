@@ -71,7 +71,6 @@ stardoc(
         "file_rename",
         "generate_json_config",
         "tgz2zip",
-        "workspace_refs",
 
         # From: //crates:rules.bzl
         "assemble_crate",

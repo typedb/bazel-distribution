@@ -25,7 +25,6 @@ load("@typedb_bazel_distribution//common/macsigning:rules.bzl", _keychain_setup 
 load("@typedb_bazel_distribution//common/package_versioning:rules.bzl", _package_version_vars = "package_version_vars")
 load("@typedb_bazel_distribution//common/tgz2zip:rules.bzl", _tgz2zip = "tgz2zip")
 load("@typedb_bazel_distribution//common/targz:rules.bzl", _assemble_targz = "assemble_targz")
-load("@typedb_bazel_distribution//common/workspace_refs:rules.bzl", _workspace_refs = "workspace_refs")
 load("@typedb_bazel_distribution//common/zip:rules.bzl", _assemble_zip = "assemble_zip", _unzip_file = "unzip_file")
 load("@typedb_bazel_distribution//common/rename:rules.bzl", _file_rename = "file_rename")
 
@@ -41,4 +40,3 @@ mac_pkg_installer = _mac_pkg_installer
 package_version_vars = _package_version_vars
 tgz2zip = _tgz2zip
 unzip_file = _unzip_file
-workspace_refs = _workspace_refs
